@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "clientarguments",
+  "version": "${version}",
+  "name": "clientarguments",
+  "description": "Quality of life library for client-sided command building.",
+  "authors": [
+    "xpple"
+  ],
+  "contact": {
+    "website": "https://xpple.dev/",
+    "repo": "https://github.com/xpple/ClientArguments"
+  },
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.xpple.clientarguments.ClientArguments"
+    ]
+  },
+  "mixins": [
+    "clientarguments.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.11.6",
+    "fabric": ">=0.37.1",
+    "minecraft": "1.17.1"
+  }
+}
