@@ -23,6 +23,7 @@ import java.util.Map;
 public class ClientBlockArgument {
 
     private static final DynamicCommandExceptionType UNKNOWN_TAG_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("carguments.block.tag.unknown", id));
+    private static final DynamicCommandExceptionType NULL_POINTER_EXCEPTION = new DynamicCommandExceptionType(arg -> new TranslatableText("carguments.block.null", arg));
 
     private final Block block;
     private final BlockState blockState;
@@ -73,6 +74,41 @@ public class ClientBlockArgument {
 
     private boolean isSameNbt(NbtCompound other) {
         return NbtHelper.matches(this.nbt, other, true);
+    }
+
+    public Block getBlock() throws CommandSyntaxException {
+        if (this.block == null) {
+            throw NULL_POINTER_EXCEPTION.create("block");
+        }
+        return this.block;
+    }
+
+    public BlockState getBlockState() throws CommandSyntaxException {
+        if (this.blockState == null) {
+            throw NULL_POINTER_EXCEPTION.create("block state");
+        }
+        return this.blockState;
+    }
+
+    public NbtCompound getNbt() throws CommandSyntaxException {
+        if (this.nbt == null) {
+            throw NULL_POINTER_EXCEPTION.create("nbt");
+        }
+        return this.nbt;
+    }
+
+    public Identifier getIdentifier() throws CommandSyntaxException {
+        if (this.identifier == null) {
+            throw NULL_POINTER_EXCEPTION.create("identifier");
+        }
+        return this.identifier;
+    }
+
+    public Map<String, String> getProperties() throws CommandSyntaxException {
+        if (this.properties == null) {
+            throw NULL_POINTER_EXCEPTION.create("properties");
+        }
+        return this.properties;
     }
 
     public boolean test(WorldView world, BlockPos pos) throws CommandSyntaxException {

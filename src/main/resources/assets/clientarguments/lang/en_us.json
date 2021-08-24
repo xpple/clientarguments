@@ -78,6 +78,7 @@
   "cargument.id.unknown": "Unknown ID: %s",
   "cargument.scoreboardDisplaySlot.invalid": "Unknown display slot '%s'",
   "carguments.block.tag.unknown": "Unknown block tag '%s'",
+  "carguments.block.null": "No value for '%s'",
   "cargument.block.id.invalid": "Unknown block type '%s'",
   "cargument.block.property.unknown": "Block %s does not have property '%s'",
   "cargument.block.property.duplicate": "Property '%s' can only be set once for block %s",
