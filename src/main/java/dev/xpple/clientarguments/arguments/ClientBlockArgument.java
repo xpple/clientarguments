@@ -23,7 +23,6 @@ import java.util.Map;
 public class ClientBlockArgument {
 
     private static final DynamicCommandExceptionType UNKNOWN_TAG_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("carguments.block.tag.unknown", id));
-    private static final DynamicCommandExceptionType NULL_POINTER_EXCEPTION = new DynamicCommandExceptionType(arg -> new TranslatableText("carguments.block.null", arg));
 
     private final Block block;
     private final BlockState blockState;
@@ -76,38 +75,23 @@ public class ClientBlockArgument {
         return NbtHelper.matches(this.nbt, other, true);
     }
 
-    public Block getBlock() throws CommandSyntaxException {
-        if (this.block == null) {
-            throw NULL_POINTER_EXCEPTION.create("block");
-        }
+    public Block getBlock() {
         return this.block;
     }
 
-    public BlockState getBlockState() throws CommandSyntaxException {
-        if (this.blockState == null) {
-            throw NULL_POINTER_EXCEPTION.create("block state");
-        }
+    public BlockState getBlockState() {
         return this.blockState;
     }
 
-    public NbtCompound getNbt() throws CommandSyntaxException {
-        if (this.nbt == null) {
-            throw NULL_POINTER_EXCEPTION.create("nbt");
-        }
+    public NbtCompound getNbt() {
         return this.nbt;
     }
 
-    public Identifier getIdentifier() throws CommandSyntaxException {
-        if (this.identifier == null) {
-            throw NULL_POINTER_EXCEPTION.create("identifier");
-        }
+    public Identifier getIdentifier() {
         return this.identifier;
     }
 
-    public Map<String, String> getProperties() throws CommandSyntaxException {
-        if (this.properties == null) {
-            throw NULL_POINTER_EXCEPTION.create("properties");
-        }
+    public Map<String, String> getProperties() {
         return this.properties;
     }
 
