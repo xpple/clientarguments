@@ -50,7 +50,7 @@ public class ClientBlockArgument {
         this.nbt = parser.getNbtData();
     }
 
-    public ClientBlockArgument ignoreNbt() {
+    ClientBlockArgument ignoreNbt() {
         this.ignoreNbt = true;
         return this;
     }
