@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.minecraft.command.argument.AngleArgumentType;
 import net.minecraft.command.argument.CoordinateArgument;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.MathHelper;
@@ -32,9 +33,10 @@ public class CAngleArgumentType implements ArgumentType<CAngleArgumentType.Angle
 		if (!stringReader.canRead()) {
 			throw INCOMPLETE_ANGLE_EXCEPTION.createWithContext(stringReader);
 		}
+		boolean relative = CoordinateArgument.isRelative(stringReader);
 		float angle = stringReader.canRead() && stringReader.peek() != ' ' ? stringReader.readFloat() : 0.0F;
 		if (!Float.isNaN(angle) && !Float.isInfinite(angle)) {
-			return new Angle(angle, CoordinateArgument.isRelative(stringReader));
+			return new Angle(angle, relative);
 		}
 		throw INVALID_ANGLE_EXCEPTION.createWithContext(stringReader);
 	}
