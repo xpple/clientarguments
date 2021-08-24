@@ -3,7 +3,7 @@
   "id": "clientarguments",
   "version": "${version}",
   "name": "clientarguments",
-  "description": "Quality of life library for client-sided command building.",
+  "description": "Quality of life library for client-sided Minecraft Fabric command building.",
   "authors": [
     "xpple"
   ],
