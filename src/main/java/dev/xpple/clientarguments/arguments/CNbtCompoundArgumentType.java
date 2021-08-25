@@ -18,7 +18,7 @@ public class CNbtCompoundArgumentType implements ArgumentType<NbtCompound> {
 		return new CNbtCompoundArgumentType();
 	}
 
-	public static <S> NbtCompound getNbtCompound(CommandContext<S> context, String name) {
+	public static <S> NbtCompound getCNbtCompound(CommandContext<S> context, String name) {
 		return context.getArgument(name, NbtCompound.class);
 	}
 

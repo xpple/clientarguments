@@ -25,7 +25,7 @@ public class CColorArgumentType implements ArgumentType<Formatting> {
 		return new CColorArgumentType();
 	}
 
-	public static Formatting getColor(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static Formatting getCColor(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, Formatting.class);
 	}
 

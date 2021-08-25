@@ -27,7 +27,7 @@ public class CStatusEffectArgumentType implements ArgumentType<StatusEffect> {
 		return new CStatusEffectArgumentType();
 	}
 
-	public static StatusEffect getStatusEffect(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static StatusEffect getCStatusEffect(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, StatusEffect.class);
 	}
 

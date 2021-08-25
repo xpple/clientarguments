@@ -60,7 +60,7 @@ public class CItemSlotArgumentType implements ArgumentType<Integer> {
 		return new CItemSlotArgumentType();
 	}
 
-	public static Integer getItemSlot(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static Integer getCItemSlot(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, Integer.class);
 	}
 

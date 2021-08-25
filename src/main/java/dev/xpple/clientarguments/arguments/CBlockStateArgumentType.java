@@ -22,7 +22,7 @@ public class CBlockStateArgumentType implements ArgumentType<ClientBlockArgument
 		return new CBlockStateArgumentType();
 	}
 
-	public static ClientBlockArgument getBlockState(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static ClientBlockArgument getCBlockState(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, ClientBlockArgument.class);
 	}
 

@@ -28,7 +28,7 @@ public class CTestFunctionArgumentType implements ArgumentType<TestFunction> {
 		return new CTestFunctionArgumentType();
 	}
 
-	public static TestFunction getFunction(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static TestFunction getCFunction(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, TestFunction.class);
 	}
 

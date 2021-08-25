@@ -27,7 +27,7 @@ public class COperationArgumentType implements ArgumentType<COperationArgumentTy
 		return new COperationArgumentType();
 	}
 
-	public static Operation getOperation(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static Operation getCOperation(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, Operation.class);
 	}
 

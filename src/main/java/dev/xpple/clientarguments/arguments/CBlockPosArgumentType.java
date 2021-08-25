@@ -31,7 +31,7 @@ public class CBlockPosArgumentType implements ArgumentType<CPosArgument> {
 		return new CBlockPosArgumentType();
 	}
 
-	public static BlockPos getLoadedBlockPos(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static BlockPos getCLoadedBlockPos(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		BlockPos blockPos = (context.getArgument(name, CPosArgument.class)).toAbsoluteBlockPos(context.getSource());
 
 		if (!context.getSource().getWorld().isChunkLoaded(blockPos.getX() >> 4, blockPos.getZ() >> 4)) {
@@ -42,7 +42,7 @@ public class CBlockPosArgumentType implements ArgumentType<CPosArgument> {
 		return blockPos;
 	}
 
-	public static BlockPos getBlockPos(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static BlockPos getCBlockPos(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		BlockPos blockPos = context.getArgument(name, CPosArgument.class).toAbsoluteBlockPos(context.getSource());
 		if (World.isValid(blockPos)) {
 			return blockPos;

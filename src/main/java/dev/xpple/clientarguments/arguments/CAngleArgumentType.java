@@ -24,7 +24,7 @@ public class CAngleArgumentType implements ArgumentType<CAngleArgumentType.Angle
 		return new CAngleArgumentType();
 	}
 
-	public static float getAngle(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static float getCAngle(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, Angle.class).getAngle(context.getSource());
 	}
 

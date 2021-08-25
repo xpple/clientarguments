@@ -23,7 +23,7 @@ public class CSwizzleArgumentType implements ArgumentType<EnumSet<Direction.Axis
 	}
 
 	@SuppressWarnings("unchecked")
-	public static EnumSet<Direction.Axis> getSwizzle(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static EnumSet<Direction.Axis> getCSwizzle(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return (EnumSet<Direction.Axis>) context.getArgument(name, EnumSet.class);
 	}
 

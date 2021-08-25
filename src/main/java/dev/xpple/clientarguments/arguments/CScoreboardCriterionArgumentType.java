@@ -25,7 +25,7 @@ public class CScoreboardCriterionArgumentType implements ArgumentType<Scoreboard
 		return new CScoreboardCriterionArgumentType();
 	}
 
-	public static ScoreboardCriterion getCriterion(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static ScoreboardCriterion getCCriterion(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, ScoreboardCriterion.class);
 	}
 

@@ -18,7 +18,7 @@ public class CNbtElementArgumentType implements ArgumentType<NbtElement> {
 		return new CNbtElementArgumentType();
 	}
 
-	public static <S> NbtElement getNbtElement(CommandContext<S> context, String name) {
+	public static <S> NbtElement getCNbtElement(CommandContext<S> context, String name) {
 		return context.getArgument(name, NbtElement.class);
 	}
 

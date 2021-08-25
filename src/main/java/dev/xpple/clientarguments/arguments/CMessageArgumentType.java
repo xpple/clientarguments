@@ -23,7 +23,7 @@ public class CMessageArgumentType implements ArgumentType<CMessageArgumentType.M
 		return new CMessageArgumentType();
 	}
 
-	public static Text getMessage(CommandContext<FabricClientCommandSource> command, String name) throws CommandSyntaxException {
+	public static Text getCMessage(CommandContext<FabricClientCommandSource> command, String name) throws CommandSyntaxException {
 		return command.getArgument(name, MessageFormat.class).format(command.getSource(), true);
 	}
 

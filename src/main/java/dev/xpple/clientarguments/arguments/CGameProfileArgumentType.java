@@ -27,7 +27,7 @@ public class CGameProfileArgumentType implements ArgumentType<CGameProfileArgume
 		return new CGameProfileArgumentType();
 	}
 
-	public static Collection<GameProfile> getProfileArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Collection<GameProfile> getCProfileArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		return context.getArgument(name, GameProfileArgument.class).getNames(context.getSource());
 	}
 

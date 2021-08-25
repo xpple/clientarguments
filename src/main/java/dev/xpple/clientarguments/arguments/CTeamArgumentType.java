@@ -26,7 +26,7 @@ public class CTeamArgumentType implements ArgumentType<String> {
 		return new CTeamArgumentType();
 	}
 
-	public static Team getTeam(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Team getCTeam(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		String string = context.getArgument(name, String.class);
 		Scoreboard scoreboard = context.getSource().getWorld().getScoreboard();
 		Team team = scoreboard.getTeam(string);

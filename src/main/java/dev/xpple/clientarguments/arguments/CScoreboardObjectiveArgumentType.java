@@ -28,7 +28,7 @@ public class CScoreboardObjectiveArgumentType implements ArgumentType<String> {
 		return new CScoreboardObjectiveArgumentType();
 	}
 
-	public static ScoreboardObjective getObjective(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static ScoreboardObjective getCObjective(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		String string = context.getArgument(name, String.class);
 		Scoreboard scoreboard = context.getSource().getWorld().getScoreboard();
 		ScoreboardObjective scoreboardObjective = scoreboard.getNullableObjective(string);
@@ -38,8 +38,8 @@ public class CScoreboardObjectiveArgumentType implements ArgumentType<String> {
 		return scoreboardObjective;
 	}
 
-	public static ScoreboardObjective getWritableObjective(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		ScoreboardObjective scoreboardObjective = getObjective(context, name);
+	public static ScoreboardObjective getCWritableObjective(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+		ScoreboardObjective scoreboardObjective = getCObjective(context, name);
 		if (scoreboardObjective.getCriterion().isReadOnly()) {
 			throw READONLY_OBJECTIVE_EXCEPTION.create(scoreboardObjective.getName());
 		}

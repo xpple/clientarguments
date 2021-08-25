@@ -35,7 +35,7 @@ public class CIdentifierArgumentType implements ArgumentType<Identifier> {
 		return new CIdentifierArgumentType();
 	}
 
-	public static Advancement getAdvancementArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
+	public static Advancement getCAdvancementArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
 		Identifier identifier = context.getArgument(argumentName, Identifier.class);
 		Advancement advancement = context.getSource().getClient().getNetworkHandler().getAdvancementHandler().getManager().get(identifier);
 		if (advancement == null) {
@@ -44,14 +44,14 @@ public class CIdentifierArgumentType implements ArgumentType<Identifier> {
 		return advancement;
 	}
 
-	public static Recipe<?> getRecipeArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
+	public static Recipe<?> getCRecipeArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
 		RecipeManager recipeManager = context.getSource().getWorld().getRecipeManager();
 		Identifier identifier = context.getArgument(argumentName, Identifier.class);
 		return recipeManager.get(identifier).orElseThrow(() -> UNKNOWN_RECIPE_EXCEPTION.create(identifier));
 	}
 
 	/*
-	public static LootCondition getPredicateArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
+	public static LootCondition getCPredicateArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
 		Identifier identifier = context.getArgument(argumentName, Identifier.class);
 		LootConditionManager lootConditionManager = context.getSource().getServer().getPredicateManager();
 		LootCondition lootCondition = lootConditionManager.get(identifier);
@@ -63,7 +63,7 @@ public class CIdentifierArgumentType implements ArgumentType<Identifier> {
 	 */
 
 	/*
-	public static LootFunction getItemModifierArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
+	public static LootFunction getCItemModifierArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
 		Identifier identifier = context.getArgument(argumentName, Identifier.class);
 		LootFunctionManager lootFunctionManager = context.getSource().getServer().getItemModifierManager();
 		LootFunction lootFunction = lootFunctionManager.get(identifier);
@@ -74,12 +74,12 @@ public class CIdentifierArgumentType implements ArgumentType<Identifier> {
 	}
 	 */
 
-	public static EntityAttribute getAttributeArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
+	public static EntityAttribute getCAttributeArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
 		Identifier identifier = context.getArgument(argumentName, Identifier.class);
 		return Registry.ATTRIBUTE.getOrEmpty(identifier).orElseThrow(() -> UNKNOWN_ATTRIBUTE_EXCEPTION.create(identifier));
 	}
 
-	public static Identifier getIdentifier(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static Identifier getCIdentifier(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, Identifier.class);
 	}
 

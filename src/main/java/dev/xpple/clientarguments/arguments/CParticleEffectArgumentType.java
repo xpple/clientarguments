@@ -28,7 +28,7 @@ public class CParticleEffectArgumentType implements ArgumentType<ParticleEffect>
 		return new CParticleEffectArgumentType();
 	}
 
-	public static ParticleEffect getParticle(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static ParticleEffect getCParticle(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, ParticleEffect.class);
 	}
 

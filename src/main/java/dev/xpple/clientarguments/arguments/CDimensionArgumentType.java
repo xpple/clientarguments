@@ -29,7 +29,7 @@ public class CDimensionArgumentType implements ArgumentType<Identifier> {
 		return new CDimensionArgumentType();
 	}
 
-	public static DimensionArgument getDimensionArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static DimensionArgument getCDimensionArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		Identifier identifier = context.getArgument(name, Identifier.class);
 		RegistryKey<World> registryKey = RegistryKey.of(Registry.WORLD_KEY, identifier);
 		return Arrays.stream(DimensionArgument.values()).filter(dimension -> dimension.registryKey.equals(registryKey)).findAny().orElseThrow(() -> INVALID_DIMENSION_EXCEPTION.create(identifier));

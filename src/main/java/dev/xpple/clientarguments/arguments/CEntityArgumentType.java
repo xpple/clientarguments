@@ -43,7 +43,7 @@ public class CEntityArgumentType implements ArgumentType<CEntitySelector> {
 		return new CEntityArgumentType(true, false);
 	}
 
-	public static Entity getEntity(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Entity getCEntity(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		return context.getArgument(name, CEntitySelector.class).getEntity(context.getSource());
 	}
 
@@ -51,19 +51,19 @@ public class CEntityArgumentType implements ArgumentType<CEntitySelector> {
 		return new CEntityArgumentType(false, false);
 	}
 
-	public static Collection<? extends Entity> getEntities(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		Collection<? extends Entity> collection = getOptionalEntities(context, name);
+	public static Collection<? extends Entity> getCEntities(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+		Collection<? extends Entity> collection = getCOptionalEntities(context, name);
 		if (collection.isEmpty()) {
 			throw ENTITY_NOT_FOUND_EXCEPTION.create();
 		}
 		return collection;
 	}
 
-	public static Collection<? extends Entity> getOptionalEntities(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Collection<? extends Entity> getCOptionalEntities(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		return context.getArgument(name, CEntitySelector.class).getEntities(context.getSource());
 	}
 
-	public static Collection<AbstractClientPlayerEntity> getOptionalPlayers(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Collection<AbstractClientPlayerEntity> getCOptionalPlayers(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		return context.getArgument(name, CEntitySelector.class).getPlayers(context.getSource());
 	}
 
@@ -71,7 +71,7 @@ public class CEntityArgumentType implements ArgumentType<CEntitySelector> {
 		return new CEntityArgumentType(true, true);
 	}
 
-	public static AbstractClientPlayerEntity getPlayer(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static AbstractClientPlayerEntity getCPlayer(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		return context.getArgument(name, CEntitySelector.class).getPlayer(context.getSource());
 	}
 
@@ -79,7 +79,7 @@ public class CEntityArgumentType implements ArgumentType<CEntitySelector> {
 		return new CEntityArgumentType(false, true);
 	}
 
-	public static Collection<AbstractClientPlayerEntity> getPlayers(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Collection<AbstractClientPlayerEntity> getCPlayers(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		List<AbstractClientPlayerEntity> list = context.getArgument(name, CEntitySelector.class).getPlayers(context.getSource());
 		if (list.isEmpty()) {
 			throw PLAYER_NOT_FOUND_EXCEPTION.create();

@@ -30,7 +30,7 @@ public class CColumnPosArgumentType implements ArgumentType<CPosArgument> {
 		return new CColumnPosArgumentType();
 	}
 
-	public static ColumnPos getColumnPos(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static ColumnPos getCColumnPos(final CommandContext<FabricClientCommandSource> context, final String name) {
 		BlockPos blockPos = (context.getArgument(name, CPosArgument.class)).toAbsoluteBlockPos(context.getSource());
 		return new ColumnPos(blockPos.getX(), blockPos.getZ());
 	}

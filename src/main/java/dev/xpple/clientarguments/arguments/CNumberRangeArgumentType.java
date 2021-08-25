@@ -24,7 +24,7 @@ public interface CNumberRangeArgumentType<T extends NumberRange<?>> extends Argu
 
 		private static final Collection<String> EXAMPLES = Arrays.asList("0..5", "0", "-5", "-100..", "..100");
 
-		public static NumberRange.IntRange getRangeArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
+		public static NumberRange.IntRange getCRangeArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
 			return context.getArgument(name, NumberRange.IntRange.class);
 		}
 
@@ -43,7 +43,7 @@ public interface CNumberRangeArgumentType<T extends NumberRange<?>> extends Argu
 
 		private static final Collection<String> EXAMPLES = Arrays.asList("0..5.2", "0", "-5.4", "-100.76..", "..100");
 
-		public static NumberRange.FloatRange getRangeArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
+		public static NumberRange.FloatRange getCRangeArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
 			return context.getArgument(name, NumberRange.FloatRange.class);
 		}
 

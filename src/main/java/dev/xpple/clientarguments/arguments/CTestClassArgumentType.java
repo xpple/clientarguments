@@ -36,7 +36,7 @@ public class CTestClassArgumentType implements ArgumentType<String> {
 		return new CTestClassArgumentType();
 	}
 
-	public static String getTestClass(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static String getCTestClass(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, String.class);
 	}
 

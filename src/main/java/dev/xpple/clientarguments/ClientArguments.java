@@ -93,25 +93,25 @@ public class ClientArguments implements ClientModInitializer {
         ClientCommandManager.DISPATCHER.register(literal("clientarguments:test")
                 .then(literal("angle").then(argument("angle", angle())
                         .executes(ctx -> {
-                            float angle = getAngle(ctx, "angle");
+                            float angle = getCAngle(ctx, "angle");
                             ctx.getSource().sendFeedback(of(angle));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("blockpos").then(argument("blockpos", blockPos())
                         .executes(ctx -> {
-                            BlockPos blockpos = getBlockPos(ctx, "blockpos");
+                            BlockPos blockpos = getCBlockPos(ctx, "blockpos");
                             ctx.getSource().sendFeedback(of(blockpos.getX(), blockpos.getY(), blockpos.getZ()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("blockpredicate").then(argument("blockpredicate", blockPredicate())
                         .executes(ctx -> {
-                            ClientBlockArgument.ClientBlockPredicate clientBlockPredicate = getBlockPredicate(ctx, "blockpredicate");
+                            ClientBlockArgument.ClientBlockPredicate clientBlockPredicate = getCBlockPredicate(ctx, "blockpredicate");
                             ctx.getSource().sendFeedback(of(clientBlockPredicate.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("blockstate").then(argument("blockstate", blockState())
                         .executes(ctx -> {
-                            ClientBlockArgument blockArgument = getBlockState(ctx, "blockstate");
+                            ClientBlockArgument blockArgument = getCBlockState(ctx, "blockstate");
                             String[] arr = new String[5];
                             arr[0] = blockArgument.getBlock() == null ? "null" : blockArgument.getBlock().toString();
                             arr[1] = blockArgument.getBlockState() == null ? "null" : blockArgument.getBlockState().toString();
@@ -125,152 +125,152 @@ public class ClientArguments implements ClientModInitializer {
                         })))
                 .then(literal("color").then(argument("color", color())
                         .executes(ctx -> {
-                            Formatting color = getColor(ctx, "color");
+                            Formatting color = getCColor(ctx, "color");
                             ctx.getSource().sendFeedback(of(color.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("columnpos").then(argument("columnpos", columnPos())
                         .executes(ctx -> {
-                            ColumnPos columnPos = getColumnPos(ctx, "columnpos");
+                            ColumnPos columnPos = getCColumnPos(ctx, "columnpos");
                             ctx.getSource().sendFeedback(of(columnPos.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("dimension").then(argument("dimension", dimension())
                         .executes(ctx -> {
-                            CDimensionArgumentType.DimensionArgument dimension = getDimensionArgument(ctx, "dimension");
+                            CDimensionArgumentType.DimensionArgument dimension = getCDimensionArgument(ctx, "dimension");
                             ctx.getSource().sendFeedback(of(dimension.getName()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("enchantment").then(argument("enchantment", enchantment())
                         .executes(ctx -> {
-                            Enchantment enchantment = getEnchantment(ctx, "enchantment");
+                            Enchantment enchantment = getCEnchantment(ctx, "enchantment");
                             ctx.getSource().sendFeedback(new TranslatableText(enchantment.getTranslationKey()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("entityanchor").then(argument("entityanchor", entityAnchor())
                         .executes(ctx -> {
-                            CEntityAnchorArgumentType.EntityAnchor entityAnchor = getEntityAnchor(ctx, "entityanchor");
+                            CEntityAnchorArgumentType.EntityAnchor entityAnchor = getCEntityAnchor(ctx, "entityanchor");
                             ctx.getSource().sendFeedback(of(entityAnchor.positionAt(ctx.getSource()).toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("entity").then(argument("entity", entity())
                         .executes(ctx -> {
-                            Entity entity = getEntity(ctx, "entity");
+                            Entity entity = getCEntity(ctx, "entity");
                             ctx.getSource().sendFeedback(of(entity.getEntityName()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("entitysummon").then(argument("entitysummon", entitySummon())
                         .executes(ctx -> {
-                            Identifier entitySummon = getEntitySummon(ctx, "entitysummon");
+                            Identifier entitySummon = getCEntitySummon(ctx, "entitysummon");
                             ctx.getSource().sendFeedback(of(entitySummon.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("gameprofile").then(argument("gameprofile", gameProfile())
                         .executes(ctx -> {
-                            Collection<GameProfile> gameProfiles = getProfileArgument(ctx, "gameprofile");
+                            Collection<GameProfile> gameProfiles = getCProfileArgument(ctx, "gameprofile");
                             ctx.getSource().sendFeedback(of(gameProfiles.stream().map(GameProfile::getName).toArray(String[]::new)));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("identifier").then(argument("identifier", identifier())
                         .executes(ctx -> {
-                            Identifier identifier = getIdentifier(ctx, "identifier");
+                            Identifier identifier = getCIdentifier(ctx, "identifier");
                             ctx.getSource().sendFeedback(of(identifier.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("itempredicate").then(argument("itempredicate", itemPredicate())
                         .executes(ctx -> {
-                            Predicate<ItemStack> itemPredicate = getItemPredicate(ctx, "itempredicate");
+                            Predicate<ItemStack> itemPredicate = getCItemPredicate(ctx, "itempredicate");
                             ctx.getSource().sendFeedback(of(itemPredicate.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("itemslot").then(argument("itemslot", itemSlot())
                         .executes(ctx -> {
-                            Integer itemSlot = getItemSlot(ctx, "itemslot");
+                            Integer itemSlot = getCItemSlot(ctx, "itemslot");
                             ctx.getSource().sendFeedback(of(itemSlot.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("itemstack").then(argument("itemstack", itemStack())
                         .executes(ctx -> {
-                            ItemStackArgument itemStackArgument = getItemStackArgument(ctx, "itemstack");
+                            ItemStackArgument itemStackArgument = getCItemStackArgument(ctx, "itemstack");
                             ctx.getSource().sendFeedback(of(itemStackArgument.asString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("message").then(argument("message", message())
                         .executes(ctx -> {
-                            Text message = getMessage(ctx, "message");
+                            Text message = getCMessage(ctx, "message");
                             ctx.getSource().sendFeedback(message);
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("nbtcompound").then(argument("nbtcompound", nbtCompound())
                         .executes(ctx -> {
-                            NbtCompound nbtCompound = getNbtCompound(ctx, "nbtcompound");
+                            NbtCompound nbtCompound = getCNbtCompound(ctx, "nbtcompound");
                             ctx.getSource().sendFeedback(of(nbtCompound.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("nbtelement").then(argument("nbtelement", nbtElement())
                         .executes(ctx -> {
-                            NbtElement nbtElement = getNbtElement(ctx, "nbtelement");
+                            NbtElement nbtElement = getCNbtElement(ctx, "nbtelement");
                             ctx.getSource().sendFeedback(of(nbtElement.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("nbtpath").then(argument("nbtpath", nbtPath())
                         .executes(ctx -> {
-                            CNbtPathArgumentType.NbtPath nbtPath = getNbtPath(ctx, "nbtpath");
+                            CNbtPathArgumentType.NbtPath nbtPath = getCNbtPath(ctx, "nbtpath");
                             ctx.getSource().sendFeedback(of(nbtPath.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("operation").then(argument("operation", operation())
                         .executes(ctx -> {
-                            COperationArgumentType.Operation operation = getOperation(ctx, "operation");
+                            COperationArgumentType.Operation operation = getCOperation(ctx, "operation");
                             ctx.getSource().sendFeedback(of(operation.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("particleeffect").then(argument("particleeffect", particleEffect())
                         .executes(ctx -> {
-                            ParticleEffect particleEffect = getParticle(ctx, "particleeffect");
+                            ParticleEffect particleEffect = getCParticle(ctx, "particleeffect");
                             ctx.getSource().sendFeedback(of(particleEffect.asString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("rotation").then(argument("rotation", rotation())
                         .executes(ctx -> {
-                            CPosArgument rotation = getRotation(ctx, "rotation");
+                            CPosArgument rotation = getCRotation(ctx, "rotation");
                             Vec2f vec2f = rotation.toAbsoluteRotation(ctx.getSource());
                             ctx.getSource().sendFeedback(of(vec2f.x, vec2f.y));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("scoreboardcriterion").then(argument("scoreboardcriterion", scoreboardCriterion())
                         .executes(ctx -> {
-                            ScoreboardCriterion scoreboardCriterion = getCriterion(ctx, "scoreboardcriterion");
+                            ScoreboardCriterion scoreboardCriterion = getCCriterion(ctx, "scoreboardcriterion");
                             ctx.getSource().sendFeedback(of(scoreboardCriterion.getName()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("scoreboardobjective").then(argument("scoreboardobjective", scoreboardObjective())
                         .executes(ctx -> {
-                            ScoreboardObjective scoreboardObjective = getObjective(ctx, "scoreboardobjective");
+                            ScoreboardObjective scoreboardObjective = getCObjective(ctx, "scoreboardobjective");
                             ctx.getSource().sendFeedback(of(scoreboardObjective.getName()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("scoreboardslot").then(argument("scoreboardslot", scoreboardSlot())
                         .executes(ctx -> {
-                            int scoreboardSlot = getScoreboardSlot(ctx, "scoreboardslot");
+                            int scoreboardSlot = getCScoreboardSlot(ctx, "scoreboardslot");
                             ctx.getSource().sendFeedback(of(scoreboardSlot));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("scoreholder").then(argument("scoreholder", scoreHolder())
                         .executes(ctx -> {
-                            String scoreHolder = getScoreHolder(ctx, "scoreholder");
+                            String scoreHolder = getCScoreHolder(ctx, "scoreholder");
                             ctx.getSource().sendFeedback(of(scoreHolder));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("statuseffect").then(argument("statuseffect", statusEffect())
                         .executes(ctx -> {
-                            StatusEffect statusEffect = getStatusEffect(ctx, "statuseffect");
+                            StatusEffect statusEffect = getCStatusEffect(ctx, "statuseffect");
                             ctx.getSource().sendFeedback(statusEffect.getName());
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("swizzle").then(argument("swizzle", swizzle())
                         .executes(ctx -> {
-                            EnumSet<Direction.Axis> swizzle = getSwizzle(ctx, "swizzle");
+                            EnumSet<Direction.Axis> swizzle = getCSwizzle(ctx, "swizzle");
                             Set<Direction.Axis> axes = new HashSet<>(swizzle);
                             String[] arr = axes.stream().map(Direction.Axis::toString).toArray(String[]::new);
                             ctx.getSource().sendFeedback(of(arr));
@@ -278,49 +278,49 @@ public class ClientArguments implements ClientModInitializer {
                         })))
                 .then(literal("team").then(argument("team", team())
                         .executes(ctx -> {
-                            Team team = getTeam(ctx, "team");
+                            Team team = getCTeam(ctx, "team");
                             ctx.getSource().sendFeedback(team.getDisplayName());
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("testclass").then(argument("testclass", testClass())
                         .executes(ctx -> {
-                            String testClass = getTestClass(ctx, "testclass");
+                            String testClass = getCTestClass(ctx, "testclass");
                             ctx.getSource().sendFeedback(of(testClass));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("testfunction").then(argument("testfunction", testFunction())
                         .executes(ctx -> {
-                            TestFunction testFunction = getFunction(ctx, "testfunction");
+                            TestFunction testFunction = getCFunction(ctx, "testfunction");
                             ctx.getSource().sendFeedback(of(testFunction.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("text").then(argument("text", text())
                         .executes(ctx -> {
-                            Text text = getTextArgument(ctx, "text");
+                            Text text = getCTextArgument(ctx, "text");
                             ctx.getSource().sendFeedback(text);
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("time").then(argument("time", time())
                         .executes(ctx -> {
-                            Integer integer = getTime(ctx, "time");
+                            Integer integer = getCTime(ctx, "time");
                             ctx.getSource().sendFeedback(of(integer));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("uuid").then(argument("uuid", uuid())
                         .executes(ctx -> {
-                            UUID uuid = getUuid(ctx, "uuid");
+                            UUID uuid = getCUuid(ctx, "uuid");
                             ctx.getSource().sendFeedback(of(uuid.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("vec2").then(argument("vec2", vec2())
                         .executes(ctx -> {
-                            Vec2f vec2f = getVec2(ctx, "vec2");
+                            Vec2f vec2f = getCVec2(ctx, "vec2");
                             ctx.getSource().sendFeedback(of(vec2f.x, vec2f.y));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("vec3").then(argument("vec3", vec3())
                         .executes(ctx -> {
-                            Vec3d vec3d = getVec3(ctx, "vec3");
+                            Vec3d vec3d = getCVec3(ctx, "vec3");
                             ctx.getSource().sendFeedback(of(vec3d.x, vec3d.y, vec3d.z));
                             return Command.SINGLE_SUCCESS;
                         })))

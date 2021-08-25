@@ -22,7 +22,7 @@ public class CItemStackArgumentType implements ArgumentType<ItemStackArgument> {
 		return new CItemStackArgumentType();
 	}
 
-	public static <S> ItemStackArgument getItemStackArgument(CommandContext<S> context, String name) {
+	public static <S> ItemStackArgument getCItemStackArgument(CommandContext<S> context, String name) {
 		return context.getArgument(name, ItemStackArgument.class);
 	}
 

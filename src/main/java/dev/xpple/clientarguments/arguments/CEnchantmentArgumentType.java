@@ -27,7 +27,7 @@ public class CEnchantmentArgumentType implements ArgumentType<Enchantment> {
 		return new CEnchantmentArgumentType();
 	}
 
-	public static Enchantment getEnchantment(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static Enchantment getCEnchantment(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, Enchantment.class);
 	}
 

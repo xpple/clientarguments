@@ -25,7 +25,7 @@ public class CScoreboardSlotArgumentType implements ArgumentType<Integer> {
 		return new CScoreboardSlotArgumentType();
 	}
 
-	public static int getScoreboardSlot(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static int getCScoreboardSlot(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, Integer.class);
 	}
 

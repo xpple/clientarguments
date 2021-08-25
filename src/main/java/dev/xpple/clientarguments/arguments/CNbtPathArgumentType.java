@@ -31,7 +31,7 @@ public class CNbtPathArgumentType implements ArgumentType<CNbtPathArgumentType.N
 		return new CNbtPathArgumentType();
 	}
 
-	public static NbtPath getNbtPath(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static NbtPath getCNbtPath(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, NbtPath.class);
 	}
 

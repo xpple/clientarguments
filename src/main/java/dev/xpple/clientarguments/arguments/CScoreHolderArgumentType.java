@@ -50,21 +50,21 @@ public class CScoreHolderArgumentType implements ArgumentType<CScoreHolderArgume
 		return new CScoreHolderArgumentType(true);
 	}
 
-	public static String getScoreHolder(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		return getScoreHolders(context, name).iterator().next();
+	public static String getCScoreHolder(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+		return getCScoreHolders(context, name).iterator().next();
 	}
 
-	public static Collection<String> getScoreHolders(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		return getScoreHolders(context, name, Collections::emptyList);
+	public static Collection<String> getCScoreHolders(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+		return getCScoreHolders(context, name, Collections::emptyList);
 	}
 
-	public static Collection<String> getScoreboardScoreHolders(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Collection<String> getCScoreboardScoreHolders(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		Scoreboard scoreboard = context.getSource().getWorld().getScoreboard();
 		Objects.requireNonNull(scoreboard);
-		return getScoreHolders(context, name, scoreboard::getKnownPlayers);
+		return getCScoreHolders(context, name, scoreboard::getKnownPlayers);
 	}
 
-	public static Collection<String> getScoreHolders(final CommandContext<FabricClientCommandSource> context, final String name, Supplier<Collection<String>> players) throws CommandSyntaxException {
+	public static Collection<String> getCScoreHolders(final CommandContext<FabricClientCommandSource> context, final String name, Supplier<Collection<String>> players) throws CommandSyntaxException {
 		Collection<String> collection = (context.getArgument(name, ScoreHolder.class)).getNames(context.getSource(), players);
 		if (collection.isEmpty()) {
 			throw CEntityArgumentType.ENTITY_NOT_FOUND_EXCEPTION.create();

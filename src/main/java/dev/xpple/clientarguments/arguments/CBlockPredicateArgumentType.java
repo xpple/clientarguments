@@ -36,7 +36,7 @@ public class CBlockPredicateArgumentType implements ArgumentType<ClientBlockArgu
 		return this;
 	}
 
-	public static ClientBlockArgument.ClientBlockPredicate getBlockPredicate(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static ClientBlockArgument.ClientBlockPredicate getCBlockPredicate(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, ClientBlockArgument.ClientBlockPredicate.class);
 	}
 

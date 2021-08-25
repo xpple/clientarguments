@@ -21,7 +21,7 @@ public class CRotationArgumentType implements ArgumentType<CPosArgument> {
 		return new CRotationArgumentType();
 	}
 
-	public static CPosArgument getRotation(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static CPosArgument getCRotation(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, CPosArgument.class);
 	}
 

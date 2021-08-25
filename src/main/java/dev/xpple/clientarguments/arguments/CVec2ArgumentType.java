@@ -39,7 +39,7 @@ public class CVec2ArgumentType implements ArgumentType<CPosArgument> {
 		return new CVec2ArgumentType(centerIntegers);
 	}
 
-	public static Vec2f getVec2(CommandContext<FabricClientCommandSource> context, String name) {
+	public static Vec2f getCVec2(CommandContext<FabricClientCommandSource> context, String name) {
 		Vec3d vec3d = context.getArgument(name, CPosArgument.class).toAbsolutePos(context.getSource());
 		return new Vec2f((float)vec3d.x, (float)vec3d.z);
 	}

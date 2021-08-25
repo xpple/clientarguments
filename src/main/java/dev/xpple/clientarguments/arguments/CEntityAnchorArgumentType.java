@@ -31,7 +31,7 @@ public class CEntityAnchorArgumentType implements ArgumentType<CEntityAnchorArgu
 		return new CEntityAnchorArgumentType();
 	}
 
-	public static EntityAnchor getEntityAnchor(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static EntityAnchor getCEntityAnchor(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, EntityAnchor.class);
 	}
 

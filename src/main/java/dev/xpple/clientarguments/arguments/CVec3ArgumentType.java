@@ -38,11 +38,11 @@ public class CVec3ArgumentType implements ArgumentType<CPosArgument> {
 		return new CVec3ArgumentType(centerIntegers);
 	}
 
-	public static Vec3d getVec3(CommandContext<FabricClientCommandSource> context, String name) {
+	public static Vec3d getCVec3(CommandContext<FabricClientCommandSource> context, String name) {
 		return context.getArgument(name, CPosArgument.class).toAbsolutePos(context.getSource());
 	}
 
-	public static CPosArgument getPosArgument(CommandContext<FabricClientCommandSource> context, String name) {
+	public static CPosArgument getCPosArgument(CommandContext<FabricClientCommandSource> context, String name) {
 		return context.getArgument(name, CPosArgument.class);
 	}
 

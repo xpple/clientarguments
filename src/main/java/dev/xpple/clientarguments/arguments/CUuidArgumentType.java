@@ -25,7 +25,7 @@ public class CUuidArgumentType implements ArgumentType<UUID> {
         return new UuidArgumentType();
     }
 
-    public static UUID getUuid(final CommandContext<FabricClientCommandSource> context, final String name) {
+    public static UUID getCUuid(final CommandContext<FabricClientCommandSource> context, final String name) {
         return context.getArgument(name, UUID.class);
     }
 

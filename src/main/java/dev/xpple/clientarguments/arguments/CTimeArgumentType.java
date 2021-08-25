@@ -38,7 +38,7 @@ public class CTimeArgumentType implements ArgumentType<Integer> {
         return new TimeArgumentType();
     }
 
-    public static Integer getTime(final CommandContext<FabricClientCommandSource> context, final String name) {
+    public static Integer getCTime(final CommandContext<FabricClientCommandSource> context, final String name) {
         return context.getArgument(name, Integer.class);
     }
 

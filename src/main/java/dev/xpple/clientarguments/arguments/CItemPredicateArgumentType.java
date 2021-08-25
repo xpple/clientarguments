@@ -34,7 +34,7 @@ public class CItemPredicateArgumentType implements ArgumentType<CItemPredicateAr
 		return new CItemPredicateArgumentType();
 	}
 
-	public static Predicate<ItemStack> getItemPredicate(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Predicate<ItemStack> getCItemPredicate(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		return context.getArgument(name, ItemPredicateArgument.class).create(context);
 	}
 

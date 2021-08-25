@@ -28,7 +28,7 @@ public class CEntitySummonArgumentType implements ArgumentType<Identifier> {
 		return new CEntitySummonArgumentType();
 	}
 
-	public static Identifier getEntitySummon(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Identifier getCEntitySummon(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		return validate(context.getArgument(name, Identifier.class));
 	}
 
