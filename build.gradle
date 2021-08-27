@@ -94,5 +94,13 @@ publishing {
                 password = System.getenv("GITHUB_TOKEN")
             }
         }
+        maven {
+            name = "xpple"
+            url = "sftp://xpple.dev:22/maven.xpple.dev/maven2"
+            credentials {
+                username = System.getenv("MAVEN_USER")
+                password = System.getenv("MAVEN_PASS")
+            }
+        }
     }
 }
