@@ -125,7 +125,7 @@ public class ClientBlockArgument {
             if (be == null) {
                 return true;
             }
-            return isSameNbt(be.writeNbt(new NbtCompound()));
+            return isSameNbt(be.createNbt());
         } else {
             BlockState other = world.getBlockState(pos);
             if (!isSameBlock(other.getBlock())) {
@@ -141,7 +141,7 @@ public class ClientBlockArgument {
             if (be == null) {
                 return true;
             }
-            return isSameNbt(be.writeNbt(new NbtCompound()));
+            return isSameNbt(be.createNbt());
         }
     }
 

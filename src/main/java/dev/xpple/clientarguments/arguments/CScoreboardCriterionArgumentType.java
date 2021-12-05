@@ -46,7 +46,7 @@ public class CScoreboardCriterionArgumentType implements ArgumentType<Scoreboard
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-		return CommandSource.suggestMatching(ScoreboardCriterion.method_37271(), builder);
+		return CommandSource.suggestMatching(ScoreboardCriterion.getAllSimpleCriteria(), builder);
 	}
 
 	@Override

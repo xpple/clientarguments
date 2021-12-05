@@ -41,7 +41,7 @@ import java.util.function.Predicate;
 
 public class CEntitySelectorOptions {
 
-	private static final Map<String, CEntitySelectorOptions.SelectorOption> OPTIONS = new HashMap<>();
+	private static final Map<String, SelectorOption> OPTIONS = new HashMap<>();
 	public static final DynamicCommandExceptionType UNKNOWN_OPTION_EXCEPTION = new DynamicCommandExceptionType(arg -> new TranslatableText("cargument.entity.options.unknown", arg));
 	public static final DynamicCommandExceptionType INAPPLICABLE_OPTION_EXCEPTION = new DynamicCommandExceptionType(arg -> new TranslatableText("cargument.entity.options.inapplicable", arg));
 	public static final SimpleCommandExceptionType NEGATIVE_DISTANCE_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.entity.options.distance.negative"));
@@ -53,8 +53,8 @@ public class CEntitySelectorOptions {
 
 	private static final MinecraftClient client = MinecraftClient.getInstance();
 
-	private static void putOption(String id, CEntitySelectorOptions.SelectorHandler handler, Predicate<CEntitySelectorReader> condition, Text description) {
-		OPTIONS.put(id, new CEntitySelectorOptions.SelectorOption(handler, condition, description));
+	private static void putOption(String id, SelectorHandler handler, Predicate<CEntitySelectorReader> condition, Text description) {
+		OPTIONS.put(id, new SelectorOption(handler, condition, description));
 	}
 
 	public static void register() {
@@ -439,8 +439,8 @@ public class CEntitySelectorOptions {
 		}
 	}
 
-	public static CEntitySelectorOptions.SelectorHandler getHandler(CEntitySelectorReader reader, String option, int restoreCursor) throws CommandSyntaxException {
-		CEntitySelectorOptions.SelectorOption selectorOption = OPTIONS.get(option);
+	public static SelectorHandler getHandler(CEntitySelectorReader reader, String option, int restoreCursor) throws CommandSyntaxException {
+		SelectorOption selectorOption = OPTIONS.get(option);
 		if (selectorOption != null) {
 			if (selectorOption.condition.test(reader)) {
 				return selectorOption.handler;
@@ -464,11 +464,11 @@ public class CEntitySelectorOptions {
 	}
 
 	private static class SelectorOption {
-		public final CEntitySelectorOptions.SelectorHandler handler;
+		public final SelectorHandler handler;
 		public final Predicate<CEntitySelectorReader> condition;
 		public final Text description;
 
-		SelectorOption(CEntitySelectorOptions.SelectorHandler selectorHandler, Predicate<CEntitySelectorReader> predicate, Text text) {
+		SelectorOption(SelectorHandler selectorHandler, Predicate<CEntitySelectorReader> predicate, Text text) {
 			this.handler = selectorHandler;
 			this.condition = predicate;
 			this.description = text;
