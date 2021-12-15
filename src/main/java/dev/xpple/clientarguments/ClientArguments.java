@@ -137,7 +137,7 @@ public class ClientArguments implements ClientModInitializer {
                         })))
                 .then(literal("dimension").then(argument("dimension", dimension())
                         .executes(ctx -> {
-                            CDimensionArgumentType.DimensionArgument dimension = getCDimensionArgument(ctx, "dimension");
+                            DimensionArgument dimension = getCDimensionArgument(ctx, "dimension");
                             ctx.getSource().sendFeedback(of(dimension.getName()));
                             return Command.SINGLE_SUCCESS;
                         })))
@@ -149,7 +149,7 @@ public class ClientArguments implements ClientModInitializer {
                         })))
                 .then(literal("entityanchor").then(argument("entityanchor", entityAnchor())
                         .executes(ctx -> {
-                            CEntityAnchorArgumentType.EntityAnchor entityAnchor = getCEntityAnchor(ctx, "entityanchor");
+                            EntityAnchor entityAnchor = getCEntityAnchor(ctx, "entityanchor");
                             ctx.getSource().sendFeedback(of(entityAnchor.positionAt(ctx.getSource()).toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
@@ -215,13 +215,13 @@ public class ClientArguments implements ClientModInitializer {
                         })))
                 .then(literal("nbtpath").then(argument("nbtpath", nbtPath())
                         .executes(ctx -> {
-                            CNbtPathArgumentType.NbtPath nbtPath = getCNbtPath(ctx, "nbtpath");
+                            NbtPath nbtPath = getCNbtPath(ctx, "nbtpath");
                             ctx.getSource().sendFeedback(of(nbtPath.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("operation").then(argument("operation", operation())
                         .executes(ctx -> {
-                            COperationArgumentType.Operation operation = getCOperation(ctx, "operation");
+                            Operation operation = getCOperation(ctx, "operation");
                             ctx.getSource().sendFeedback(of(operation.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
