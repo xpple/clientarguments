@@ -11,6 +11,7 @@ import dev.xpple.clientarguments.arguments.COperationArgumentType.Operation;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.command.argument.ItemStackArgument;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
@@ -109,7 +110,7 @@ public class ClientArguments implements ClientModInitializer {
                         })))
                 .then(literal("blockpredicate").then(argument("blockpredicate", blockPredicate())
                         .executes(ctx -> {
-                            ClientBlockArgument.ClientBlockPredicate clientBlockPredicate = getCBlockPredicate(ctx, "blockpredicate");
+                            Predicate<CachedBlockPosition> clientBlockPredicate = getCBlockPredicate(ctx, "blockpredicate");
                             ctx.getSource().sendFeedback(of(clientBlockPredicate.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))

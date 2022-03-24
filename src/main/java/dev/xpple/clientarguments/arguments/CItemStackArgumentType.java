@@ -8,7 +8,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.argument.ItemStackArgument;
 import net.minecraft.command.argument.ItemStringReader;
-import net.minecraft.tag.ItemTags;
+import net.minecraft.util.registry.Registry;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,14 +22,14 @@ public class CItemStackArgumentType implements ArgumentType<ItemStackArgument> {
 		return new CItemStackArgumentType();
 	}
 
-	public static <S> ItemStackArgument getCItemStackArgument(CommandContext<S> context, String name) {
-		return context.getArgument(name, ItemStackArgument.class);
-	}
-
 	@Override
 	public ItemStackArgument parse(final StringReader stringReader) throws CommandSyntaxException {
 		ItemStringReader itemStringReader = (new ItemStringReader(stringReader, false)).consume();
 		return new ItemStackArgument(itemStringReader.getItem(), itemStringReader.getNbt());
+	}
+
+	public static <S> ItemStackArgument getCItemStackArgument(CommandContext<S> context, String name) {
+		return context.getArgument(name, ItemStackArgument.class);
 	}
 
 	@Override
@@ -37,13 +37,11 @@ public class CItemStackArgumentType implements ArgumentType<ItemStackArgument> {
 		StringReader stringReader = new StringReader(builder.getInput());
 		stringReader.setCursor(builder.getStart());
 		ItemStringReader itemStringReader = new ItemStringReader(stringReader, false);
-
 		try {
 			itemStringReader.consume();
 		} catch (CommandSyntaxException ignored) {
 		}
-
-		return itemStringReader.getSuggestions(builder, ItemTags.getTagGroup());
+		return itemStringReader.getSuggestions(builder, Registry.ITEM);
 	}
 
 	@Override

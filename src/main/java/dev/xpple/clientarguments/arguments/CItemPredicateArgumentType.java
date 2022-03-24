@@ -7,16 +7,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.tag.ItemTags;
-import net.minecraft.tag.Tag;
+import net.minecraft.tag.TagKey;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,7 +24,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 public class CItemPredicateArgumentType implements ArgumentType<CItemPredicateArgumentType.ItemPredicateArgument> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "#stick", "#stick{foo=bar}");
 	private static final DynamicCommandExceptionType UNKNOWN_TAG_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("carguments.item.tag.unknown", id));
 
@@ -34,37 +31,36 @@ public class CItemPredicateArgumentType implements ArgumentType<CItemPredicateAr
 		return new CItemPredicateArgumentType();
 	}
 
-	public static Predicate<ItemStack> getCItemPredicate(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		return context.getArgument(name, ItemPredicateArgument.class).create(context);
-	}
-
 	@Override
 	public ItemPredicateArgument parse(final StringReader stringReader) throws CommandSyntaxException {
 		ItemStringReader itemStringReader = (new ItemStringReader(stringReader, true)).consume();
 		if (itemStringReader.getItem() != null) {
 			ItemPredicate itemPredicate = new ItemPredicate(itemStringReader.getItem(), itemStringReader.getNbt());
-			return (context) -> itemPredicate;
-		} else {
-			Identifier identifier = itemStringReader.getId();
-			return context -> {
-				Tag<Item> tag = context.getSource().getWorld().getTagManager().getTag(Registry.ITEM_KEY, identifier, (id) -> UNKNOWN_TAG_EXCEPTION.create(id.toString()));
-				return new TagPredicate(tag, itemStringReader.getNbt());
-			};
+			return context -> itemPredicate;
 		}
+		TagKey<Item> itemPredicate = itemStringReader.getId();
+		return commandContext -> {
+			if (!Registry.ITEM.containsTag(itemPredicate)) {
+				throw UNKNOWN_TAG_EXCEPTION.create(itemPredicate);
+			}
+			return new TagPredicate(itemPredicate, itemStringReader.getNbt());
+		};
+	}
+
+	public static Predicate<ItemStack> getCItemPredicate(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
+		return context.getArgument(name, ItemPredicateArgument.class).create(context);
 	}
 
 	@Override
-	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
 		StringReader stringReader = new StringReader(builder.getInput());
 		stringReader.setCursor(builder.getStart());
 		ItemStringReader itemStringReader = new ItemStringReader(stringReader, true);
-
 		try {
 			itemStringReader.consume();
 		} catch (CommandSyntaxException ignored) {
 		}
-
-		return itemStringReader.getSuggestions(builder, ItemTags.getTagGroup());
+		return itemStringReader.getSuggestions(builder, Registry.ITEM);
 	}
 
 	@Override
@@ -82,6 +78,7 @@ public class CItemPredicateArgumentType implements ArgumentType<CItemPredicateAr
 			this.nbt = nbt;
 		}
 
+		@Override
 		public boolean test(ItemStack itemStack) {
 			return itemStack.isOf(this.item) && NbtHelper.matches(this.nbt, itemStack.getNbt(), true);
 		}
@@ -92,15 +89,16 @@ public class CItemPredicateArgumentType implements ArgumentType<CItemPredicateAr
 	}
 
 	private static class TagPredicate implements Predicate<ItemStack> {
-		private final Tag<Item> tag;
+		private final TagKey<Item> tag;
 		@Nullable
 		private final NbtCompound compound;
 
-		public TagPredicate(Tag<Item> tag, @Nullable NbtCompound nbt) {
+		public TagPredicate(TagKey<Item> tag, @Nullable NbtCompound nbt) {
 			this.tag = tag;
 			this.compound = nbt;
 		}
 
+		@Override
 		public boolean test(ItemStack itemStack) {
 			return itemStack.isIn(this.tag) && NbtHelper.matches(this.compound, itemStack.getNbt(), true);
 		}

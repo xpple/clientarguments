@@ -5,13 +5,11 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.state.property.Property;
-import net.minecraft.tag.Tag;
-import net.minecraft.tag.TagManager;
+import net.minecraft.tag.TagKey;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -21,8 +19,6 @@ import net.minecraft.world.WorldView;
 import java.util.Map;
 
 public class ClientBlockArgument {
-
-    private static final DynamicCommandExceptionType UNKNOWN_TAG_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("carguments.block.tag.unknown", id));
 
     private final Block block;
     private final BlockState blockState;
@@ -35,7 +31,7 @@ public class ClientBlockArgument {
     ClientBlockArgument(BlockArgumentParser parser) {
         BlockState blockState = parser.getBlockState();
         if (blockState == null) {
-            this.identifier = parser.getTagId();
+            this.identifier = parser.getTagId().id();
             this.properties = parser.getProperties();
 
             this.block = null;
@@ -97,9 +93,8 @@ public class ClientBlockArgument {
 
     public boolean test(WorldView world, BlockPos pos) throws CommandSyntaxException {
         if (this.blockState == null) {
-            TagManager tagManager = MinecraftClient.getInstance().getNetworkHandler().getTagManager();
             BlockState blockState = world.getBlockState(pos);
-            Tag<Block> tag = tagManager.getTag(Registry.BLOCK_KEY, this.identifier, id -> UNKNOWN_TAG_EXCEPTION.create(id.toString()));
+            TagKey<Block> tag = TagKey.of(Registry.BLOCK_KEY, this.identifier);
             if (!blockState.isIn(tag)) {
                 return false;
             }

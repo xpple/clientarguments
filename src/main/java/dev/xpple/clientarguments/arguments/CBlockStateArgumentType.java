@@ -8,7 +8,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.command.argument.BlockArgumentParser;
-import net.minecraft.tag.BlockTags;
+import net.minecraft.util.registry.Registry;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,13 +37,11 @@ public class CBlockStateArgumentType implements ArgumentType<ClientBlockArgument
 		StringReader stringReader = new StringReader(builder.getInput());
 		stringReader.setCursor(builder.getStart());
 		BlockArgumentParser blockArgumentParser = new BlockArgumentParser(stringReader, false);
-
 		try {
 			blockArgumentParser.parse(true);
 		} catch (CommandSyntaxException ignored) {
 		}
-
-		return blockArgumentParser.getSuggestions(builder, BlockTags.getTagGroup());
+		return blockArgumentParser.getSuggestions(builder, Registry.BLOCK);
 	}
 
 	@Override

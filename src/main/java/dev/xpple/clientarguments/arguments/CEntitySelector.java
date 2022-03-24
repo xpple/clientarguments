@@ -6,7 +6,6 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.predicate.NumberRange;
@@ -29,10 +28,12 @@ import java.util.stream.Collectors;
 public class CEntitySelector {
 
 	private static final TypeFilter<Entity, ?> PASSTHROUGH_FILTER = new TypeFilter<>() {
+		@Override
 		public Entity downcast(Entity entity) {
 			return entity;
 		}
 
+		@Override
 		public Class<? extends Entity> getBaseClass() {
 			return Entity.class;
 		}
@@ -84,12 +85,13 @@ public class CEntitySelector {
 		return this.usesAt;
 	}
 
-	public Entity getEntity(FabricClientCommandSource fabricClientCommandSource) throws CommandSyntaxException {
-		List<? extends Entity> list = this.getEntities(fabricClientCommandSource);
+	public Entity getEntity(FabricClientCommandSource source) throws CommandSyntaxException {
+		List<? extends Entity> list = this.getEntities(source);
 		if (list.isEmpty()) {
-			throw EntityArgumentType.ENTITY_NOT_FOUND_EXCEPTION.create();
-		} else if (list.size() > 1) {
-			throw EntityArgumentType.TOO_MANY_ENTITIES_EXCEPTION.create();
+			throw CEntityArgumentType.ENTITY_NOT_FOUND_EXCEPTION.create();
+		}
+		if (list.size() > 1) {
+			throw CEntityArgumentType.TOO_MANY_ENTITIES_EXCEPTION.create();
 		}
 		return list.get(0);
 	}
@@ -97,38 +99,40 @@ public class CEntitySelector {
 	public List<? extends Entity> getEntities(FabricClientCommandSource source) throws CommandSyntaxException {
 		if (!this.includesNonPlayers) {
 			return this.getPlayers(source);
-		} else if (this.playerName != null) {
+		}
+		if (this.playerName != null) {
 			AbstractClientPlayerEntity abstractClientPlayerEntity = Streams.stream(source.getWorld().getEntities())
 					.filter(entity -> entity instanceof AbstractClientPlayerEntity)
 					.map(entity -> (AbstractClientPlayerEntity) entity)
 					.filter(abstractPlayer -> abstractPlayer.getName().getString().equals(this.playerName))
 					.findAny().orElse(null);
 			return abstractClientPlayerEntity == null ? Collections.emptyList() : Lists.newArrayList(abstractClientPlayerEntity);
-		} else if (this.uuid != null) {
+		}
+		if (this.uuid != null) {
 			Entity foundEntity = Streams.stream(source.getWorld().getEntities())
 					.filter(entity -> entity.getUuid().equals(this.uuid))
 					.findAny().orElse(null);
-
 			return foundEntity == null ? Collections.emptyList() : Lists.newArrayList(foundEntity);
-		} else {
-			Vec3d vec3d = this.positionOffset.apply(source.getPosition());
-			Predicate<Entity> predicate = this.getPositionPredicate(vec3d);
-			if (this.senderOnly) {
-				return source.getEntity() != null && predicate.test(source.getEntity()) ? Lists.newArrayList(source.getEntity()) : Collections.emptyList();
-			} else {
-				List<Entity> list = new ArrayList<>();
-				this.appendEntitiesFromWorld(list, source.getWorld(), vec3d, predicate);
-				return this.getEntities(vec3d, list);
-			}
 		}
+		Vec3d pos = this.positionOffset.apply(source.getPosition());
+		Predicate<Entity> predicate = this.getPositionPredicate(pos);
+		if (this.senderOnly) {
+			if (source.getEntity() != null && predicate.test(source.getEntity())) {
+				return Lists.newArrayList(source.getEntity());
+			}
+			return Collections.emptyList();
+		}
+		ArrayList<Entity> entity = new ArrayList<>();
+		this.appendEntitiesFromWorld(entity, source.getWorld(), pos, predicate);
+		return this.getEntities(pos, entity);
 	}
 
-	private void appendEntitiesFromWorld(List<Entity> list, ClientWorld clientWorld, Vec3d vec3d, Predicate<Entity> predicate) {
+	private void appendEntitiesFromWorld(List<Entity> result, ClientWorld clientWorld, Vec3d pos, Predicate<Entity> predicate) {
 		if (this.box != null) {
-			list.addAll(clientWorld.getEntitiesByType(this.entityFilter, this.box.offset(vec3d), predicate));
+			result.addAll(clientWorld.getEntitiesByType(this.entityFilter, this.box.offset(pos), predicate));
 		} else {
 			final int border = 30_000_000;
-			list.addAll(clientWorld.getEntitiesByType(this.entityFilter, new Box(-border, 0, -border, border, 255, border), predicate));
+			result.addAll(clientWorld.getEntitiesByType(this.entityFilter, new Box(-border, 0, -border, border, 255, border), predicate));
 		}
 	}
 
@@ -136,9 +140,8 @@ public class CEntitySelector {
 		List<AbstractClientPlayerEntity> list = this.getPlayers(source);
 		if (list.size() != 1) {
 			throw CEntityArgumentType.PLAYER_NOT_FOUND_EXCEPTION.create();
-		} else {
-			return list.get(0);
 		}
+		return list.get(0);
 	}
 
 	public List<AbstractClientPlayerEntity> getPlayers(FabricClientCommandSource source) throws CommandSyntaxException {
@@ -150,56 +153,49 @@ public class CEntitySelector {
 					.filter(abstractPlayer -> abstractPlayer.getName().getString().equals(this.playerName))
 					.findAny().orElse(null);
 			return abstractClientPlayerEntity == null ? Collections.emptyList() : Lists.newArrayList(abstractClientPlayerEntity);
-		} else if (this.uuid != null) {
+		}
+		if (this.uuid != null) {
 			abstractClientPlayerEntity = Streams.stream(source.getWorld().getEntities())
-					.filter(entity -> entity.getUuid().equals(this.uuid))
 					.filter(entity -> entity instanceof AbstractClientPlayerEntity)
 					.map(entity -> (AbstractClientPlayerEntity) entity)
+					.filter(entity -> entity.getUuid().equals(this.uuid))
 					.findAny().orElse(null);
 			return abstractClientPlayerEntity == null ? Collections.emptyList() : Lists.newArrayList(abstractClientPlayerEntity);
-		} else {
-			Vec3d vec3d = this.positionOffset.apply(source.getPosition());
-			Predicate<Entity> predicate = this.getPositionPredicate(vec3d);
-			if (this.senderOnly) {
-				if (source.getEntity() instanceof AbstractClientPlayerEntity player) {
-					if (predicate.test(player)) {
-						return Lists.newArrayList(player);
-					}
-				}
-				return Collections.emptyList();
-			} else {
-				List<AbstractClientPlayerEntity> entities = source.getWorld().getPlayers().stream()
-							.filter(predicate)
-							.collect(Collectors.toList());
-
-				return this.getEntities(vec3d, entities);
-			}
 		}
+		Vec3d pos = this.positionOffset.apply(source.getPosition());
+		Predicate<Entity> predicate = this.getPositionPredicate(pos);
+		if (this.senderOnly) {
+			if (source.getEntity() instanceof AbstractClientPlayerEntity player && predicate.test(player)) {
+				return Lists.newArrayList(player);
+			}
+			return Collections.emptyList();
+		}
+		List<AbstractClientPlayerEntity> entities = source.getWorld().getPlayers().stream()
+				.filter(predicate)
+				.collect(Collectors.toList());
+		return this.getEntities(pos, entities);
 	}
 
-	private Predicate<Entity> getPositionPredicate(Vec3d vec3d) {
+	private Predicate<Entity> getPositionPredicate(Vec3d pos) {
 		Predicate<Entity> predicate = this.basePredicate;
 		if (this.box != null) {
-			Box box = this.box.offset(vec3d);
-			predicate = predicate.and((entity) -> box.intersects(entity.getBoundingBox()));
+			Box box = this.box.offset(pos);
+			predicate = predicate.and(entity -> box.intersects(entity.getBoundingBox()));
 		}
-
 		if (!this.distance.isDummy()) {
-			predicate = predicate.and((entity) -> this.distance.testSqrt(entity.squaredDistanceTo(vec3d)));
+			predicate = predicate.and(entity -> this.distance.testSqrt(entity.squaredDistanceTo(pos)));
 		}
-
 		return predicate;
 	}
 
-	private <T extends Entity> List<T> getEntities(Vec3d vec3d, List<T> list) {
-		if (list.size() > 1) {
-			this.sorter.accept(vec3d, list);
+	private <T extends Entity> List<T> getEntities(Vec3d pos, List<T> entities) {
+		if (entities.size() > 1) {
+			this.sorter.accept(pos, entities);
 		}
-
-		return list.subList(0, Math.min(this.limit, list.size()));
+		return entities.subList(0, Math.min(this.limit, entities.size()));
 	}
 
-	public static Text getNames(List<? extends Entity> list) {
-		return Texts.join(list, Entity::getDisplayName);
+	public static Text getNames(List<? extends Entity> entities) {
+		return Texts.join(entities, Entity::getDisplayName);
 	}
 }
