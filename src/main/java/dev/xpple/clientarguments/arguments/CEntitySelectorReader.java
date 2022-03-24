@@ -95,7 +95,7 @@ public class CEntitySelectorReader {
 		if (this.dx != null || this.dy != null || this.dz != null) {
 			box = this.createBox(this.dx == null ? 0.0 : this.dx, this.dy == null ? 0.0 : this.dy, this.dz == null ? 0.0 : this.dz);
 		} else if (this.distance.getMax() != null) {
-			double d = (Double)this.distance.getMax();
+			double d = this.distance.getMax();
 			box = new Box(-d, -d, -d, d + 1.0, d + 1.0, d + 1.0);
 		} else {
 			box = null;
@@ -135,10 +135,10 @@ public class CEntitySelectorReader {
 	}
 
 	private Predicate<Entity> rotationPredicate(FloatRangeArgument angleRange, ToDoubleFunction<Entity> entityToAngle) {
-		double d = MathHelper.wrapDegrees(angleRange.getMin() == null ? 0.0f : angleRange.getMin().floatValue());
-		double e = MathHelper.wrapDegrees(angleRange.getMax() == null ? 359.0f : angleRange.getMax().floatValue());
+		double d = MathHelper.wrapDegrees(angleRange.getMin() == null ? 0.0f : angleRange.getMin());
+		double e = MathHelper.wrapDegrees(angleRange.getMax() == null ? 359.0f : angleRange.getMax());
 		return entity -> {
-			double f = MathHelper.wrapDegrees(entityToAngle.applyAsDouble((Entity)entity));
+			double f = MathHelper.wrapDegrees(entityToAngle.applyAsDouble(entity));
 			if (d > e) {
 				return f >= d || f <= e;
 			}
@@ -180,7 +180,7 @@ public class CEntitySelectorReader {
 			this.predicate = Entity::isAlive;
 		} else {
 			this.reader.setCursor(i);
-			throw UNKNOWN_SELECTOR_EXCEPTION.createWithContext(this.reader, "@" + String.valueOf(c));
+			throw UNKNOWN_SELECTOR_EXCEPTION.createWithContext(this.reader, "@" + c);
 		}
 		this.suggestionProvider = this::suggestOpen;
 		if (this.reader.canRead() && this.reader.peek() == '[') {
