@@ -51,6 +51,10 @@ public class CEntityArgumentType implements ArgumentType<CEntitySelector> {
 		return new CEntityArgumentType(false, false);
 	}
 
+	public static CEntitySelector getCEntitySelector(final CommandContext<FabricClientCommandSource> context, final String name) {
+		return context.getArgument(name, CEntitySelector.class);
+	}
+
 	public static Collection<? extends Entity> getCEntities(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		Collection<? extends Entity> collection = getCOptionalEntities(context, name);
 		if (collection.isEmpty()) {
