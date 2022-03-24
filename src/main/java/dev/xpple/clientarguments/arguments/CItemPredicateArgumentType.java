@@ -102,5 +102,13 @@ public class CItemPredicateArgumentType implements ArgumentType<CItemPredicateAr
 		public boolean test(ItemStack itemStack) {
 			return itemStack.isIn(this.tag) && NbtHelper.matches(this.compound, itemStack.getNbt(), true);
 		}
+
+		public String getPrettyString() {
+			String ret = "#" + this.tag.id();
+			if (this.compound != null) {
+				ret += this.compound;
+			}
+			return ret;
+		}
 	}
 }
