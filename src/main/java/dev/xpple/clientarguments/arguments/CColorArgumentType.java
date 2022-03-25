@@ -7,8 +7,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.command.CommandSource;
 import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.minecraft.command.CommandSource;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public class CColorArgumentType implements ArgumentType<Formatting> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("red", "green");
-	public static final DynamicCommandExceptionType INVALID_COLOR_EXCEPTION = new DynamicCommandExceptionType((color) -> new TranslatableText("cargument.color.invalid", color));
+	public static final DynamicCommandExceptionType INVALID_COLOR_EXCEPTION = new DynamicCommandExceptionType(color -> new TranslatableText("cargument.color.invalid", color));
 
 	public static CColorArgumentType color() {
 		return new CColorArgumentType();

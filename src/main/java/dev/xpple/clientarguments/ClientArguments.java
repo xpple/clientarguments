@@ -30,6 +30,11 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryEntry;
+import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.gen.feature.ConfiguredFeature;
+import net.minecraft.world.gen.feature.ConfiguredStructureFeature;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -58,6 +63,10 @@ import static dev.xpple.clientarguments.arguments.CNbtElementArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CNbtPathArgumentType.*;
 import static dev.xpple.clientarguments.arguments.COperationArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CParticleEffectArgumentType.*;
+import static dev.xpple.clientarguments.arguments.CRegistryKeyArgumentType.getCConfiguredFeatureEntry;
+import static dev.xpple.clientarguments.arguments.CRegistryKeyArgumentType.registryKey;
+import static dev.xpple.clientarguments.arguments.CRegistryPredicateArgumentType.getCConfiguredStructureFeaturePredicate;
+import static dev.xpple.clientarguments.arguments.CRegistryPredicateArgumentType.registryPredicate;
 import static dev.xpple.clientarguments.arguments.CRotationArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CScoreHolderArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CScoreboardCriterionArgumentType.*;
@@ -327,6 +336,18 @@ public class ClientArguments implements ClientModInitializer {
                         .executes(ctx -> {
                             Vec3d vec3d = getCVec3(ctx, "vec3");
                             ctx.getSource().sendFeedback(of(vec3d.x, vec3d.y, vec3d.z));
+                            return Command.SINGLE_SUCCESS;
+                        })))
+                .then(literal("registrykey").then(argument("registrykey", registryKey(Registry.CONFIGURED_FEATURE_KEY))
+                        .executes(ctx -> {
+                            RegistryEntry<ConfiguredFeature<?, ?>> registryKey = getCConfiguredFeatureEntry(ctx, "registrykey");
+                            ctx.getSource().sendFeedback(of(registryKey.value().toString()));
+                            return Command.SINGLE_SUCCESS;
+                        })))
+                .then(literal("registrypredicate").then(argument("registrypredicate", registryPredicate(Registry.CONFIGURED_STRUCTURE_FEATURE_KEY))
+                        .executes(ctx -> {
+                            CRegistryPredicateArgumentType.RegistryPredicate<ConfiguredStructureFeature<?, ?>> registryPredicate = getCConfiguredStructureFeaturePredicate(ctx, "registrypredicate");
+                            ctx.getSource().sendFeedback(of(registryPredicate.asString()));
                             return Command.SINGLE_SUCCESS;
                         })))
         );
