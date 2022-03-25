@@ -68,6 +68,9 @@
   "cargument.id.invalid": "Invalid ID",
   "cargument.time.invalid_unit": "Invalid unit",
   "cargument.time.invalid_tick_count": "Tick count must be non-negative",
+  "ccommands.locate.invalid": "There is no structure with type \"%s\"",
+  "ccommands.locatebiome.invalid": "There is no biome with type \"%s\"",
+  "ccommands.placefeature.invalid": "There is no feature with type \"%s\"",
   "cargument.color.invalid": "Unknown color '%s'",
   "cargument.dimension.invalid": "Unknown dimension '%s'",
   "cargument.component.invalid": "Invalid chat component: %s",
@@ -106,5 +109,17 @@
   "cargument.integer.big": "Integer must not be more than %s, found %s",
   "cargument.long.low": "Long must not be less than %s, found %s",
   "cargument.long.big": "Long must not be more than %s, found %s",
-  "cargument.literal.incorrect": "Expected literal %s"
+  "cargument.literal.incorrect": "Expected literal %s",
+
+  "attribute.unknown": "Unknown attribute",
+  "advancement.advancementNotFound": "Unknown advancement: %s",
+  "effect.effectNotFound": "Unknown effect: %s",
+  "entity.notFound": "Unknown entity: %s",
+  "enchantment.unknown": "Unknown enchantment: %s",
+  "item_modifier.unknown": "Unknown item modifier: %s",
+  "predicate.unknown": "Unknown predicate: %s",
+  "particle.notFound": "Unknown particle: %s",
+  "recipe.notFound": "Unknown recipe: %s",
+  "slot.unknown": "Unknown slot '%s'",
+  "team.notFound": "Unknown team '%s'"
 }
