@@ -8,6 +8,8 @@ import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.boss.dragon.EnderDragonEntity;
+import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.predicate.NumberRange;
 import net.minecraft.text.Text;
 import net.minecraft.text.Texts;
@@ -131,8 +133,20 @@ public class CEntitySelector {
 		if (this.box != null) {
 			result.addAll(clientWorld.getEntitiesByType(this.entityFilter, this.box.offset(pos), predicate));
 		} else {
-			final int border = 30_000_000;
-			result.addAll(clientWorld.getEntitiesByType(this.entityFilter, new Box(-border, 0, -border, border, 255, border), predicate));
+			clientWorld.getEntities().forEach(entity -> {
+				if (predicate.test(entity)) {
+					result.add(entity);
+				}
+				if (entity instanceof EnderDragonEntity enderDragon) {
+					for (EnderDragonPart bodyPart : enderDragon.getBodyParts()) {
+						Entity e = entityFilter.downcast(bodyPart);
+						if (e == null || !predicate.test(e)) {
+							continue;
+						}
+						result.add(e);
+					}
+				}
+			});
 		}
 	}
 
