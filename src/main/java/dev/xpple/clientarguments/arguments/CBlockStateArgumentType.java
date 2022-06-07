@@ -6,7 +6,10 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.block.Block;
+import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.util.registry.Registry;
 
@@ -18,8 +21,14 @@ public class CBlockStateArgumentType implements ArgumentType<ClientBlockArgument
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("stone", "minecraft:stone", "stone[foo=bar]", "foo{bar=baz}");
 
-	public static CBlockStateArgumentType blockState() {
-		return new CBlockStateArgumentType();
+	private final CommandRegistryWrapper<Block> registryWrapper;
+
+	protected CBlockStateArgumentType(CommandRegistryAccess registryAccess) {
+		this.registryWrapper = registryAccess.createWrapper(Registry.BLOCK_KEY);
+	}
+
+	public static CBlockStateArgumentType blockState(CommandRegistryAccess registryAccess) {
+		return new CBlockStateArgumentType(registryAccess);
 	}
 
 	public static ClientBlockArgument getCBlockState(final CommandContext<FabricClientCommandSource> context, final String name) {
@@ -28,20 +37,13 @@ public class CBlockStateArgumentType implements ArgumentType<ClientBlockArgument
 
 	@Override
 	public ClientBlockArgument parse(final StringReader stringReader) throws CommandSyntaxException {
-		BlockArgumentParser blockArgumentParser = (new BlockArgumentParser(stringReader, true)).parse(true);
-		return new ClientBlockArgument(blockArgumentParser);
+		var result = BlockArgumentParser.block(this.registryWrapper, stringReader, true);
+		return new ClientBlockArgument(result);
 	}
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-		StringReader stringReader = new StringReader(builder.getInput());
-		stringReader.setCursor(builder.getStart());
-		BlockArgumentParser blockArgumentParser = new BlockArgumentParser(stringReader, false);
-		try {
-			blockArgumentParser.parse(true);
-		} catch (CommandSyntaxException ignored) {
-		}
-		return blockArgumentParser.getSuggestions(builder, Registry.BLOCK);
+		return BlockArgumentParser.getSuggestions(this.registryWrapper, builder, false, true);
 	}
 
 	@Override

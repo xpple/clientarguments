@@ -3,6 +3,8 @@ package dev.xpple.clientarguments;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.AmbiguityConsumer;
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import dev.xpple.clientarguments.arguments.CDimensionArgumentType.DimensionArgument;
 import dev.xpple.clientarguments.arguments.CEntityAnchorArgumentType.EntityAnchor;
 import dev.xpple.clientarguments.arguments.CEntitySelectorOptions;
@@ -12,9 +14,11 @@ import dev.xpple.clientarguments.arguments.CPosArgument;
 import dev.xpple.clientarguments.arguments.CRegistryPredicateArgumentType;
 import dev.xpple.clientarguments.arguments.ClientBlockArgument;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.pattern.CachedBlockPosition;
+import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.ItemStackArgument;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
@@ -27,16 +31,15 @@ import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.test.TestFunction;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
-import net.minecraft.world.gen.feature.ConfiguredStructureFeature;
+import net.minecraft.world.gen.structure.Structure;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -82,16 +85,17 @@ import static dev.xpple.clientarguments.arguments.CTimeArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CUuidArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CVec2ArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CVec3ArgumentType.*;
-import static net.fabricmc.fabric.api.client.command.v1.ClientCommandManager.*;
+import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
 
 public class ClientArguments implements ClientModInitializer {
+    private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("ccommands.locate.invalid"));
 
     @Override
     public void onInitializeClient() {
         CEntitySelectorOptions.register();
 
         if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-            registerTestCommand();
+            ClientCommandRegistrationCallback.EVENT.register(ClientArguments::registerTestCommand);
         }
     }
 
@@ -103,8 +107,8 @@ public class ClientArguments implements ClientModInitializer {
      * The command feedback doesn't always indicate something meaningful. The arguments of this command may be extended
      * to be more concise.
      */
-    private static void registerTestCommand() {
-        ClientCommandManager.DISPATCHER.register(literal("clientarguments:test")
+    private static void registerTestCommand(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+        dispatcher.register(literal("clientarguments:test")
                 .then(literal("angle").then(argument("angle", angle())
                         .executes(ctx -> {
                             float angle = getCAngle(ctx, "angle");
@@ -117,21 +121,20 @@ public class ClientArguments implements ClientModInitializer {
                             ctx.getSource().sendFeedback(of(blockpos.getX(), blockpos.getY(), blockpos.getZ()));
                             return Command.SINGLE_SUCCESS;
                         })))
-                .then(literal("blockpredicate").then(argument("blockpredicate", blockPredicate())
+                .then(literal("blockpredicate").then(argument("blockpredicate", blockPredicate(registryAccess))
                         .executes(ctx -> {
                             Predicate<CachedBlockPosition> clientBlockPredicate = getCBlockPredicate(ctx, "blockpredicate");
                             ctx.getSource().sendFeedback(of(clientBlockPredicate.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
-                .then(literal("blockstate").then(argument("blockstate", blockState())
+                .then(literal("blockstate").then(argument("blockstate", blockState(registryAccess))
                         .executes(ctx -> {
                             ClientBlockArgument blockArgument = getCBlockState(ctx, "blockstate");
-                            String[] arr = new String[5];
+                            String[] arr = new String[4];
                             arr[0] = blockArgument.getBlock() == null ? "null" : blockArgument.getBlock().toString();
                             arr[1] = blockArgument.getBlockState() == null ? "null" : blockArgument.getBlockState().toString();
                             arr[2] = blockArgument.getNbt() == null ? "null" : blockArgument.getNbt().toString();
-                            arr[3] = blockArgument.getIdentifier() == null ? "null" : blockArgument.getIdentifier().toString();
-                            arr[4] = blockArgument.getProperties() == null ? "null" : blockArgument.getProperties().entrySet().stream()
+                            arr[3] = blockArgument.getProperties() == null ? "null" : blockArgument.getProperties().entrySet().stream()
                                     .map(entry -> entry.getKey() + "=" + entry.getValue())
                                     .collect(Collectors.joining("; "));
                             ctx.getSource().sendFeedback(of(arr));
@@ -158,7 +161,7 @@ public class ClientArguments implements ClientModInitializer {
                 .then(literal("enchantment").then(argument("enchantment", enchantment())
                         .executes(ctx -> {
                             Enchantment enchantment = getCEnchantment(ctx, "enchantment");
-                            ctx.getSource().sendFeedback(new TranslatableText(enchantment.getTranslationKey()));
+                            ctx.getSource().sendFeedback(Text.translatable(enchantment.getTranslationKey()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("entityanchor").then(argument("entityanchor", entityAnchor())
@@ -191,7 +194,7 @@ public class ClientArguments implements ClientModInitializer {
                             ctx.getSource().sendFeedback(of(identifier.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
-                .then(literal("itempredicate").then(argument("itempredicate", itemPredicate())
+                .then(literal("itempredicate").then(argument("itempredicate", itemPredicate(registryAccess))
                         .executes(ctx -> {
                             Predicate<ItemStack> itemPredicate = getCItemPredicate(ctx, "itempredicate");
                             ctx.getSource().sendFeedback(of(itemPredicate.toString()));
@@ -203,7 +206,7 @@ public class ClientArguments implements ClientModInitializer {
                             ctx.getSource().sendFeedback(of(itemSlot.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
-                .then(literal("itemstack").then(argument("itemstack", itemStack())
+                .then(literal("itemstack").then(argument("itemstack", itemStack(registryAccess))
                         .executes(ctx -> {
                             ItemStackArgument itemStackArgument = getCItemStackArgument(ctx, "itemstack");
                             ctx.getSource().sendFeedback(of(itemStackArgument.asString()));
@@ -344,20 +347,20 @@ public class ClientArguments implements ClientModInitializer {
                             ctx.getSource().sendFeedback(of(registryKey.value().toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
-                .then(literal("registrypredicate").then(argument("registrypredicate", registryPredicate(Registry.CONFIGURED_STRUCTURE_FEATURE_KEY))
+                .then(literal("registrypredicate").then(argument("registrypredicate", registryPredicate(Registry.STRUCTURE_KEY))
                         .executes(ctx -> {
-                            CRegistryPredicateArgumentType.RegistryPredicate<ConfiguredStructureFeature<?, ?>> registryPredicate = getCConfiguredStructureFeaturePredicate(ctx, "registrypredicate");
+                            CRegistryPredicateArgumentType.RegistryPredicate<Structure> registryPredicate = getCPredicate(ctx, "registrypredicate", Registry.STRUCTURE_KEY, INVALID_STRUCTURE_EXCEPTION);
                             ctx.getSource().sendFeedback(of(registryPredicate.asString()));
                             return Command.SINGLE_SUCCESS;
                         })))
         );
     }
 
-    private static LiteralText of(String... s) {
-        return new LiteralText(String.join(", ", s));
+    private static MutableText of(String... s) {
+        return Text.literal(String.join(", ", s));
     }
 
-    private static LiteralText of(Number... numbers) {
+    private static MutableText of(Number... numbers) {
         return of(Stream.of(numbers).map(String::valueOf).toArray(String[]::new));
     }
 }

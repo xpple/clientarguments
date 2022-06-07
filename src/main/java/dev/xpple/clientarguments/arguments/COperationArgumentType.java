@@ -9,8 +9,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.scoreboard.ScoreboardPlayerScore;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Arrays;
@@ -20,8 +20,8 @@ import java.util.concurrent.CompletableFuture;
 public class COperationArgumentType implements ArgumentType<COperationArgumentType.Operation> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("=", ">", "<");
-	private static final SimpleCommandExceptionType INVALID_OPERATION = new SimpleCommandExceptionType(new TranslatableText("carguments.operation.invalid"));
-	private static final SimpleCommandExceptionType DIVISION_ZERO_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("carguments.operation.div0"));
+	private static final SimpleCommandExceptionType INVALID_OPERATION = new SimpleCommandExceptionType(Text.translatable("carguments.operation.invalid"));
+	private static final SimpleCommandExceptionType DIVISION_ZERO_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("carguments.operation.div0"));
 
 	public static COperationArgumentType operation() {
 		return new COperationArgumentType();

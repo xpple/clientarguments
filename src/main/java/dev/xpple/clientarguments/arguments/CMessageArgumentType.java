@@ -5,8 +5,8 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.LiteralText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.command.EntitySelectorReader;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
@@ -14,31 +14,45 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class CMessageArgumentType implements ArgumentType<CMessageArgumentType.MessageFormat> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("Hello world!", "foo", "@e", "Hello @p :)");
+
+	public CMessageArgumentType() {
+	}
 
 	public static CMessageArgumentType message() {
 		return new CMessageArgumentType();
 	}
 
-	public static Text getCMessage(CommandContext<FabricClientCommandSource> command, String name) throws CommandSyntaxException {
-		return command.getArgument(name, MessageFormat.class).format(command.getSource(), true);
+	public static Text getCMessage(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
+		MessageFormat messageFormat = context.getArgument(name, MessageFormat.class);
+		return messageFormat.format(context.getSource());
 	}
 
-	@Override
-	public MessageFormat parse(final StringReader stringReader) throws CommandSyntaxException {
+	public MessageFormat parse(StringReader stringReader) throws CommandSyntaxException {
 		return MessageFormat.parse(stringReader, true);
 	}
 
-	@Override
 	public Collection<String> getExamples() {
 		return EXAMPLES;
 	}
 
+	public Text toText(MessageFormat messageFormat) {
+		return Text.literal(messageFormat.getContents());
+	}
+
+	public CompletableFuture<Text> decorate(FabricClientCommandSource source, MessageFormat messageFormat) throws CommandSyntaxException {
+		return messageFormat.decorate(source);
+	}
+
+	public Class<MessageFormat> getFormatClass() {
+		return MessageFormat.class;
+	}
+
 	public static class MessageFormat {
-		private final String contents;
+		final String contents;
 		private final MessageSelector[] selectors;
 
 		public MessageFormat(String contents, MessageSelector[] selectors) {
@@ -54,73 +68,81 @@ public class CMessageArgumentType implements ArgumentType<CMessageArgumentType.M
 			return this.selectors;
 		}
 
+		CompletableFuture<Text> decorate(FabricClientCommandSource source) throws CommandSyntaxException {
+			Text text = this.format(source);
+			return CompletableFuture.completedFuture(text);
+		}
+
+		Text format(FabricClientCommandSource source) throws CommandSyntaxException {
+			return this.format(source, source.hasPermissionLevel(2));
+		}
+
 		public Text format(FabricClientCommandSource source, boolean canUseSelectors) throws CommandSyntaxException {
 			if (this.selectors.length != 0 && canUseSelectors) {
-				MutableText mutableText = new LiteralText(this.contents.substring(0, this.selectors[0].getStart()));
-				int start = this.selectors[0].getStart();
+				MutableText mutableText = Text.literal(this.contents.substring(0, this.selectors[0].getStart()));
+				int i = this.selectors[0].getStart();
 
-				for (MessageSelector messageSelector : this.selectors) {
+				for(MessageSelector messageSelector : this.selectors) {
 					Text text = messageSelector.format(source);
-					if (start < messageSelector.getStart()) {
-						mutableText.append(this.contents.substring(start, messageSelector.getStart()));
+					if (i < messageSelector.getStart()) {
+						mutableText.append(this.contents.substring(i, messageSelector.getStart()));
 					}
 
 					if (text != null) {
 						mutableText.append(text);
 					}
 
-					start = messageSelector.getEnd();
+					i = messageSelector.getEnd();
 				}
 
-				if (start < this.contents.length()) {
-					mutableText.append(this.contents.substring(start, this.contents.length()));
+				if (i < this.contents.length()) {
+					mutableText.append(this.contents.substring(i));
 				}
 
 				return mutableText;
 			} else {
-				return new LiteralText(this.contents);
+				return Text.literal(this.contents);
 			}
 		}
 
 		public static MessageFormat parse(StringReader reader, boolean canUseSelectors) throws CommandSyntaxException {
-			// TODO: 23-8-2021 refactor
 			String string = reader.getString().substring(reader.getCursor(), reader.getTotalLength());
 			if (!canUseSelectors) {
 				reader.setCursor(reader.getTotalLength());
 				return new MessageFormat(string, new MessageSelector[0]);
 			} else {
 				List<MessageSelector> list = Lists.newArrayList();
-				int cursor = reader.getCursor();
+				int i = reader.getCursor();
 
 				while(true) {
 					int j;
-					CEntitySelector entitySelector2;
-					label38:
+					CEntitySelector entitySelector;
 					while(true) {
-						while(reader.canRead()) {
-							if (reader.peek() == '@') {
-								j = reader.getCursor();
-
-								try {
-									CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(reader);
-									entitySelector2 = entitySelectorReader.read();
-									break label38;
-								} catch (CommandSyntaxException var8) {
-									if (var8.getType() != CEntitySelectorReader.MISSING_EXCEPTION && var8.getType() != CEntitySelectorReader.UNKNOWN_SELECTOR_EXCEPTION) {
-										throw var8;
-									}
-
-									reader.setCursor(j + 1);
-								}
-							} else {
-								reader.skip();
-							}
+						if (!reader.canRead()) {
+							return new MessageFormat(string, list.toArray(new MessageSelector[0]));
 						}
 
-						return new MessageFormat(string, list.toArray(new MessageSelector[0]));
+						if (reader.peek() == '@') {
+							j = reader.getCursor();
+
+							try {
+								CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(reader);
+								entitySelector = entitySelectorReader.read();
+								break;
+							} catch (CommandSyntaxException e) {
+								if (e.getType() != CEntitySelectorReader.MISSING_EXCEPTION
+										&& e.getType() != CEntitySelectorReader.UNKNOWN_SELECTOR_EXCEPTION) {
+									throw e;
+								}
+
+								reader.setCursor(j + 1);
+							}
+						} else {
+							reader.skip();
+						}
 					}
 
-					list.add(new MessageSelector(j - cursor, reader.getCursor() - cursor, entitySelector2));
+					list.add(new MessageSelector(j - i, reader.getCursor() - i, entitySelector));
 				}
 			}
 		}

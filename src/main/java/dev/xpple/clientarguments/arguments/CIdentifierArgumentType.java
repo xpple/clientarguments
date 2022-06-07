@@ -6,16 +6,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.advancement.Advancement;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.loot.condition.LootCondition;
-import net.minecraft.loot.condition.LootConditionManager;
-import net.minecraft.loot.function.LootFunction;
-import net.minecraft.loot.function.LootFunctionManager;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -25,11 +20,9 @@ import java.util.Collection;
 public class CIdentifierArgumentType implements ArgumentType<Identifier> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
-	private static final DynamicCommandExceptionType UNKNOWN_ADVANCEMENT_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("advancement.advancementNotFound", id));
-	private static final DynamicCommandExceptionType UNKNOWN_RECIPE_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("recipe.notFound", id));
-	private static final DynamicCommandExceptionType UNKNOWN_PREDICATE_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("predicate.unknown", id));
-	private static final DynamicCommandExceptionType UNKNOWN_ATTRIBUTE_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("attribute.unknown", id));
-	private static final DynamicCommandExceptionType UNKNOWN_ITEM_MODIFIER_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("item_modifier.unknown", id));
+	private static final DynamicCommandExceptionType UNKNOWN_ADVANCEMENT_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("advancement.advancementNotFound", id));
+	private static final DynamicCommandExceptionType UNKNOWN_RECIPE_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("recipe.notFound", id));
+	private static final DynamicCommandExceptionType UNKNOWN_ATTRIBUTE_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("attribute.unknown", id));
 
 	public static CIdentifierArgumentType identifier() {
 		return new CIdentifierArgumentType();

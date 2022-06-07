@@ -1,7 +1,6 @@
 package dev.xpple.clientarguments.arguments;
 
 import com.google.common.collect.Iterables;
-import com.google.gson.JsonObject;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -9,13 +8,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.serialize.ArgumentSerializer;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,12 +22,12 @@ import java.util.concurrent.CompletableFuture;
 public class CEntityArgumentType implements ArgumentType<CEntitySelector> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "@e", "@e[type=foo]", "dd12be42-52a9-4a91-a8a1-11c01849e498");
-	public static final SimpleCommandExceptionType TOO_MANY_ENTITIES_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.entity.toomany"));
-	public static final SimpleCommandExceptionType TOO_MANY_PLAYERS_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.player.toomany"));
-	public static final SimpleCommandExceptionType PLAYER_SELECTOR_HAS_ENTITIES_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.player.entities"));
-	public static final SimpleCommandExceptionType ENTITY_NOT_FOUND_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.entity.notfound.entity"));
-	public static final SimpleCommandExceptionType PLAYER_NOT_FOUND_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.entity.notfound.player"));
-	public static final SimpleCommandExceptionType NOT_ALLOWED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.entity.selector.not_allowed"));
+	public static final SimpleCommandExceptionType TOO_MANY_ENTITIES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.toomany"));
+	public static final SimpleCommandExceptionType TOO_MANY_PLAYERS_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.player.toomany"));
+	public static final SimpleCommandExceptionType PLAYER_SELECTOR_HAS_ENTITIES_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.player.entities"));
+	public static final SimpleCommandExceptionType ENTITY_NOT_FOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.notfound.entity"));
+	public static final SimpleCommandExceptionType PLAYER_NOT_FOUND_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.notfound.player"));
+	public static final SimpleCommandExceptionType NOT_ALLOWED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.selector.not_allowed"));
 	final boolean singleTarget;
 	final boolean playersOnly;
 
@@ -134,30 +131,5 @@ public class CEntityArgumentType implements ArgumentType<CEntitySelector> {
 	@Override
 	public Collection<String> getExamples() {
 		return EXAMPLES;
-	}
-
-	public static class Serializer implements ArgumentSerializer<CEntityArgumentType> {
-		public void toPacket(CEntityArgumentType entityArgumentType, PacketByteBuf packetByteBuf) {
-			byte b = 0;
-			if (entityArgumentType.singleTarget) {
-				b = (byte) (b | 1);
-			}
-
-			if (entityArgumentType.playersOnly) {
-				b = (byte) (b | 2);
-			}
-
-			packetByteBuf.writeByte(b);
-		}
-
-		public CEntityArgumentType fromPacket(PacketByteBuf packetByteBuf) {
-			byte b = packetByteBuf.readByte();
-			return new CEntityArgumentType((b & 1) != 0, (b & 2) != 0);
-		}
-
-		public void toJson(CEntityArgumentType entityArgumentType, JsonObject jsonObject) {
-			jsonObject.addProperty("amount", entityArgumentType.singleTarget ? "single" : "multiple");
-			jsonObject.addProperty("type", entityArgumentType.playersOnly ? "players" : "entities");
-		}
 	}
 }

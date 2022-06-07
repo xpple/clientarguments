@@ -9,8 +9,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.effect.StatusEffect;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 public class CStatusEffectArgumentType implements ArgumentType<StatusEffect> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("spooky", "effect");
-	public static final DynamicCommandExceptionType INVALID_EFFECT_EXCEPTION = new DynamicCommandExceptionType((id) -> new TranslatableText("effect.effectNotFound", id));
+	public static final DynamicCommandExceptionType INVALID_EFFECT_EXCEPTION = new DynamicCommandExceptionType((id) -> Text.translatable("effect.effectNotFound", id));
 
 	public static CStatusEffectArgumentType statusEffect() {
 		return new CStatusEffectArgumentType();

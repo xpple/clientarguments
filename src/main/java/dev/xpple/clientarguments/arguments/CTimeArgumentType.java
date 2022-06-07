@@ -10,10 +10,10 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.TimeArgumentType;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,8 +22,8 @@ import java.util.concurrent.CompletableFuture;
 public class CTimeArgumentType implements ArgumentType<Integer> {
 
     private static final Collection<String> EXAMPLES = Arrays.asList("0d", "0s", "0t", "0");
-    private static final SimpleCommandExceptionType INVALID_UNIT_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.time.invalid_unit"));
-    private static final DynamicCommandExceptionType INVALID_COUNT_EXCEPTION = new DynamicCommandExceptionType(arg -> new TranslatableText("cargument.time.invalid_tick_count", arg));
+    private static final SimpleCommandExceptionType INVALID_UNIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.time.invalid_unit"));
+    private static final DynamicCommandExceptionType INVALID_COUNT_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("cargument.time.invalid_tick_count", arg));
     private static final Object2IntMap<String> UNITS = new Object2IntOpenHashMap<>();
 
     static {

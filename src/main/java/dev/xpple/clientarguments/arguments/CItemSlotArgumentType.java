@@ -10,8 +10,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.EquipmentSlot;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 
 import java.util.Arrays;
@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 public class CItemSlotArgumentType implements ArgumentType<Integer> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("container.5", "12", "weapon");
-	private static final DynamicCommandExceptionType UNKNOWN_SLOT_EXCEPTION = new DynamicCommandExceptionType(name -> new TranslatableText("slot.unknown", name));
+	private static final DynamicCommandExceptionType UNKNOWN_SLOT_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("slot.unknown", name));
 	private static final Map<String, Integer> SLOT_NAMES_TO_SLOT_COMMAND_ID = Util.make(Maps.newHashMap(), map -> {
 		int n;
 

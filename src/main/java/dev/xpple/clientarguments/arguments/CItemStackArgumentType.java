@@ -6,8 +6,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.ItemStackArgument;
 import net.minecraft.command.argument.ItemStringReader;
+import net.minecraft.item.Item;
 import net.minecraft.util.registry.Registry;
 
 import java.util.Arrays;
@@ -18,14 +21,20 @@ public class CItemStackArgumentType implements ArgumentType<ItemStackArgument> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "stick{foo=bar}");
 
-	public static CItemStackArgumentType itemStack() {
-		return new CItemStackArgumentType();
+	private final CommandRegistryWrapper<Item> registryWrapper;
+
+	public CItemStackArgumentType(CommandRegistryAccess registryAccess) {
+		this.registryWrapper = registryAccess.createWrapper(Registry.ITEM_KEY);
+	}
+
+	public static CItemStackArgumentType itemStack(CommandRegistryAccess registryAccess) {
+		return new CItemStackArgumentType(registryAccess);
 	}
 
 	@Override
 	public ItemStackArgument parse(final StringReader stringReader) throws CommandSyntaxException {
-		ItemStringReader itemStringReader = (new ItemStringReader(stringReader, false)).consume();
-		return new ItemStackArgument(itemStringReader.getItem(), itemStringReader.getNbt());
+		var result = ItemStringReader.item(this.registryWrapper, stringReader);
+		return new ItemStackArgument(result.item(), result.nbt());
 	}
 
 	public static <S> ItemStackArgument getCItemStackArgument(CommandContext<S> context, String name) {
@@ -34,14 +43,7 @@ public class CItemStackArgumentType implements ArgumentType<ItemStackArgument> {
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-		StringReader stringReader = new StringReader(builder.getInput());
-		stringReader.setCursor(builder.getStart());
-		ItemStringReader itemStringReader = new ItemStringReader(stringReader, false);
-		try {
-			itemStringReader.consume();
-		} catch (CommandSyntaxException ignored) {
-		}
-		return itemStringReader.getSuggestions(builder, Registry.ITEM);
+		return ItemStringReader.getSuggestions(this.registryWrapper, builder, false);
 	}
 
 	@Override

@@ -1,20 +1,17 @@
 package dev.xpple.clientarguments.arguments;
 
 import com.google.common.collect.Lists;
-import com.google.gson.JsonObject;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.serialize.ArgumentSerializer;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -35,7 +32,7 @@ public class CScoreHolderArgumentType implements ArgumentType<CScoreHolderArgume
 	};
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "*", "@e");
-	private static final SimpleCommandExceptionType EMPTY_SCORE_HOLDER_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.scoreHolder.empty"));
+	private static final SimpleCommandExceptionType EMPTY_SCORE_HOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.scoreHolder.empty"));
 	final boolean multiple;
 
 	public CScoreHolderArgumentType(boolean multiple) {
@@ -136,27 +133,6 @@ public class CScoreHolderArgumentType implements ArgumentType<CScoreHolderArgume
 
 				return list2;
 			}
-		}
-	}
-
-	public static class Serializer implements ArgumentSerializer<CScoreHolderArgumentType> {
-		public void toPacket(CScoreHolderArgumentType scoreHolderArgumentType, PacketByteBuf packetByteBuf) {
-			byte b = 0;
-			if (scoreHolderArgumentType.multiple) {
-				b = (byte)(b | 1);
-			}
-
-			packetByteBuf.writeByte(b);
-		}
-
-		public CScoreHolderArgumentType fromPacket(PacketByteBuf packetByteBuf) {
-			byte b = packetByteBuf.readByte();
-			boolean bl = (b & 1) != 0;
-			return new CScoreHolderArgumentType(bl);
-		}
-
-		public void toJson(CScoreHolderArgumentType scoreHolderArgumentType, JsonObject jsonObject) {
-			jsonObject.addProperty("amount", scoreHolderArgumentType.multiple ? "multiple" : "single");
 		}
 	}
 }

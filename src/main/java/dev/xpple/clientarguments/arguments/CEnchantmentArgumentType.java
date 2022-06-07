@@ -9,8 +9,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.enchantment.Enchantment;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 public class CEnchantmentArgumentType implements ArgumentType<Enchantment> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("unbreaking", "silk_touch");
-	public static final DynamicCommandExceptionType UNKNOWN_ENCHANTMENT_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("enchantment.unknown", id));
+	public static final DynamicCommandExceptionType UNKNOWN_ENCHANTMENT_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("enchantment.unknown", id));
 
 	public static CEnchantmentArgumentType enchantment() {
 		return new CEnchantmentArgumentType();

@@ -8,8 +8,8 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class CDimensionArgumentType implements ArgumentType<Identifier> {
 
 	private static final Collection<String> EXAMPLES = Arrays.stream(DimensionArgument.values()).map(DimensionArgument::getName).collect(Collectors.toSet());
-	private static final DynamicCommandExceptionType INVALID_DIMENSION_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("cargument.dimension.invalid", id));
+	private static final DynamicCommandExceptionType INVALID_DIMENSION_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("cargument.dimension.invalid", id));
 
 	public static CDimensionArgumentType dimension() {
 		return new CDimensionArgumentType();

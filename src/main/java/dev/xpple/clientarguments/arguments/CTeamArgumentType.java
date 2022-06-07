@@ -10,8 +10,8 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.Team;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 public class CTeamArgumentType implements ArgumentType<String> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("foo", "123");
-	private static final DynamicCommandExceptionType UNKNOWN_TEAM_EXCEPTION = new DynamicCommandExceptionType(name -> new TranslatableText("team.notFound", name));
+	private static final DynamicCommandExceptionType UNKNOWN_TEAM_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("team.notFound", name));
 
 	public static CTeamArgumentType team() {
 		return new CTeamArgumentType();

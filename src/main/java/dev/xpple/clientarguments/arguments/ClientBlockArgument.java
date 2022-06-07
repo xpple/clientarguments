@@ -1,70 +1,33 @@
 package dev.xpple.clientarguments.arguments;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.state.property.Property;
-import net.minecraft.tag.TagKey;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.world.WorldView;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
 public class ClientBlockArgument {
-
-    private final Block block;
-    private final BlockState blockState;
+    private final BlockState state;
+    private final Map<Property<?>, Comparable<?>> properties;
+    @Nullable
     private final NbtCompound nbt;
-    private final Identifier identifier;
-    private final Map<String, String> properties;
 
-    private boolean ignoreNbt = false;
-
-    ClientBlockArgument(BlockArgumentParser parser) {
-        BlockState blockState = parser.getBlockState();
-        if (blockState == null) {
-            this.identifier = parser.getTagId().id();
-            this.properties = parser.getProperties();
-
-            this.block = null;
-            this.blockState = null;
-        } else {
-            this.block = blockState.getBlock();
-            this.blockState = blockState;
-
-            this.identifier = null;
-            this.properties = null;
-        }
-        this.nbt = parser.getNbtData();
-    }
-
-    ClientBlockArgument ignoreNbt() {
-        this.ignoreNbt = true;
-        return this;
+    ClientBlockArgument(BlockArgumentParser.BlockResult result) {
+        this.state = result.blockState();
+        this.properties = result.properties();
+        this.nbt = result.nbt();
     }
 
     private boolean isSameBlock(Block other) {
-        return this.block.equals(other);
+        return this.state.getBlock().equals(other);
     }
 
     private boolean isSameBlockState(BlockState other) {
-        if (!this.blockState.isOf(other.getBlock())) {
-            return false;
-        }
-        for (Property<?> property : this.blockState.getProperties()) {
-            if (this.blockState.get(property) != other.get(property)) {
-                return false;
-            }
-        }
-        return true;
+        return this.state == other;
     }
 
     private boolean isSameNbt(NbtCompound other) {
@@ -72,76 +35,19 @@ public class ClientBlockArgument {
     }
 
     public Block getBlock() {
-        return this.block;
+        return this.state.getBlock();
     }
 
     public BlockState getBlockState() {
-        return this.blockState;
+        return this.state;
     }
 
+    @Nullable
     public NbtCompound getNbt() {
         return this.nbt;
     }
 
-    public Identifier getIdentifier() {
-        return this.identifier;
-    }
-
-    public Map<String, String> getProperties() {
+    public Map<Property<?>, Comparable<?>> getProperties() {
         return this.properties;
-    }
-
-    public boolean test(WorldView world, BlockPos pos) throws CommandSyntaxException {
-        if (this.blockState == null) {
-            BlockState blockState = world.getBlockState(pos);
-            TagKey<Block> tag = TagKey.of(Registry.BLOCK_KEY, this.identifier);
-            if (!blockState.isIn(tag)) {
-                return false;
-            }
-            for (Map.Entry<String, String> entry : this.properties.entrySet()) {
-                Property<?> property = blockState.getBlock().getStateManager().getProperty(entry.getKey());
-                if (property == null) {
-                    return false;
-                }
-
-                Comparable<?> comparable = property.parse(entry.getValue()).orElse(null);
-                if (comparable == null) {
-                    return false;
-                }
-
-                if (blockState.get(property) != comparable) {
-                    return false;
-                }
-            }
-            if (this.ignoreNbt) {
-                return true;
-            }
-            BlockEntity be = world.getBlockEntity(pos);
-            if (be == null) {
-                return true;
-            }
-            return isSameNbt(be.createNbt());
-        } else {
-            BlockState other = world.getBlockState(pos);
-            if (!isSameBlock(other.getBlock())) {
-                return false;
-            }
-            if (!isSameBlockState(other)) {
-                return false;
-            }
-            if (this.ignoreNbt) {
-                return true;
-            }
-            BlockEntity be = world.getBlockEntity(pos);
-            if (be == null) {
-                return true;
-            }
-            return isSameNbt(be.createNbt());
-        }
-    }
-
-    @FunctionalInterface
-    public interface ClientBlockPredicate {
-        boolean test(WorldView world, BlockPos pos) throws CommandSyntaxException;
     }
 }

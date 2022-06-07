@@ -2,7 +2,7 @@ package dev.xpple.clientarguments.arguments;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.argument.CoordinateArgument;
 import net.minecraft.command.argument.Vec3ArgumentType;
 import net.minecraft.util.math.Vec2f;

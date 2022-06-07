@@ -7,10 +7,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandSource;
 import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public class CScoreboardCriterionArgumentType implements ArgumentType<ScoreboardCriterion> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("trigger", "playerKillCount", "food");
-	public static final DynamicCommandExceptionType INVALID_CRITERION_EXCEPTION = new DynamicCommandExceptionType(name -> new TranslatableText("cargument.criteria.invalid", name));
+	public static final DynamicCommandExceptionType INVALID_CRITERION_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("cargument.criteria.invalid", name));
 
 	public static CScoreboardCriterionArgumentType scoreboardCriterion() {
 		return new CScoreboardCriterionArgumentType();

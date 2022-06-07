@@ -9,9 +9,9 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.test.TestFunctions;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,7 +27,7 @@ public class CTestClassArgumentType implements ArgumentType<String> {
 		if (TestFunctions.testClassExists(string)) {
 			return string;
 		} else {
-			Message message = new LiteralText("No such test class: " + string);
+			Message message = Text.literal("No such test class: " + string);
 			throw new CommandSyntaxException(new SimpleCommandExceptionType(message), message);
 		}
 	}

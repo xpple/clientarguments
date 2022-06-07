@@ -1,6 +1,5 @@
 package dev.xpple.clientarguments.arguments;
 
-import com.google.gson.JsonObject;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -8,12 +7,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.serialize.ArgumentSerializer;
 import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryEntry;
@@ -28,8 +25,8 @@ import java.util.concurrent.CompletableFuture;
 public class CRegistryKeyArgumentType<T> implements ArgumentType<RegistryKey<T>> {
 
     private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
-    private static final DynamicCommandExceptionType UNKNOWN_ATTRIBUTE_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("cattribute.unknown", id));
-    private static final DynamicCommandExceptionType INVALID_CONFIGURED_FEATURE_EXCEPTION = new DynamicCommandExceptionType(id -> new TranslatableText("ccommands.placefeature.invalid", id));
+    private static final DynamicCommandExceptionType UNKNOWN_ATTRIBUTE_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("cattribute.unknown", id));
+    private static final DynamicCommandExceptionType INVALID_CONFIGURED_FEATURE_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("ccommands.placefeature.invalid", id));
     final RegistryKey<? extends Registry<T>> registryRef;
 
     public CRegistryKeyArgumentType(RegistryKey<? extends Registry<T>> registryRef) {
@@ -78,23 +75,5 @@ public class CRegistryKeyArgumentType<T> implements ArgumentType<RegistryKey<T>>
     @Override
     public Collection<String> getExamples() {
         return EXAMPLES;
-    }
-
-    public static class Serializer implements ArgumentSerializer<CRegistryKeyArgumentType<?>> {
-        @Override
-        public void toPacket(CRegistryKeyArgumentType<?> registryKeyArgumentType, PacketByteBuf packetByteBuf) {
-            packetByteBuf.writeIdentifier(registryKeyArgumentType.registryRef.getValue());
-        }
-
-        @Override
-        public CRegistryKeyArgumentType<?> fromPacket(PacketByteBuf packetByteBuf) {
-            Identifier identifier = packetByteBuf.readIdentifier();
-            return new CRegistryKeyArgumentType<>(RegistryKey.ofRegistry(identifier));
-        }
-
-        @Override
-        public void toJson(CRegistryKeyArgumentType<?> registryKeyArgumentType, JsonObject jsonObject) {
-            jsonObject.addProperty("registry", registryKeyArgumentType.registryRef.getValue().toString());
-        }
     }
 }

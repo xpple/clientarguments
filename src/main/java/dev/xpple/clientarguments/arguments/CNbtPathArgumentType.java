@@ -10,8 +10,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.nbt.*;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 import java.util.*;
@@ -24,8 +24,8 @@ import java.util.stream.Stream;
 public class CNbtPathArgumentType implements ArgumentType<CNbtPathArgumentType.NbtPath> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo.bar", "foo[0]", "[0]", "[]", "{foo=bar}");
-	public static final SimpleCommandExceptionType INVALID_PATH_NODE_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("carguments.nbtpath.node.invalid"));
-	public static final DynamicCommandExceptionType NOTHING_FOUND_EXCEPTION = new DynamicCommandExceptionType(path -> new TranslatableText("carguments.nbtpath.nothing_found", path));
+	public static final SimpleCommandExceptionType INVALID_PATH_NODE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("carguments.nbtpath.node.invalid"));
+	public static final DynamicCommandExceptionType NOTHING_FOUND_EXCEPTION = new DynamicCommandExceptionType(path -> Text.translatable("carguments.nbtpath.nothing_found", path));
 
 	public static CNbtPathArgumentType nbtPath() {
 		return new CNbtPathArgumentType();

@@ -9,10 +9,10 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.test.TestFunction;
 import net.minecraft.test.TestFunctions;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,14 +39,14 @@ public class CTestFunctionArgumentType implements ArgumentType<TestFunction> {
 		if (optional.isPresent()) {
 			return optional.get();
 		} else {
-			Message message = new LiteralText("No such test: " + string);
+			Message message = Text.literal("No such test: " + string);
 			throw new CommandSyntaxException(new SimpleCommandExceptionType(message), message);
 		}
 	}
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-		Stream<String> stream = TestFunctions.getTestFunctions().stream().map(TestFunction::getStructurePath);
+		Stream<String> stream = TestFunctions.getTestFunctions().stream().map(TestFunction::getTemplatePath);
 		return CommandSource.suggestMatching(stream, builder);
 	}
 

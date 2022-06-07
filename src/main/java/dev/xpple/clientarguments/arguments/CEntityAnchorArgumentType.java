@@ -10,8 +10,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.Entity;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +25,7 @@ import java.util.function.BiFunction;
 public class CEntityAnchorArgumentType implements ArgumentType<CEntityAnchorArgumentType.EntityAnchor> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("eyes", "feet");
-	private static final DynamicCommandExceptionType INVALID_ANCHOR_EXCEPTION = new DynamicCommandExceptionType(name -> new TranslatableText("cargument.anchor.invalid", name));
+	private static final DynamicCommandExceptionType INVALID_ANCHOR_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("cargument.anchor.invalid", name));
 
 	public static CEntityAnchorArgumentType entityAnchor() {
 		return new CEntityAnchorArgumentType();

@@ -5,10 +5,9 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.command.argument.AngleArgumentType;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.argument.CoordinateArgument;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Arrays;
@@ -17,8 +16,8 @@ import java.util.Collection;
 public class CAngleArgumentType implements ArgumentType<CAngleArgumentType.Angle> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("0", "~", "~-5");
-	public static final SimpleCommandExceptionType INCOMPLETE_ANGLE_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.angle.incomplete"));
-	public static final SimpleCommandExceptionType INVALID_ANGLE_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.angle.invalid"));
+	public static final SimpleCommandExceptionType INCOMPLETE_ANGLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.angle.incomplete"));
+	public static final SimpleCommandExceptionType INVALID_ANGLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.angle.invalid"));
 
 	public static CAngleArgumentType angle() {
 		return new CAngleArgumentType();

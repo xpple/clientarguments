@@ -9,8 +9,8 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.scoreboard.Scoreboard;
-import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
-import net.minecraft.text.TranslatableText;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.text.Text;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public class CScoreboardSlotArgumentType implements ArgumentType<Integer> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("sidebar", "foo.bar");
-	public static final DynamicCommandExceptionType INVALID_SLOT_EXCEPTION = new DynamicCommandExceptionType(name -> new TranslatableText("cargument.scoreboardDisplaySlot.invalid", name));
+	public static final DynamicCommandExceptionType INVALID_SLOT_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("cargument.scoreboardDisplaySlot.invalid", name));
 
 	public static CScoreboardSlotArgumentType scoreboardSlot() {
 		return new CScoreboardSlotArgumentType();

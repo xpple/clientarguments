@@ -12,7 +12,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.predicate.NumberRange;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -25,12 +25,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 
 public class CEntitySelectorReader {
-	public static final SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.entity.invalid"));
-	public static final DynamicCommandExceptionType UNKNOWN_SELECTOR_EXCEPTION = new DynamicCommandExceptionType(selectorType -> new TranslatableText("cargument.entity.selector.unknown", selectorType));
-	public static final SimpleCommandExceptionType NOT_ALLOWED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.entity.selector.not_allowed"));
-	public static final SimpleCommandExceptionType MISSING_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.entity.selector.missing"));
-	public static final SimpleCommandExceptionType UNTERMINATED_EXCEPTION = new SimpleCommandExceptionType(new TranslatableText("cargument.entity.options.unterminated"));
-	public static final DynamicCommandExceptionType VALUELESS_EXCEPTION = new DynamicCommandExceptionType(option -> new TranslatableText("cargument.entity.options.valueless", option));
+	public static final SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.invalid"));
+	public static final DynamicCommandExceptionType UNKNOWN_SELECTOR_EXCEPTION = new DynamicCommandExceptionType(selectorType -> Text.translatable("cargument.entity.selector.unknown", selectorType));
+	public static final SimpleCommandExceptionType NOT_ALLOWED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.selector.not_allowed"));
+	public static final SimpleCommandExceptionType MISSING_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.selector.missing"));
+	public static final SimpleCommandExceptionType UNTERMINATED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.options.unterminated"));
+	public static final DynamicCommandExceptionType VALUELESS_EXCEPTION = new DynamicCommandExceptionType(option -> Text.translatable("cargument.entity.options.valueless", option));
 	public static final BiConsumer<Vec3d, List<? extends Entity>> ARBITRARY = (pos, entities) -> {
 	};
 	public static final BiConsumer<Vec3d, List<? extends Entity>> NEAREST = (pos, entities) -> entities.sort((entity1, entity2) -> Doubles.compare(entity1.squaredDistanceTo(pos), entity2.squaredDistanceTo(pos)));
@@ -393,11 +393,11 @@ public class CEntitySelectorReader {
 	}
 
 	private static void suggestSelector(SuggestionsBuilder builder) {
-		builder.suggest("@p", new TranslatableText("cargument.entity.selector.nearestPlayer"));
-		builder.suggest("@a", new TranslatableText("cargument.entity.selector.allPlayers"));
-		builder.suggest("@r", new TranslatableText("cargument.entity.selector.randomPlayer"));
-		builder.suggest("@s", new TranslatableText("cargument.entity.selector.self"));
-		builder.suggest("@e", new TranslatableText("cargument.entity.selector.allEntities"));
+		builder.suggest("@p", Text.translatable("cargument.entity.selector.nearestPlayer"));
+		builder.suggest("@a", Text.translatable("cargument.entity.selector.allPlayers"));
+		builder.suggest("@r", Text.translatable("cargument.entity.selector.randomPlayer"));
+		builder.suggest("@s", Text.translatable("cargument.entity.selector.self"));
+		builder.suggest("@e", Text.translatable("cargument.entity.selector.allEntities"));
 	}
 
 	private CompletableFuture<Suggestions> suggestSelector(SuggestionsBuilder builder, Consumer<SuggestionsBuilder> consumer) {
