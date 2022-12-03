@@ -7,11 +7,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.ItemStackArgument;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.Item;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,10 +21,10 @@ public class CItemStackArgumentType implements ArgumentType<ItemStackArgument> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "stick{foo=bar}");
 
-	private final CommandRegistryWrapper<Item> registryWrapper;
+	private final RegistryWrapper<Item> registryWrapper;
 
 	public CItemStackArgumentType(CommandRegistryAccess registryAccess) {
-		this.registryWrapper = registryAccess.createWrapper(Registry.ITEM_KEY);
+		this.registryWrapper = registryAccess.createWrapper(RegistryKeys.ITEM);
 	}
 
 	public static CItemStackArgumentType itemStack(CommandRegistryAccess registryAccess) {

@@ -8,14 +8,14 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.ItemStringReader;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntryList;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.entry.RegistryEntryList;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -26,10 +26,10 @@ import java.util.function.Predicate;
 public class CItemPredicateArgumentType implements ArgumentType<Predicate<ItemStack>> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "#stick", "#stick{foo=bar}");
 
-	private final CommandRegistryWrapper<Item> registryWrapper;
+	private final RegistryWrapper<Item> registryWrapper;
 
 	public CItemPredicateArgumentType(CommandRegistryAccess registryAccess) {
-		this.registryWrapper = registryAccess.createWrapper(Registry.ITEM_KEY);
+		this.registryWrapper = registryAccess.createWrapper(RegistryKeys.ITEM);
 	}
 
 	public static CItemPredicateArgumentType itemPredicate(CommandRegistryAccess registryAccess) {

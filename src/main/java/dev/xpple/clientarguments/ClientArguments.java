@@ -27,6 +27,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.Team;
@@ -36,8 +38,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.*;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntry;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.gen.structure.Structure;
 
@@ -341,15 +341,15 @@ public class ClientArguments implements ClientModInitializer {
                             ctx.getSource().sendFeedback(of(vec3d.x, vec3d.y, vec3d.z));
                             return Command.SINGLE_SUCCESS;
                         })))
-                .then(literal("registrykey").then(argument("registrykey", registryKey(Registry.CONFIGURED_FEATURE_KEY))
+                .then(literal("registrykey").then(argument("registrykey", registryKey(RegistryKeys.CONFIGURED_FEATURE))
                         .executes(ctx -> {
                             RegistryEntry<ConfiguredFeature<?, ?>> registryKey = getCConfiguredFeatureEntry(ctx, "registrykey");
                             ctx.getSource().sendFeedback(of(registryKey.value().toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
-                .then(literal("registrypredicate").then(argument("registrypredicate", registryPredicate(Registry.STRUCTURE_KEY))
+                .then(literal("registrypredicate").then(argument("registrypredicate", registryPredicate(RegistryKeys.STRUCTURE))
                         .executes(ctx -> {
-                            CRegistryPredicateArgumentType.RegistryPredicate<Structure> registryPredicate = getCPredicate(ctx, "registrypredicate", Registry.STRUCTURE_KEY, INVALID_STRUCTURE_EXCEPTION);
+                            CRegistryPredicateArgumentType.RegistryPredicate<Structure> registryPredicate = getCPredicate(ctx, "registrypredicate", RegistryKeys.STRUCTURE, INVALID_STRUCTURE_EXCEPTION);
                             ctx.getSource().sendFeedback(of(registryPredicate.asString()));
                             return Command.SINGLE_SUCCESS;
                         })))

@@ -10,9 +10,9 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.enchantment.Enchantment;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,12 +34,12 @@ public class CEnchantmentArgumentType implements ArgumentType<Enchantment> {
 	@Override
 	public Enchantment parse(final StringReader stringReader) throws CommandSyntaxException {
 		Identifier identifier = Identifier.fromCommandInput(stringReader);
-		return Registry.ENCHANTMENT.getOrEmpty(identifier).orElseThrow(() -> UNKNOWN_ENCHANTMENT_EXCEPTION.create(identifier));
+		return Registries.ENCHANTMENT.getOrEmpty(identifier).orElseThrow(() -> UNKNOWN_ENCHANTMENT_EXCEPTION.create(identifier));
 	}
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-		return CommandSource.suggestIdentifiers(Registry.ENCHANTMENT.getIds(), builder);
+		return CommandSource.suggestIdentifiers(Registries.ENCHANTMENT.getIds(), builder);
 	}
 
 	@Override

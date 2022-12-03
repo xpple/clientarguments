@@ -9,9 +9,9 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.block.Block;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.BlockArgumentParser;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,10 +21,10 @@ public class CBlockStateArgumentType implements ArgumentType<ClientBlockArgument
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("stone", "minecraft:stone", "stone[foo=bar]", "foo{bar=baz}");
 
-	private final CommandRegistryWrapper<Block> registryWrapper;
+	private final RegistryWrapper<Block> registryWrapper;
 
 	protected CBlockStateArgumentType(CommandRegistryAccess registryAccess) {
-		this.registryWrapper = registryAccess.createWrapper(Registry.BLOCK_KEY);
+		this.registryWrapper = registryAccess.createWrapper(RegistryKeys.BLOCK);
 	}
 
 	public static CBlockStateArgumentType blockState(CommandRegistryAccess registryAccess) {

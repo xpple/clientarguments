@@ -12,14 +12,14 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandRegistryWrapper;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.command.argument.BlockPredicateArgumentType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.state.property.Property;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntryList;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -31,10 +31,10 @@ import java.util.function.Predicate;
 
 public class CBlockPredicateArgumentType implements ArgumentType<CBlockPredicateArgumentType.BlockPredicate> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("stone", "minecraft:stone", "stone[foo=bar]", "#stone", "#stone[foo=bar]{baz=nbt}");
-	private final CommandRegistryWrapper<Block> registryWrapper;
+	private final RegistryWrapper<Block> registryWrapper;
 
 	public CBlockPredicateArgumentType(CommandRegistryAccess registryAccess) {
-		this.registryWrapper = registryAccess.createWrapper(Registry.BLOCK_KEY);
+		this.registryWrapper = registryAccess.createWrapper(RegistryKeys.BLOCK);
 	}
 
 	public static BlockPredicateArgumentType blockPredicate(CommandRegistryAccess registryAccess) {
@@ -45,7 +45,7 @@ public class CBlockPredicateArgumentType implements ArgumentType<CBlockPredicate
 		return parse(this.registryWrapper, stringReader);
 	}
 
-	public static BlockPredicate parse(CommandRegistryWrapper<Block> registryWrapper, StringReader reader) throws CommandSyntaxException {
+	public static BlockPredicate parse(RegistryWrapper<Block> registryWrapper, StringReader reader) throws CommandSyntaxException {
 		return BlockArgumentParser.blockOrTag(registryWrapper, reader, true)
 				.map(
 						result -> new StatePredicate(result.blockState(), result.properties().keySet(), result.nbt()),

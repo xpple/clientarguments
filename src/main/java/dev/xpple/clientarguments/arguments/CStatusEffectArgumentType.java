@@ -10,9 +10,9 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.effect.StatusEffect;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,12 +34,12 @@ public class CStatusEffectArgumentType implements ArgumentType<StatusEffect> {
 	@Override
 	public StatusEffect parse(final StringReader stringReader) throws CommandSyntaxException {
 		Identifier identifier = Identifier.fromCommandInput(stringReader);
-		return Registry.STATUS_EFFECT.getOrEmpty(identifier).orElseThrow(() -> INVALID_EFFECT_EXCEPTION.create(identifier));
+		return Registries.STATUS_EFFECT.getOrEmpty(identifier).orElseThrow(() -> INVALID_EFFECT_EXCEPTION.create(identifier));
 	}
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-		return CommandSource.suggestIdentifiers(Registry.STATUS_EFFECT.getIds(), builder);
+		return CommandSource.suggestIdentifiers(Registries.STATUS_EFFECT.getIds(), builder);
 	}
 
 	@Override

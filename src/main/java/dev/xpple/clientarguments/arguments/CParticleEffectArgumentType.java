@@ -11,9 +11,9 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,7 +39,7 @@ public class CParticleEffectArgumentType implements ArgumentType<ParticleEffect>
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-		return CommandSource.suggestIdentifiers(Registry.PARTICLE_TYPE.getIds(), builder);
+		return CommandSource.suggestIdentifiers(Registries.PARTICLE_TYPE.getIds(), builder);
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class CParticleEffectArgumentType implements ArgumentType<ParticleEffect>
 
 	public static ParticleEffect readParameters(StringReader reader) throws CommandSyntaxException {
 		Identifier identifier = Identifier.fromCommandInput(reader);
-		ParticleType<?> particleType = Registry.PARTICLE_TYPE.getOrEmpty(identifier).orElseThrow(() -> UNKNOWN_PARTICLE_EXCEPTION.create(identifier));
+		ParticleType<?> particleType = Registries.PARTICLE_TYPE.getOrEmpty(identifier).orElseThrow(() -> UNKNOWN_PARTICLE_EXCEPTION.create(identifier));
 		return readParameters(reader, particleType);
 	}
 
