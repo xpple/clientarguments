@@ -20,9 +20,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.pattern.CachedBlockPosition;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.ItemStackArgument;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
@@ -53,10 +51,8 @@ import static dev.xpple.clientarguments.arguments.CBlockStateArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CColorArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CColumnPosArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CDimensionArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CEnchantmentArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CEntityAnchorArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CEntityArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CEntitySummonArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CGameProfileArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CIdentifierArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CItemPredicateArgumentType.*;
@@ -75,7 +71,6 @@ import static dev.xpple.clientarguments.arguments.CScoreHolderArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CScoreboardCriterionArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CScoreboardObjectiveArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CScoreboardSlotArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CStatusEffectArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CSwizzleArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CTeamArgumentType.*;
 import static dev.xpple.clientarguments.arguments.CTestClassArgumentType.*;
@@ -158,12 +153,6 @@ public class ClientArguments implements ClientModInitializer {
                             ctx.getSource().sendFeedback(of(dimension.getName()));
                             return Command.SINGLE_SUCCESS;
                         })))
-                .then(literal("enchantment").then(argument("enchantment", enchantment())
-                        .executes(ctx -> {
-                            Enchantment enchantment = getCEnchantment(ctx, "enchantment");
-                            ctx.getSource().sendFeedback(Text.translatable(enchantment.getTranslationKey()));
-                            return Command.SINGLE_SUCCESS;
-                        })))
                 .then(literal("entityanchor").then(argument("entityanchor", entityAnchor())
                         .executes(ctx -> {
                             EntityAnchor entityAnchor = getCEntityAnchor(ctx, "entityanchor");
@@ -174,12 +163,6 @@ public class ClientArguments implements ClientModInitializer {
                         .executes(ctx -> {
                             Entity entity = getCEntity(ctx, "entity");
                             ctx.getSource().sendFeedback(of(entity.getEntityName()));
-                            return Command.SINGLE_SUCCESS;
-                        })))
-                .then(literal("entitysummon").then(argument("entitysummon", entitySummon())
-                        .executes(ctx -> {
-                            Identifier entitySummon = getCEntitySummon(ctx, "entitysummon");
-                            ctx.getSource().sendFeedback(of(entitySummon.toString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("gameprofile").then(argument("gameprofile", gameProfile())
@@ -277,12 +260,6 @@ public class ClientArguments implements ClientModInitializer {
                         .executes(ctx -> {
                             String scoreHolder = getCScoreHolder(ctx, "scoreholder");
                             ctx.getSource().sendFeedback(of(scoreHolder));
-                            return Command.SINGLE_SUCCESS;
-                        })))
-                .then(literal("statuseffect").then(argument("statuseffect", statusEffect())
-                        .executes(ctx -> {
-                            StatusEffect statusEffect = getCStatusEffect(ctx, "statuseffect");
-                            ctx.getSource().sendFeedback(statusEffect.getName());
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("swizzle").then(argument("swizzle", swizzle())
