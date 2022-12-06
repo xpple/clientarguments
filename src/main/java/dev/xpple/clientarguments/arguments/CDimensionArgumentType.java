@@ -9,10 +9,10 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.command.CommandSource;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 
 import java.util.Arrays;
@@ -31,7 +31,7 @@ public class CDimensionArgumentType implements ArgumentType<Identifier> {
 
 	public static DimensionArgument getCDimensionArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		Identifier identifier = context.getArgument(name, Identifier.class);
-		RegistryKey<World> registryKey = RegistryKey.of(Registry.WORLD_KEY, identifier);
+		RegistryKey<World> registryKey = RegistryKey.of(RegistryKeys.WORLD, identifier);
 		return Arrays.stream(DimensionArgument.values()).filter(dimension -> dimension.registryKey.equals(registryKey)).findAny().orElseThrow(() -> INVALID_DIMENSION_EXCEPTION.create(identifier));
 	}
 

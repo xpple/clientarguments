@@ -10,9 +10,9 @@ import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -69,7 +69,7 @@ public class CIdentifierArgumentType implements ArgumentType<Identifier> {
 
 	public static EntityAttribute getCAttributeArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
 		Identifier identifier = context.getArgument(argumentName, Identifier.class);
-		return Registry.ATTRIBUTE.getOrEmpty(identifier).orElseThrow(() -> UNKNOWN_ATTRIBUTE_EXCEPTION.create(identifier));
+		return Registries.ATTRIBUTE.getOrEmpty(identifier).orElseThrow(() -> UNKNOWN_ATTRIBUTE_EXCEPTION.create(identifier));
 	}
 
 	public static Identifier getCIdentifier(final CommandContext<FabricClientCommandSource> context, final String name) {

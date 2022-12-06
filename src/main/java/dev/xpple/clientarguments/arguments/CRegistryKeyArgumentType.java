@@ -10,11 +10,12 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandSource;
 import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntry;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 
 import java.util.Arrays;
@@ -48,13 +49,13 @@ public class CRegistryKeyArgumentType<T> implements ArgumentType<RegistryKey<T>>
     }
 
     public static EntityAttribute getCAttribute(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
-        RegistryKey<EntityAttribute> registryKey = CRegistryKeyArgumentType.getKey(context, name, Registry.ATTRIBUTE_KEY, UNKNOWN_ATTRIBUTE_EXCEPTION);
-        return CRegistryKeyArgumentType.getRegistry(context, Registry.ATTRIBUTE_KEY).getOrEmpty(registryKey).orElseThrow(() -> UNKNOWN_ATTRIBUTE_EXCEPTION.create(registryKey.getValue()));
+        RegistryKey<EntityAttribute> registryKey = CRegistryKeyArgumentType.getKey(context, name, RegistryKeys.ATTRIBUTE, UNKNOWN_ATTRIBUTE_EXCEPTION);
+        return CRegistryKeyArgumentType.getRegistry(context, RegistryKeys.ATTRIBUTE).getOrEmpty(registryKey).orElseThrow(() -> UNKNOWN_ATTRIBUTE_EXCEPTION.create(registryKey.getValue()));
     }
 
     public static RegistryEntry<ConfiguredFeature<?, ?>> getCConfiguredFeatureEntry(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
-        RegistryKey<ConfiguredFeature<?, ?>> registryKey = CRegistryKeyArgumentType.getKey(context, name, Registry.CONFIGURED_FEATURE_KEY, INVALID_CONFIGURED_FEATURE_EXCEPTION);
-        return CRegistryKeyArgumentType.getRegistry(context, Registry.CONFIGURED_FEATURE_KEY).getEntry(registryKey).orElseThrow(() -> INVALID_CONFIGURED_FEATURE_EXCEPTION.create(registryKey.getValue()));
+        RegistryKey<ConfiguredFeature<?, ?>> registryKey = CRegistryKeyArgumentType.getKey(context, name, RegistryKeys.CONFIGURED_FEATURE, INVALID_CONFIGURED_FEATURE_EXCEPTION);
+        return CRegistryKeyArgumentType.getRegistry(context, RegistryKeys.CONFIGURED_FEATURE).getEntry(registryKey).orElseThrow(() -> INVALID_CONFIGURED_FEATURE_EXCEPTION.create(registryKey.getValue()));
     }
 
     @Override
