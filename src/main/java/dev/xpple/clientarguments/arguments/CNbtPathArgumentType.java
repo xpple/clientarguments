@@ -24,8 +24,8 @@ import java.util.stream.Stream;
 public class CNbtPathArgumentType implements ArgumentType<CNbtPathArgumentType.NbtPath> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo.bar", "foo[0]", "[0]", "[]", "{foo=bar}");
-	public static final SimpleCommandExceptionType INVALID_PATH_NODE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("carguments.nbtpath.node.invalid"));
-	public static final DynamicCommandExceptionType NOTHING_FOUND_EXCEPTION = new DynamicCommandExceptionType(path -> Text.translatable("carguments.nbtpath.nothing_found", path));
+	public static final SimpleCommandExceptionType INVALID_PATH_NODE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("arguments.nbtpath.node.invalid"));
+	public static final DynamicCommandExceptionType NOTHING_FOUND_EXCEPTION = new DynamicCommandExceptionType(path -> Text.translatable("arguments.nbtpath.nothing_found", path));
 
 	public static CNbtPathArgumentType nbtPath() {
 		return new CNbtPathArgumentType();
@@ -240,9 +240,7 @@ public class CNbtPathArgumentType implements ArgumentType<CNbtPathArgumentType.N
 		}
 
 		default List<NbtElement> getOrInit(List<NbtElement> elements, Supplier<NbtElement> supplier) {
-			return this.process(elements, (current, results) -> {
-				this.getOrInit(current, supplier, results);
-			});
+			return this.process(elements, (current, results) -> this.getOrInit(current, supplier, results));
 		}
 
 		default List<NbtElement> process(List<NbtElement> elements, BiConsumer<NbtElement, List<NbtElement>> action) {
@@ -370,13 +368,13 @@ public class CNbtPathArgumentType implements ArgumentType<CNbtPathArgumentType.N
 		}
 
 		public void get(NbtElement current, List<NbtElement> results) {
-			if (current instanceof AbstractNbtList abstractNbtList) {
+			if (current instanceof AbstractNbtList<?> abstractNbtList) {
 				results.add(abstractNbtList);
 			}
 		}
 
 		public void getOrInit(NbtElement current, Supplier<NbtElement> source, List<NbtElement> results) {
-			if (current instanceof AbstractNbtList abstractNbtList) {
+			if (current instanceof AbstractNbtList<?> abstractNbtList) {
 				if (abstractNbtList.isEmpty()) {
 					NbtElement nbtElement = source.get();
 					if (abstractNbtList.addElement(0, nbtElement)) {

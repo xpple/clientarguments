@@ -83,7 +83,7 @@ import static dev.xpple.clientarguments.arguments.CVec3ArgumentType.*;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
 
 public class ClientArguments implements ClientModInitializer {
-    private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("ccommands.locate.invalid"));
+    private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("commands.locate.invalid"));
 
     @Override
     public void onInitializeClient() {

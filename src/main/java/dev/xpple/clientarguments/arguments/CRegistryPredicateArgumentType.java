@@ -10,7 +10,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.datafixers.util.Either;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.RegistryPredicateArgumentType;
+import net.minecraft.command.CommandSource.SuggestedIdType;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.entry.RegistryEntry;
@@ -31,97 +31,92 @@ public class CRegistryPredicateArgumentType<T> implements ArgumentType<CRegistry
         this.registryRef = registryRef;
     }
 
-    public static <T> RegistryPredicateArgumentType<T> registryPredicate(RegistryKey<? extends Registry<T>> registryRef) {
-        return new RegistryPredicateArgumentType<>(registryRef);
+    public static <T> CRegistryPredicateArgumentType<T> registryPredicate(RegistryKey<? extends Registry<T>> registryRef) {
+        return new CRegistryPredicateArgumentType<>(registryRef);
     }
 
-    public static <T> RegistryPredicate<T> getCPredicate(
-            CommandContext<FabricClientCommandSource> context,
-            String name,
-            RegistryKey<Registry<T>> registryRef,
-            DynamicCommandExceptionType invalidException
-    ) throws CommandSyntaxException {
-        RegistryPredicate<?> registryPredicate = context.getArgument(name, RegistryPredicate.class);
-        Optional<RegistryPredicate<T>> optional = registryPredicate.tryCast(registryRef);
+    public static <T> CRegistryPredicateArgumentType.RegistryPredicate<T> getCPredicate(final CommandContext<FabricClientCommandSource> context, final String name, final RegistryKey<Registry<T>> registryRef, final DynamicCommandExceptionType invalidException) throws CommandSyntaxException {
+        CRegistryPredicateArgumentType.RegistryPredicate<?> registryPredicate = context.getArgument(name, CRegistryPredicateArgumentType.RegistryPredicate.class);
+        Optional<CRegistryPredicateArgumentType.RegistryPredicate<T>> optional = registryPredicate.tryCast(registryRef);
         return optional.orElseThrow(() -> invalidException.create(registryPredicate));
     }
 
-    public RegistryPredicate<T> parse(StringReader stringReader) throws CommandSyntaxException {
+    @Override
+    public CRegistryPredicateArgumentType.RegistryPredicate<T> parse(final StringReader stringReader) throws CommandSyntaxException {
         if (stringReader.canRead() && stringReader.peek() == '#') {
             int i = stringReader.getCursor();
 
             try {
                 stringReader.skip();
                 Identifier identifier = Identifier.fromCommandInput(stringReader);
-                return new TagBased<>(TagKey.of(this.registryRef, identifier));
+                return new CRegistryPredicateArgumentType.TagBased<>(TagKey.of(this.registryRef, identifier));
             } catch (CommandSyntaxException var4) {
                 stringReader.setCursor(i);
                 throw var4;
             }
         } else {
             Identifier identifier2 = Identifier.fromCommandInput(stringReader);
-            return new RegistryKeyBased<>(RegistryKey.of(this.registryRef, identifier2));
+            return new CRegistryPredicateArgumentType.RegistryKeyBased<>(RegistryKey.of(this.registryRef, identifier2));
         }
     }
 
+    @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        Object var4 = context.getSource();
-        return var4 instanceof CommandSource commandSource
-                ? commandSource.listIdSuggestions(this.registryRef, CommandSource.SuggestedIdType.ALL, builder, context)
-                : builder.buildFuture();
+        S s = context.getSource();
+        if (s instanceof CommandSource commandSource) {
+            return commandSource.listIdSuggestions(this.registryRef, SuggestedIdType.ALL, builder, context);
+        }
+        return builder.buildFuture();
     }
 
+    @Override
     public Collection<String> getExamples() {
         return EXAMPLES;
-    }
-
-    record RegistryKeyBased<T>(RegistryKey<T> key) implements RegistryPredicate<T> {
-        @Override
-        public Either<RegistryKey<T>, TagKey<T>> getKey() {
-            return Either.left(this.key);
-        }
-
-        @Override
-        public <E> Optional<RegistryPredicate<E>> tryCast(RegistryKey<? extends Registry<E>> registryRef) {
-            return this.key.tryCast(registryRef).map(RegistryKeyBased::new);
-        }
-
-        public boolean test(RegistryEntry<T> registryEntry) {
-            return registryEntry.matchesKey(this.key);
-        }
-
-        @Override
-        public String asString() {
-            return this.key.getValue().toString();
-        }
     }
 
     public interface RegistryPredicate<T> extends Predicate<RegistryEntry<T>> {
         Either<RegistryKey<T>, TagKey<T>> getKey();
 
-        <E> Optional<RegistryPredicate<E>> tryCast(RegistryKey<? extends Registry<E>> registryRef);
+        <E> Optional<CRegistryPredicateArgumentType.RegistryPredicate<E>> tryCast(RegistryKey<? extends Registry<E>> registryRef);
 
         String asString();
     }
 
-    record TagBased<T>(TagKey<T> key) implements RegistryPredicate<T> {
-        @Override
+    record TagBased<T>(TagKey<T> key) implements CRegistryPredicateArgumentType.RegistryPredicate<T> {
+
         public Either<RegistryKey<T>, TagKey<T>> getKey() {
             return Either.right(this.key);
         }
 
-        @Override
-        public <E> Optional<RegistryPredicate<E>> tryCast(RegistryKey<? extends Registry<E>> registryRef) {
-            return this.key.tryCast(registryRef).map(TagBased::new);
+        public <E> Optional<CRegistryPredicateArgumentType.RegistryPredicate<E>> tryCast(RegistryKey<? extends Registry<E>> registryRef) {
+            return this.key.tryCast(registryRef).map(CRegistryPredicateArgumentType.TagBased::new);
         }
 
         public boolean test(RegistryEntry<T> registryEntry) {
             return registryEntry.isIn(this.key);
         }
 
-        @Override
         public String asString() {
             return "#" + this.key.id();
+        }
+    }
+
+    record RegistryKeyBased<T>(RegistryKey<T> key) implements CRegistryPredicateArgumentType.RegistryPredicate<T> {
+
+        public Either<RegistryKey<T>, TagKey<T>> getKey() {
+            return Either.left(this.key);
+        }
+
+        public <E> Optional<CRegistryPredicateArgumentType.RegistryPredicate<E>> tryCast(RegistryKey<? extends Registry<E>> registryRef) {
+            return this.key.tryCast(registryRef).map(CRegistryPredicateArgumentType.RegistryKeyBased::new);
+        }
+
+        public boolean test(RegistryEntry<T> registryEntry) {
+            return registryEntry.matchesKey(this.key);
+        }
+
+        public String asString() {
+            return this.key.getValue().toString();
         }
     }
 }

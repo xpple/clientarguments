@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public class CScoreboardCriterionArgumentType implements ArgumentType<ScoreboardCriterion> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("trigger", "playerKillCount", "food");
-	public static final DynamicCommandExceptionType INVALID_CRITERION_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("cargument.criteria.invalid", name));
+	public static final DynamicCommandExceptionType INVALID_CRITERION_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("argument.criteria.invalid", name));
 
 	public static CScoreboardCriterionArgumentType scoreboardCriterion() {
 		return new CScoreboardCriterionArgumentType();

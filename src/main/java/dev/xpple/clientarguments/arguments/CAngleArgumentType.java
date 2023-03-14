@@ -16,8 +16,8 @@ import java.util.Collection;
 public class CAngleArgumentType implements ArgumentType<CAngleArgumentType.Angle> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("0", "~", "~-5");
-	public static final SimpleCommandExceptionType INCOMPLETE_ANGLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.angle.incomplete"));
-	public static final SimpleCommandExceptionType INVALID_ANGLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.angle.invalid"));
+	public static final SimpleCommandExceptionType INCOMPLETE_ANGLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.angle.incomplete"));
+	public static final SimpleCommandExceptionType INVALID_ANGLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.angle.invalid"));
 
 	public static CAngleArgumentType angle() {
 		return new CAngleArgumentType();

@@ -16,7 +16,7 @@ import java.util.EnumSet;
 public class CSwizzleArgumentType implements ArgumentType<EnumSet<Direction.Axis>> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("xyz", "x");
-	private static final SimpleCommandExceptionType INVALID_SWIZZLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("carguments.swizzle.invalid"));
+	private static final SimpleCommandExceptionType INVALID_SWIZZLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("arguments.swizzle.invalid"));
 
 	public static CSwizzleArgumentType swizzle() {
 		return new CSwizzleArgumentType();

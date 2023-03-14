@@ -32,7 +32,7 @@ public class CScoreHolderArgumentType implements ArgumentType<CScoreHolderArgume
 	};
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "*", "@e");
-	private static final SimpleCommandExceptionType EMPTY_SCORE_HOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.scoreHolder.empty"));
+	private static final SimpleCommandExceptionType EMPTY_SCORE_HOLDER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.scoreHolder.empty"));
 	final boolean multiple;
 
 	public CScoreHolderArgumentType(boolean multiple) {

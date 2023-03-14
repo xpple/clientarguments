@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public class CScoreboardSlotArgumentType implements ArgumentType<Integer> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("sidebar", "foo.bar");
-	public static final DynamicCommandExceptionType INVALID_SLOT_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("cargument.scoreboardDisplaySlot.invalid", name));
+	public static final DynamicCommandExceptionType INVALID_SLOT_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("argument.scoreboardDisplaySlot.invalid", name));
 
 	public static CScoreboardSlotArgumentType scoreboardSlot() {
 		return new CScoreboardSlotArgumentType();

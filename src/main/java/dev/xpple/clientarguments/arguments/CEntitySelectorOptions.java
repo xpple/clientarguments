@@ -40,14 +40,14 @@ import java.util.function.Predicate;
 public class CEntitySelectorOptions {
 
 	private static final Map<String, SelectorOption> OPTIONS = new HashMap<>();
-	public static final DynamicCommandExceptionType UNKNOWN_OPTION_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("cargument.entity.options.unknown", arg));
-	public static final DynamicCommandExceptionType INAPPLICABLE_OPTION_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("cargument.entity.options.inapplicable", arg));
-	public static final SimpleCommandExceptionType NEGATIVE_DISTANCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.options.distance.negative"));
-	public static final SimpleCommandExceptionType NEGATIVE_LEVEL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.options.level.negative"));
-	public static final SimpleCommandExceptionType TOO_SMALL_LEVEL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.entity.options.limit.toosmall"));
-	public static final DynamicCommandExceptionType IRREVERSIBLE_SORT_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("cargument.entity.options.sort.irreversible", arg));
-	public static final DynamicCommandExceptionType INVALID_MODE_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("cargument.entity.options.mode.invalid", arg));
-	public static final DynamicCommandExceptionType INVALID_TYPE_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("cargument.entity.options.type.invalid", arg));
+	public static final DynamicCommandExceptionType UNKNOWN_OPTION_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("argument.entity.options.unknown", arg));
+	public static final DynamicCommandExceptionType INAPPLICABLE_OPTION_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("argument.entity.options.inapplicable", arg));
+	public static final SimpleCommandExceptionType NEGATIVE_DISTANCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.options.distance.negative"));
+	public static final SimpleCommandExceptionType NEGATIVE_LEVEL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.options.level.negative"));
+	public static final SimpleCommandExceptionType TOO_SMALL_LEVEL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.options.limit.toosmall"));
+	public static final DynamicCommandExceptionType IRREVERSIBLE_SORT_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("argument.entity.options.sort.irreversible", arg));
+	public static final DynamicCommandExceptionType INVALID_MODE_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("argument.entity.options.mode.invalid", arg));
+	public static final DynamicCommandExceptionType INVALID_TYPE_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("argument.entity.options.type.invalid", arg));
 
 	private static void putOption(String id, SelectorHandler handler, Predicate<CEntitySelectorReader> condition, Text description) {
 		OPTIONS.put(id, new SelectorOption(handler, condition, description));
@@ -71,7 +71,7 @@ public class CEntitySelectorOptions {
 				reader2.setSelectsName(true);
 			}
 			reader2.setPredicate(reader -> reader.getName().getString().equals(string) != bl);
-		}, reader -> !reader.selectsName(), Text.translatable("cargument.entity.options.name.description"));
+		}, reader -> !reader.selectsName(), Text.translatable("argument.entity.options.name.description"));
 		CEntitySelectorOptions.putOption("distance", reader -> {
 			int i = reader.getReader().getCursor();
 			NumberRange.FloatRange floatRange = NumberRange.FloatRange.parse(reader.getReader());
@@ -80,7 +80,7 @@ public class CEntitySelectorOptions {
 				throw NEGATIVE_DISTANCE_EXCEPTION.createWithContext(reader.getReader());
 			}
 			reader.setDistance(floatRange);
-		}, reader -> reader.getDistance().isDummy(), Text.translatable("cargument.entity.options.distance.description"));
+		}, reader -> reader.getDistance().isDummy(), Text.translatable("argument.entity.options.distance.description"));
 		CEntitySelectorOptions.putOption("level", reader -> {
 			int i = reader.getReader().getCursor();
 			NumberRange.IntRange intRange = NumberRange.IntRange.parse(reader.getReader());
@@ -90,15 +90,15 @@ public class CEntitySelectorOptions {
 			}
 			reader.setLevelRange(intRange);
 			reader.setIncludesNonPlayers(false);
-		}, reader -> reader.getLevelRange().isDummy(), Text.translatable("cargument.entity.options.level.description"));
-		CEntitySelectorOptions.putOption("x", reader -> reader.setX(reader.getReader().readDouble()), reader -> reader.getX() == null, Text.translatable("cargument.entity.options.x.description"));
-		CEntitySelectorOptions.putOption("y", reader -> reader.setY(reader.getReader().readDouble()), reader -> reader.getY() == null, Text.translatable("cargument.entity.options.y.description"));
-		CEntitySelectorOptions.putOption("z", reader -> reader.setZ(reader.getReader().readDouble()), reader -> reader.getZ() == null, Text.translatable("cargument.entity.options.z.description"));
-		CEntitySelectorOptions.putOption("dx", reader -> reader.setDx(reader.getReader().readDouble()), reader -> reader.getDx() == null, Text.translatable("cargument.entity.options.dx.description"));
-		CEntitySelectorOptions.putOption("dy", reader -> reader.setDy(reader.getReader().readDouble()), reader -> reader.getDy() == null, Text.translatable("cargument.entity.options.dy.description"));
-		CEntitySelectorOptions.putOption("dz", reader -> reader.setDz(reader.getReader().readDouble()), reader -> reader.getDz() == null, Text.translatable("cargument.entity.options.dz.description"));
-		CEntitySelectorOptions.putOption("x_rotation", reader -> reader.setPitchRange(FloatRangeArgument.parse(reader.getReader(), true, MathHelper::wrapDegrees)), reader -> reader.getPitchRange() == FloatRangeArgument.ANY, Text.translatable("cargument.entity.options.x_rotation.description"));
-		CEntitySelectorOptions.putOption("y_rotation", reader -> reader.setYawRange(FloatRangeArgument.parse(reader.getReader(), true, MathHelper::wrapDegrees)), reader -> reader.getYawRange() == FloatRangeArgument.ANY, Text.translatable("cargument.entity.options.y_rotation.description"));
+		}, reader -> reader.getLevelRange().isDummy(), Text.translatable("argument.entity.options.level.description"));
+		CEntitySelectorOptions.putOption("x", reader -> reader.setX(reader.getReader().readDouble()), reader -> reader.getX() == null, Text.translatable("argument.entity.options.x.description"));
+		CEntitySelectorOptions.putOption("y", reader -> reader.setY(reader.getReader().readDouble()), reader -> reader.getY() == null, Text.translatable("argument.entity.options.y.description"));
+		CEntitySelectorOptions.putOption("z", reader -> reader.setZ(reader.getReader().readDouble()), reader -> reader.getZ() == null, Text.translatable("argument.entity.options.z.description"));
+		CEntitySelectorOptions.putOption("dx", reader -> reader.setDx(reader.getReader().readDouble()), reader -> reader.getDx() == null, Text.translatable("argument.entity.options.dx.description"));
+		CEntitySelectorOptions.putOption("dy", reader -> reader.setDy(reader.getReader().readDouble()), reader -> reader.getDy() == null, Text.translatable("argument.entity.options.dy.description"));
+		CEntitySelectorOptions.putOption("dz", reader -> reader.setDz(reader.getReader().readDouble()), reader -> reader.getDz() == null, Text.translatable("argument.entity.options.dz.description"));
+		CEntitySelectorOptions.putOption("x_rotation", reader -> reader.setPitchRange(FloatRangeArgument.parse(reader.getReader(), true, MathHelper::wrapDegrees)), reader -> reader.getPitchRange() == FloatRangeArgument.ANY, Text.translatable("argument.entity.options.x_rotation.description"));
+		CEntitySelectorOptions.putOption("y_rotation", reader -> reader.setYawRange(FloatRangeArgument.parse(reader.getReader(), true, MathHelper::wrapDegrees)), reader -> reader.getYawRange() == FloatRangeArgument.ANY, Text.translatable("argument.entity.options.y_rotation.description"));
 		CEntitySelectorOptions.putOption("limit", reader -> {
 			int i = reader.getReader().getCursor();
 			int j = reader.getReader().readInt();
@@ -108,7 +108,7 @@ public class CEntitySelectorOptions {
 			}
 			reader.setLimit(j);
 			reader.setHasLimit(true);
-		}, reader -> !reader.isSenderOnly() && !reader.hasLimit(), Text.translatable("cargument.entity.options.limit.description"));
+		}, reader -> !reader.isSenderOnly() && !reader.hasLimit(), Text.translatable("argument.entity.options.limit.description"));
 		CEntitySelectorOptions.putOption("sort", reader -> {
 			int i = reader.getReader().getCursor();
 			String string = reader.getReader().readUnquotedString();
@@ -124,7 +124,7 @@ public class CEntitySelectorOptions {
 				}
 			});
 			reader.setHasSorter(true);
-		}, reader -> !reader.isSenderOnly() && !reader.hasSorter(), Text.translatable("cargument.entity.options.sort.description"));
+		}, reader -> !reader.isSenderOnly() && !reader.hasSorter(), Text.translatable("argument.entity.options.sort.description"));
 		CEntitySelectorOptions.putOption("gamemode", reader -> {
 			reader.setSuggestionProvider((builder, consumer) -> {
 				String string = builder.getRemaining().toLowerCase(Locale.ROOT);
@@ -174,7 +174,7 @@ public class CEntitySelectorOptions {
 			} else {
 				reader.setSelectsGameMode(true);
 			}
-		}, reader -> !reader.selectsGameMode(), Text.translatable("cargument.entity.options.gamemode.description"));
+		}, reader -> !reader.selectsGameMode(), Text.translatable("argument.entity.options.gamemode.description"));
 		CEntitySelectorOptions.putOption("team", reader -> {
 			boolean bl = reader.readNegationCharacter();
 			String string = reader.getReader().readUnquotedString();
@@ -191,7 +191,7 @@ public class CEntitySelectorOptions {
 			} else {
 				reader.setSelectsTeam(true);
 			}
-		}, reader -> !reader.selectsTeam(), Text.translatable("cargument.entity.options.team.description"));
+		}, reader -> !reader.selectsTeam(), Text.translatable("argument.entity.options.team.description"));
 		CEntitySelectorOptions.putOption("type", reader -> {
 			reader.setSuggestionProvider((builder, consumer) -> {
 				CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.getIds(), builder, String.valueOf('!'));
@@ -228,17 +228,17 @@ public class CEntitySelectorOptions {
 					reader.setEntityType(entityType);
 				}
 			}
-		}, reader -> !reader.selectsEntityType(), Text.translatable("cargument.entity.options.type.description"));
+		}, reader -> !reader.selectsEntityType(), Text.translatable("argument.entity.options.type.description"));
 		CEntitySelectorOptions.putOption("tag", reader -> {
 			boolean bl = reader.readNegationCharacter();
 			String string = reader.getReader().readUnquotedString();
 			reader.setPredicate(entity -> {
 				if ("".equals(string)) {
-					return entity.getScoreboardTags().isEmpty() != bl;
+					return entity.getCommandTags().isEmpty() != bl;
 				}
-				return entity.getScoreboardTags().contains(string) != bl;
+				return entity.getCommandTags().contains(string) != bl;
 			});
-		}, reader -> true, Text.translatable("cargument.entity.options.tag.description"));
+		}, reader -> true, Text.translatable("argument.entity.options.tag.description"));
 		CEntitySelectorOptions.putOption("nbt", reader -> {
 			boolean bl = reader.readNegationCharacter();
 			NbtCompound nbtCompound = new StringNbtReader(reader.getReader()).parseCompound();
@@ -250,7 +250,7 @@ public class CEntitySelectorOptions {
 				}
 				return NbtHelper.matches(nbtCompound, nbtCompound2, true) != bl;
 			});
-		}, reader -> true, Text.translatable("cargument.entity.options.nbt.description"));
+		}, reader -> true, Text.translatable("argument.entity.options.nbt.description"));
 		CEntitySelectorOptions.putOption("scores", reader -> {
 			StringReader stringReader = reader.getReader();
 			HashMap<String, NumberRange.IntRange> map = Maps.newHashMap();
@@ -292,7 +292,7 @@ public class CEntitySelectorOptions {
 				});
 			}
 			reader.setSelectsScores(true);
-		}, reader -> !reader.selectsScores(), Text.translatable("cargument.entity.options.scores.description"));
+		}, reader -> !reader.selectsScores(), Text.translatable("argument.entity.options.scores.description"));
 		CEntitySelectorOptions.putOption("advancements", reader -> {
 			StringReader stringReader = reader.getReader();
 			Map<Identifier, Predicate<AdvancementProgress>> map = new HashMap<>();
@@ -348,8 +348,8 @@ public class CEntitySelectorOptions {
 				reader.setIncludesNonPlayers(false);
 			}
 			reader.setSelectsAdvancements(true);
-		}, reader -> !reader.selectsAdvancements(), Text.translatable("cargument.entity.options.advancements.description"));
-		CEntitySelectorOptions.putOption("predicate", reader -> reader.setPredicate(entity -> false), reader -> true, Text.translatable("cargument.entity.options.predicate.description"));
+		}, reader -> !reader.selectsAdvancements(), Text.translatable("argument.entity.options.advancements.description"));
+		CEntitySelectorOptions.putOption("predicate", reader -> reader.setPredicate(entity -> false), reader -> true, Text.translatable("argument.entity.options.predicate.description"));
 	}
 
 	public static SelectorHandler getHandler(CEntitySelectorReader reader, String option, int restoreCursor) throws CommandSyntaxException {

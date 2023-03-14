@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 public class CColorArgumentType implements ArgumentType<Formatting> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("red", "green");
-	public static final DynamicCommandExceptionType INVALID_COLOR_EXCEPTION = new DynamicCommandExceptionType(color -> Text.translatable("cargument.color.invalid", color));
+	public static final DynamicCommandExceptionType INVALID_COLOR_EXCEPTION = new DynamicCommandExceptionType(color -> Text.translatable("argument.color.invalid", color));
 
 	public static CColorArgumentType color() {
 		return new CColorArgumentType();

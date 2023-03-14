@@ -7,9 +7,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandSource;
 import net.minecraft.scoreboard.ScoreboardPlayerScore;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
@@ -20,8 +20,8 @@ import java.util.concurrent.CompletableFuture;
 public class COperationArgumentType implements ArgumentType<COperationArgumentType.Operation> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("=", ">", "<");
-	private static final SimpleCommandExceptionType INVALID_OPERATION = new SimpleCommandExceptionType(Text.translatable("carguments.operation.invalid"));
-	private static final SimpleCommandExceptionType DIVISION_ZERO_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("carguments.operation.div0"));
+	private static final SimpleCommandExceptionType INVALID_OPERATION = new SimpleCommandExceptionType(Text.translatable("arguments.operation.invalid"));
+	private static final SimpleCommandExceptionType DIVISION_ZERO_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("arguments.operation.div0"));
 
 	public static COperationArgumentType operation() {
 		return new COperationArgumentType();
@@ -66,45 +66,46 @@ public class COperationArgumentType implements ArgumentType<COperationArgumentTy
 
 	private static IntOperator getIntOperator(String operator) throws CommandSyntaxException {
 		byte code = -1;
-		switch(operator.hashCode()) {
-		case 60:
-			if (operator.equals("<")) {
-				code = 6;
+		switch (operator.hashCode()) {
+			case 60 -> {
+				if (operator.equals("<")) {
+					code = 6;
+				}
 			}
-			break;
-		case 61:
-			if (operator.equals("=")) {
-				code = 0;
+			case 61 -> {
+				if (operator.equals("=")) {
+					code = 0;
+				}
 			}
-			break;
-		case 62:
-			if (operator.equals(">")) {
-				code = 7;
+			case 62 -> {
+				if (operator.equals(">")) {
+					code = 7;
+				}
 			}
-			break;
-		case 1208:
-			if (operator.equals("%=")) {
-				code = 5;
+			case 1208 -> {
+				if (operator.equals("%=")) {
+					code = 5;
+				}
 			}
-			break;
-		case 1363:
-			if (operator.equals("*=")) {
-				code = 3;
+			case 1363 -> {
+				if (operator.equals("*=")) {
+					code = 3;
+				}
 			}
-			break;
-		case 1394:
-			if (operator.equals("+=")) {
-				code = 1;
+			case 1394 -> {
+				if (operator.equals("+=")) {
+					code = 1;
+				}
 			}
-			break;
-		case 1456:
-			if (operator.equals("-=")) {
-				code = 2;
+			case 1456 -> {
+				if (operator.equals("-=")) {
+					code = 2;
+				}
 			}
-			break;
-		case 1518:
-			if (operator.equals("/=")) {
-				code = 4;
+			case 1518 -> {
+				if (operator.equals("/=")) {
+					code = 4;
+				}
 			}
 		}
 

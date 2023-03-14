@@ -15,7 +15,7 @@ import java.util.Collection;
 public class CTextArgumentType implements ArgumentType<Text> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("\"hello world\"", "\"\"", "\"{\"text\":\"hello world\"}", "[\"\"]");
-	public static final DynamicCommandExceptionType INVALID_COMPONENT_EXCEPTION = new DynamicCommandExceptionType(text -> Text.translatable("cargument.component.invalid", text));
+	public static final DynamicCommandExceptionType INVALID_COMPONENT_EXCEPTION = new DynamicCommandExceptionType(text -> Text.translatable("argument.component.invalid", text));
 
 	public static Text getCTextArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, Text.class);

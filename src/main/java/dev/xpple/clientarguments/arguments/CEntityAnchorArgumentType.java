@@ -25,7 +25,7 @@ import java.util.function.BiFunction;
 public class CEntityAnchorArgumentType implements ArgumentType<CEntityAnchorArgumentType.EntityAnchor> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("eyes", "feet");
-	private static final DynamicCommandExceptionType INVALID_ANCHOR_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("cargument.anchor.invalid", name));
+	private static final DynamicCommandExceptionType INVALID_ANCHOR_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("argument.anchor.invalid", name));
 
 	public static CEntityAnchorArgumentType entityAnchor() {
 		return new CEntityAnchorArgumentType();

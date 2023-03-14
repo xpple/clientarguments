@@ -19,8 +19,8 @@ import java.util.concurrent.CompletableFuture;
 
 public class CScoreboardObjectiveArgumentType implements ArgumentType<String> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("foo", "*", "012");
-	private static final DynamicCommandExceptionType UNKNOWN_OBJECTIVE_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("carguments.objective.notFound", name));
-	private static final DynamicCommandExceptionType READONLY_OBJECTIVE_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("carguments.objective.readonly", name));
+	private static final DynamicCommandExceptionType UNKNOWN_OBJECTIVE_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("arguments.objective.notFound", name));
+	private static final DynamicCommandExceptionType READONLY_OBJECTIVE_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("arguments.objective.readonly", name));
 
 	public static CScoreboardObjectiveArgumentType scoreboardObjective() {
 		return new CScoreboardObjectiveArgumentType();

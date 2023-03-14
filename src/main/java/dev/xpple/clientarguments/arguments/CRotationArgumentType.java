@@ -15,7 +15,7 @@ import java.util.Collection;
 public class CRotationArgumentType implements ArgumentType<CPosArgument> {
 
 	private static final Collection<String> EXAMPLES = Arrays.asList("0 0", "~ ~", "~-5 ~5");
-	public static final SimpleCommandExceptionType INCOMPLETE_ROTATION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.rotation.incomplete"));
+	public static final SimpleCommandExceptionType INCOMPLETE_ROTATION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.rotation.incomplete"));
 
 	public static CRotationArgumentType rotation() {
 		return new CRotationArgumentType();

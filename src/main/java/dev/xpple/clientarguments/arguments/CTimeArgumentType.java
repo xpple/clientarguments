@@ -4,7 +4,7 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -12,7 +12,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.TimeArgumentType;
 import net.minecraft.text.Text;
 
 import java.util.Arrays;
@@ -22,9 +21,10 @@ import java.util.concurrent.CompletableFuture;
 public class CTimeArgumentType implements ArgumentType<Integer> {
 
     private static final Collection<String> EXAMPLES = Arrays.asList("0d", "0s", "0t", "0");
-    private static final SimpleCommandExceptionType INVALID_UNIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("cargument.time.invalid_unit"));
-    private static final DynamicCommandExceptionType INVALID_COUNT_EXCEPTION = new DynamicCommandExceptionType(arg -> Text.translatable("cargument.time.invalid_tick_count", arg));
+    private static final SimpleCommandExceptionType INVALID_UNIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.time.invalid_unit"));
+    private static final Dynamic2CommandExceptionType TICK_COUNT_TOO_LOW_EXCEPTION = new Dynamic2CommandExceptionType((value, minimum) -> Text.translatable("argument.time.tick_count_too_low", minimum, value));
     private static final Object2IntMap<String> UNITS = new Object2IntOpenHashMap<>();
+    final int minimum;
 
     static {
         // ticks
@@ -34,8 +34,16 @@ public class CTimeArgumentType implements ArgumentType<Integer> {
         UNITS.put("", 1);
     }
 
-    public static TimeArgumentType time() {
-        return new TimeArgumentType();
+    private CTimeArgumentType(int minimum) {
+        this.minimum = minimum;
+    }
+
+    public static CTimeArgumentType time() {
+        return new CTimeArgumentType(0);
+    }
+
+    public static CTimeArgumentType time(int minimum) {
+        return new CTimeArgumentType(minimum);
     }
 
     public static Integer getCTime(final CommandContext<FabricClientCommandSource> context, final String name) {
@@ -51,13 +59,12 @@ public class CTimeArgumentType implements ArgumentType<Integer> {
             throw INVALID_UNIT_EXCEPTION.create();
         }
         int ticks = Math.round(time * (float) unitFactor);
-        if (ticks < 0) {
-            throw INVALID_COUNT_EXCEPTION.create(ticks);
+        if (ticks < this.minimum) {
+            throw TICK_COUNT_TOO_LOW_EXCEPTION.create(ticks, this.minimum);
         }
         return ticks;
     }
 
-    @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
         StringReader stringReader = new StringReader(builder.getRemaining());
 

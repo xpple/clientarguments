@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class CDimensionArgumentType implements ArgumentType<Identifier> {
 
 	private static final Collection<String> EXAMPLES = Arrays.stream(DimensionArgument.values()).map(DimensionArgument::getName).collect(Collectors.toSet());
-	private static final DynamicCommandExceptionType INVALID_DIMENSION_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("cargument.dimension.invalid", id));
+	private static final DynamicCommandExceptionType INVALID_DIMENSION_EXCEPTION = new DynamicCommandExceptionType(id -> Text.translatable("argument.dimension.invalid", id));
 
 	public static CDimensionArgumentType dimension() {
 		return new CDimensionArgumentType();

@@ -12,7 +12,7 @@ public interface CPosArgument {
 	Vec2f toAbsoluteRotation(FabricClientCommandSource source);
 
 	default BlockPos toAbsoluteBlockPos(FabricClientCommandSource source) {
-		return new BlockPos(this.toAbsolutePos(source));
+		return BlockPos.ofFloored(this.toAbsolutePos(source));
 	}
 
 	boolean isXRelative();
