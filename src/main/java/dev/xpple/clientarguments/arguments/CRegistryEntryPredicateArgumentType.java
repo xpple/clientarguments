@@ -123,10 +123,6 @@ public class CRegistryEntryPredicateArgumentType<T> implements ArgumentType<CReg
         public String asString() {
             return "#" + this.tag.getTag().id();
         }
-
-        public RegistryEntryList.Named<T> tag() {
-            return this.tag;
-        }
     }
 
     private record EntryBased<T>(RegistryEntry.Reference<T> value) implements CRegistryEntryPredicateArgumentType.EntryPredicate<T> {
@@ -150,10 +146,6 @@ public class CRegistryEntryPredicateArgumentType<T> implements ArgumentType<CReg
         @Override
         public String asString() {
             return this.value.registryKey().getValue().toString();
-        }
-
-        public RegistryEntry.Reference<T> value() {
-            return this.value;
         }
     }
 }
