@@ -9,6 +9,7 @@ import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.datafixers.util.Either;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.RegistryEntryArgumentType;
@@ -18,7 +19,6 @@ import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.entry.RegistryEntryList;
 import net.minecraft.registry.tag.TagKey;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
@@ -47,7 +47,7 @@ public class CRegistryEntryPredicateArgumentType<T> implements ArgumentType<CReg
         return new CRegistryEntryPredicateArgumentType<>(registryRef, registryAccess);
     }
 
-    public static <T> CRegistryEntryPredicateArgumentType.EntryPredicate<T> getRegistryEntryPredicate(final CommandContext<ServerCommandSource> context, final String name, RegistryKey<Registry<T>> registryRef) throws CommandSyntaxException {
+    public static <T> CRegistryEntryPredicateArgumentType.EntryPredicate<T> getRegistryEntryPredicate(final CommandContext<FabricClientCommandSource> context, final String name, RegistryKey<Registry<T>> registryRef) throws CommandSyntaxException {
         CRegistryEntryPredicateArgumentType.EntryPredicate<?> entryPredicate = context.getArgument(name, CRegistryEntryPredicateArgumentType.EntryPredicate.class);
         Optional<CRegistryEntryPredicateArgumentType.EntryPredicate<T>> optional = entryPredicate.tryCast(registryRef);
         return optional.orElseThrow(() -> entryPredicate.getEntry().map(entry -> {

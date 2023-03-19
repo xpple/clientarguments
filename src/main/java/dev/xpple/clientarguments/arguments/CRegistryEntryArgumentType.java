@@ -9,6 +9,7 @@ import com.mojang.brigadier.exceptions.Dynamic3CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.enchantment.Enchantment;
@@ -20,7 +21,6 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
@@ -51,7 +51,7 @@ public class CRegistryEntryArgumentType<T> implements ArgumentType<RegistryEntry
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> RegistryEntry.Reference<T> getCRegistryEntry(CommandContext<ServerCommandSource> context, String name, RegistryKey<Registry<T>> registryRef) throws CommandSyntaxException {
+    public static <T> RegistryEntry.Reference<T> getCRegistryEntry(CommandContext<FabricClientCommandSource> context, String name, RegistryKey<Registry<T>> registryRef) throws CommandSyntaxException {
         RegistryEntry.Reference<T> reference = (RegistryEntry.Reference<T>) context.getArgument(name, RegistryEntry.Reference.class);
         RegistryKey<?> registryKey = reference.registryKey();
         if (registryKey.isOf(registryRef)) {
@@ -60,23 +60,23 @@ public class CRegistryEntryArgumentType<T> implements ArgumentType<RegistryEntry
         throw INVALID_TYPE_EXCEPTION.create(registryKey.getValue(), registryKey.getRegistry(), registryRef.getValue());
     }
 
-    public static RegistryEntry.Reference<EntityAttribute> getCEntityAttribute(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static RegistryEntry.Reference<EntityAttribute> getCEntityAttribute(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
         return getCRegistryEntry(context, name, RegistryKeys.ATTRIBUTE);
     }
 
-    public static RegistryEntry.Reference<ConfiguredFeature<?, ?>> getCConfiguredFeature(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static RegistryEntry.Reference<ConfiguredFeature<?, ?>> getCConfiguredFeature(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
         return getCRegistryEntry(context, name, RegistryKeys.CONFIGURED_FEATURE);
     }
 
-    public static RegistryEntry.Reference<Structure> getCStructure(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static RegistryEntry.Reference<Structure> getCStructure(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
         return getCRegistryEntry(context, name, RegistryKeys.STRUCTURE);
     }
 
-    public static RegistryEntry.Reference<EntityType<?>> getCEntityType(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static RegistryEntry.Reference<EntityType<?>> getCEntityType(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
         return getCRegistryEntry(context, name, RegistryKeys.ENTITY_TYPE);
     }
 
-    public static RegistryEntry.Reference<EntityType<?>> getCSummonableEntityType(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static RegistryEntry.Reference<EntityType<?>> getCSummonableEntityType(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
         RegistryEntry.Reference<EntityType<?>> lv = getCRegistryEntry(context, name, RegistryKeys.ENTITY_TYPE);
         if (lv.value().isSummonable()) {
             return lv;
@@ -84,11 +84,11 @@ public class CRegistryEntryArgumentType<T> implements ArgumentType<RegistryEntry
         throw NOT_SUMMONABLE_EXCEPTION.create(lv.registryKey().getValue().toString());
     }
 
-    public static RegistryEntry.Reference<StatusEffect> getCStatusEffect(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static RegistryEntry.Reference<StatusEffect> getCStatusEffect(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
         return getCRegistryEntry(context, name, RegistryKeys.STATUS_EFFECT);
     }
 
-    public static RegistryEntry.Reference<Enchantment> getCEnchantment(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
+    public static RegistryEntry.Reference<Enchantment> getCEnchantment(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
         return getCRegistryEntry(context, name, RegistryKeys.ENCHANTMENT);
     }
 
