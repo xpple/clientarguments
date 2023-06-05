@@ -10,6 +10,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.StringIdentifiable;
@@ -26,9 +27,18 @@ public class CEnumArgumentType<T extends Enum<T> & StringIdentifiable> implement
     private final Codec<T> codec;
     private final Supplier<T[]> valuesSupplier;
 
-    public CEnumArgumentType(Codec<T> codec, Supplier<T[]> valuesSupplier) {
+    private CEnumArgumentType(Codec<T> codec, Supplier<T[]> valuesSupplier) {
         this.codec = codec;
         this.valuesSupplier = valuesSupplier;
+    }
+
+    public static <T extends Enum<T> & StringIdentifiable> CEnumArgumentType<T> enumArg(Class<T> enumClass) {
+        return new CEnumArgumentType<>(StringIdentifiable.createCodec(enumClass::getEnumConstants), enumClass::getEnumConstants);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Enum<T> & StringIdentifiable> T getEnum(CommandContext<FabricClientCommandSource> context, String name) {
+        return (T) context.getArgument(name, Enum.class);
     }
 
     public T parse(final StringReader stringReader) throws CommandSyntaxException {
