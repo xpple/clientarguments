@@ -74,8 +74,8 @@ public class CEntitySelectorOptions {
 		}, reader -> !reader.selectsName(), Text.translatable("argument.entity.options.name.description"));
 		CEntitySelectorOptions.putOption("distance", reader -> {
 			int i = reader.getReader().getCursor();
-			NumberRange.FloatRange floatRange = NumberRange.FloatRange.parse(reader.getReader());
-			if (floatRange.getMin() != null && floatRange.getMin() < 0.0 || floatRange.getMax() != null && floatRange.getMax() < 0.0) {
+			NumberRange.DoubleRange floatRange = NumberRange.DoubleRange.parse(reader.getReader());
+			if (floatRange.min().isPresent() && floatRange.min().get() < 0.0 || floatRange.max().isPresent() && floatRange.max().get() < 0.0) {
 				reader.getReader().setCursor(i);
 				throw NEGATIVE_DISTANCE_EXCEPTION.createWithContext(reader.getReader());
 			}
@@ -84,7 +84,7 @@ public class CEntitySelectorOptions {
 		CEntitySelectorOptions.putOption("level", reader -> {
 			int i = reader.getReader().getCursor();
 			NumberRange.IntRange intRange = NumberRange.IntRange.parse(reader.getReader());
-			if (intRange.getMin() != null && intRange.getMin() < 0 || intRange.getMax() != null && intRange.getMax() < 0) {
+			if (intRange.min().isPresent() && intRange.min().get() < 0 || intRange.max().isPresent() && intRange.max().get() < 0) {
 				reader.getReader().setCursor(i);
 				throw NEGATIVE_LEVEL_EXCEPTION.createWithContext(reader.getReader());
 			}

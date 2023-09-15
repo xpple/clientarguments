@@ -28,6 +28,7 @@ import net.minecraft.particle.ParticleEffect;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.scoreboard.ScoreboardCriterion;
+import net.minecraft.scoreboard.ScoreboardDisplaySlot;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.test.TestFunction;
@@ -252,8 +253,8 @@ public class ClientArguments implements ClientModInitializer {
                         })))
                 .then(literal("scoreboardslot").then(argument("scoreboardslot", scoreboardSlot())
                         .executes(ctx -> {
-                            int scoreboardSlot = getCScoreboardSlot(ctx, "scoreboardslot");
-                            ctx.getSource().sendFeedback(of(scoreboardSlot));
+                            ScoreboardDisplaySlot scoreboardSlot = getCScoreboardSlot(ctx, "scoreboardslot");
+                            ctx.getSource().sendFeedback(of(scoreboardSlot.asString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("scoreholder").then(argument("scoreholder", scoreHolder())

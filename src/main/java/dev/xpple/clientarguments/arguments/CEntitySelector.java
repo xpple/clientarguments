@@ -43,7 +43,7 @@ public class CEntitySelector {
 	private final int limit;
 	private final boolean includesNonPlayers;
 	private final Predicate<Entity> basePredicate;
-	private final NumberRange.FloatRange distance;
+	private final NumberRange.DoubleRange distance;
 	private final Function<Vec3d, Vec3d> positionOffset;
 	@Nullable
 	private final Box box;
@@ -56,7 +56,7 @@ public class CEntitySelector {
 	private final TypeFilter<Entity, ?> entityFilter;
 	private final boolean usesAt;
 
-	public CEntitySelector(int count, boolean includesNonPlayers, Predicate<Entity> basePredicate, NumberRange.FloatRange distance, Function<Vec3d, Vec3d> positionOffset, @Nullable Box box, BiConsumer<Vec3d, List<? extends Entity>> sorter, boolean senderOnly, @Nullable String playerName, @Nullable UUID uuid, @Nullable EntityType<?> type, boolean usesAt) {
+	public CEntitySelector(int count, boolean includesNonPlayers, Predicate<Entity> basePredicate, NumberRange.DoubleRange distance, Function<Vec3d, Vec3d> positionOffset, @Nullable Box box, BiConsumer<Vec3d, List<? extends Entity>> sorter, boolean senderOnly, @Nullable String playerName, @Nullable UUID uuid, @Nullable EntityType<?> type, boolean usesAt) {
 		this.limit = count;
 		this.includesNonPlayers = includesNonPlayers;
 		this.basePredicate = basePredicate;

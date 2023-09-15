@@ -5,9 +5,9 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
-import net.minecraft.advancement.Advancement;
+import net.minecraft.advancement.PlacedAdvancement;
 import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeManager;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.registry.Registries;
@@ -28,16 +28,16 @@ public class CIdentifierArgumentType implements ArgumentType<Identifier> {
 		return new CIdentifierArgumentType();
 	}
 
-	public static Advancement getCAdvancementArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
+	public static PlacedAdvancement getCAdvancementArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
 		Identifier identifier = context.getArgument(argumentName, Identifier.class);
-		Advancement advancement = context.getSource().getClient().getNetworkHandler().getAdvancementHandler().getManager().get(identifier);
+		PlacedAdvancement advancement = context.getSource().getClient().getNetworkHandler().getAdvancementHandler().getManager().get(identifier);
 		if (advancement == null) {
 			throw UNKNOWN_ADVANCEMENT_EXCEPTION.create(identifier);
 		}
 		return advancement;
 	}
 
-	public static Recipe<?> getCRecipeArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
+	public static RecipeEntry<?> getCRecipeArgument(CommandContext<FabricClientCommandSource> context, String argumentName) throws CommandSyntaxException {
 		RecipeManager recipeManager = context.getSource().getWorld().getRecipeManager();
 		Identifier identifier = context.getArgument(argumentName, Identifier.class);
 		return recipeManager.get(identifier).orElseThrow(() -> UNKNOWN_RECIPE_EXCEPTION.create(identifier));

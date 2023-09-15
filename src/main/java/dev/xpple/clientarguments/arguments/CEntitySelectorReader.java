@@ -41,7 +41,7 @@ public class CEntitySelectorReader {
 	private final boolean atAllowed;
 	private int limit;
 	private boolean includesNonPlayers;
-	private NumberRange.FloatRange distance = NumberRange.FloatRange.ANY;
+	private NumberRange.DoubleRange distance = NumberRange.DoubleRange.ANY;
 	private NumberRange.IntRange levelRange = NumberRange.IntRange.ANY;
 	@Nullable
 	private Double x;
@@ -94,8 +94,8 @@ public class CEntitySelectorReader {
 		Box box;
 		if (this.dx != null || this.dy != null || this.dz != null) {
 			box = this.createBox(this.dx == null ? 0.0 : this.dx, this.dy == null ? 0.0 : this.dy, this.dz == null ? 0.0 : this.dz);
-		} else if (this.distance.getMax() != null) {
-			double d = this.distance.getMax();
+		} else if (this.distance.max().isPresent()) {
+			double d = this.distance.max().get();
 			box = new Box(-d, -d, -d, d + 1.0, d + 1.0, d + 1.0);
 		} else {
 			box = null;
@@ -135,8 +135,8 @@ public class CEntitySelectorReader {
 	}
 
 	private Predicate<Entity> rotationPredicate(FloatRangeArgument angleRange, ToDoubleFunction<Entity> entityToAngle) {
-		double d = MathHelper.wrapDegrees(angleRange.getMin() == null ? 0.0f : angleRange.getMin());
-		double e = MathHelper.wrapDegrees(angleRange.getMax() == null ? 359.0f : angleRange.getMax());
+		double d = MathHelper.wrapDegrees(angleRange.min() == null ? 0.0f : angleRange.min());
+		double e = MathHelper.wrapDegrees(angleRange.max() == null ? 359.0f : angleRange.max());
 		return entity -> {
 			double f = MathHelper.wrapDegrees(entityToAngle.applyAsDouble(entity));
 			if (d > e) {
@@ -274,11 +274,11 @@ public class CEntitySelectorReader {
 		this.predicate = this.predicate.and(predicate);
 	}
 
-	public NumberRange.FloatRange getDistance() {
+	public NumberRange.DoubleRange getDistance() {
 		return this.distance;
 	}
 
-	public void setDistance(NumberRange.FloatRange distance) {
+	public void setDistance(NumberRange.DoubleRange distance) {
 		this.distance = distance;
 	}
 
