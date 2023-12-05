@@ -8,6 +8,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextCodecs;
+import net.minecraft.util.JsonReaderUtils;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,12 +30,8 @@ public class CTextArgumentType implements ArgumentType<Text> {
 	@Override
 	public Text parse(final StringReader stringReader) throws CommandSyntaxException {
 		try {
-			Text text = Text.Serializer.fromJson(stringReader);
-			if (text == null) {
-				throw INVALID_COMPONENT_EXCEPTION.createWithContext(stringReader, "empty");
-			}
-			return text;
-		} catch (JsonParseException var4) {
+			return JsonReaderUtils.parse(stringReader, TextCodecs.CODEC);
+		} catch (Exception var4) {
 			String string = var4.getCause() != null ? var4.getCause().getMessage() : var4.getMessage();
 			throw INVALID_COMPONENT_EXCEPTION.createWithContext(stringReader, string);
 		}
