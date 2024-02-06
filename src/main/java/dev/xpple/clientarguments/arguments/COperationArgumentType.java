@@ -9,7 +9,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandSource;
-import net.minecraft.scoreboard.ScoreboardPlayerScore;
+import net.minecraft.scoreboard.ScoreboardScore;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.MathHelper;
 
@@ -134,15 +134,16 @@ public class COperationArgumentType implements ArgumentType<COperationArgumentTy
 
 	@FunctionalInterface
 	public interface Operation {
-		void apply(ScoreboardPlayerScore a, ScoreboardPlayerScore b) throws CommandSyntaxException;
+		void apply(ScoreboardScore a, ScoreboardScore b) throws CommandSyntaxException;
 	}
 
 	@FunctionalInterface
 	private interface IntOperator extends Operation {
 		int apply(int a, int b) throws CommandSyntaxException;
 
-		default void apply(ScoreboardPlayerScore scoreboardPlayerScore, ScoreboardPlayerScore scoreboardPlayerScore2) throws CommandSyntaxException {
-			scoreboardPlayerScore.setScore(this.apply(scoreboardPlayerScore.getScore(), scoreboardPlayerScore2.getScore()));
+		@Override
+		default void apply(ScoreboardScore score1, ScoreboardScore score2) throws CommandSyntaxException {
+			score1.setScore(this.apply(score1.getScore(), score2.getScore()));
 		}
 	}
 }

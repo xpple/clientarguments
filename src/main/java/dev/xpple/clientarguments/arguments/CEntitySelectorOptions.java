@@ -26,9 +26,9 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.scoreboard.AbstractTeam;
+import net.minecraft.scoreboard.ReadableScoreboardScore;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.scoreboard.ScoreboardPlayerScore;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
@@ -74,8 +74,8 @@ public class CEntitySelectorOptions {
 		}, reader -> !reader.selectsName(), Text.translatable("argument.entity.options.name.description"));
 		CEntitySelectorOptions.putOption("distance", reader -> {
 			int i = reader.getReader().getCursor();
-			NumberRange.FloatRange floatRange = NumberRange.FloatRange.parse(reader.getReader());
-			if (floatRange.getMin() != null && floatRange.getMin() < 0.0 || floatRange.getMax() != null && floatRange.getMax() < 0.0) {
+			NumberRange.DoubleRange floatRange = NumberRange.DoubleRange.parse(reader.getReader());
+			if (floatRange.min().isPresent() && floatRange.min().get() < 0.0 || floatRange.max().isPresent() && floatRange.max().get() < 0.0) {
 				reader.getReader().setCursor(i);
 				throw NEGATIVE_DISTANCE_EXCEPTION.createWithContext(reader.getReader());
 			}
@@ -84,7 +84,7 @@ public class CEntitySelectorOptions {
 		CEntitySelectorOptions.putOption("level", reader -> {
 			int i = reader.getReader().getCursor();
 			NumberRange.IntRange intRange = NumberRange.IntRange.parse(reader.getReader());
-			if (intRange.getMin() != null && intRange.getMin() < 0 || intRange.getMax() != null && intRange.getMax() < 0) {
+			if (intRange.min().isPresent() && intRange.min().get() < 0 || intRange.max().isPresent() && intRange.max().get() < 0) {
 				reader.getReader().setCursor(i);
 				throw NEGATIVE_LEVEL_EXCEPTION.createWithContext(reader.getReader());
 			}
@@ -272,21 +272,18 @@ public class CEntitySelectorOptions {
 			if (!map.isEmpty()) {
 				reader.setPredicate(entity -> {
 					Scoreboard scoreboard = entity.getWorld().getScoreboard();
-					String string = entity.getEntityName();
 					for (Map.Entry<String, NumberRange.IntRange> entry : map.entrySet()) {
 						ScoreboardObjective scoreboardObjective = scoreboard.getNullableObjective(entry.getKey());
 						if (scoreboardObjective == null) {
 							return false;
 						}
-						if (!scoreboard.playerHasObjective(string, scoreboardObjective)) {
+						ReadableScoreboardScore score = scoreboard.getScore(entity, scoreboardObjective);
+						if (score == null) {
 							return false;
 						}
-						ScoreboardPlayerScore scoreboardPlayerScore = scoreboard.getPlayerScore(string, scoreboardObjective);
-						int i = scoreboardPlayerScore.getScore();
-						if (entry.getValue().test(i)) {
-							continue;
+						if (!entry.getValue().test(score.getScore())) {
+							return false;
 						}
-						return false;
 					}
 					return true;
 				});

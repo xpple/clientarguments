@@ -27,7 +27,9 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.scoreboard.ScoreHolder;
 import net.minecraft.scoreboard.ScoreboardCriterion;
+import net.minecraft.scoreboard.ScoreboardDisplaySlot;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.test.TestFunction;
@@ -162,7 +164,7 @@ public class ClientArguments implements ClientModInitializer {
                 .then(literal("entity").then(argument("entity", entity())
                         .executes(ctx -> {
                             Entity entity = getCEntity(ctx, "entity");
-                            ctx.getSource().sendFeedback(of(entity.getEntityName()));
+                            ctx.getSource().sendFeedback(of(entity.getNameForScoreboard()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("gameprofile").then(argument("gameprofile", gameProfile())
@@ -252,14 +254,14 @@ public class ClientArguments implements ClientModInitializer {
                         })))
                 .then(literal("scoreboardslot").then(argument("scoreboardslot", scoreboardSlot())
                         .executes(ctx -> {
-                            int scoreboardSlot = getCScoreboardSlot(ctx, "scoreboardslot");
-                            ctx.getSource().sendFeedback(of(scoreboardSlot));
+                            ScoreboardDisplaySlot scoreboardSlot = getCScoreboardSlot(ctx, "scoreboardslot");
+                            ctx.getSource().sendFeedback(of(scoreboardSlot.asString()));
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("scoreholder").then(argument("scoreholder", scoreHolder())
                         .executes(ctx -> {
-                            String scoreHolder = getCScoreHolder(ctx, "scoreholder");
-                            ctx.getSource().sendFeedback(of(scoreHolder));
+                            ScoreHolder scoreHolder = getCScoreHolder(ctx, "scoreholder");
+                            ctx.getSource().sendFeedback(scoreHolder.getDisplayName());
                             return Command.SINGLE_SUCCESS;
                         })))
                 .then(literal("swizzle").then(argument("swizzle", swizzle())

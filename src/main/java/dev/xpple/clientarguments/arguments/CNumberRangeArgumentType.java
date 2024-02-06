@@ -39,17 +39,17 @@ public interface CNumberRangeArgumentType<T extends NumberRange<?>> extends Argu
 		}
 	}
 
-	class FloatRangeArgumentType implements CNumberRangeArgumentType<NumberRange.FloatRange> {
+	class FloatRangeArgumentType implements CNumberRangeArgumentType<NumberRange.DoubleRange> {
 
 		private static final Collection<String> EXAMPLES = Arrays.asList("0..5.2", "0", "-5.4", "-100.76..", "..100");
 
-		public static NumberRange.FloatRange getCRangeArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
-			return context.getArgument(name, NumberRange.FloatRange.class);
+		public static NumberRange.DoubleRange getCRangeArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
+			return context.getArgument(name, NumberRange.DoubleRange.class);
 		}
 
 		@Override
-		public NumberRange.FloatRange parse(final StringReader stringReader) throws CommandSyntaxException {
-			return NumberRange.FloatRange.parse(stringReader);
+		public NumberRange.DoubleRange parse(final StringReader stringReader) throws CommandSyntaxException {
+			return NumberRange.DoubleRange.parse(stringReader);
 		}
 
 		@Override
