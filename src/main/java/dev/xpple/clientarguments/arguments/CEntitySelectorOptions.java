@@ -11,8 +11,6 @@ import net.minecraft.advancement.criterion.CriterionProgress;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.command.EntitySelectorReader;
 import net.minecraft.command.FloatRangeArgument;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -116,10 +114,10 @@ public class CEntitySelectorOptions {
             reader.setSuggestionProvider((builder, consumer) -> CommandSource.suggestMatching(Arrays.asList("nearest", "furthest", "random", "arbitrary"), builder));
 
             reader.setSorter(switch (string) {
-				case "nearest" -> EntitySelectorReader.NEAREST;
-				case "furthest" -> EntitySelectorReader.FURTHEST;
-				case "random" -> EntitySelectorReader.RANDOM;
-				case "arbitrary" -> EntitySelector.ARBITRARY;
+				case "nearest" -> CEntitySelectorReader.NEAREST;
+				case "furthest" -> CEntitySelectorReader.FURTHEST;
+				case "random" -> CEntitySelectorReader.RANDOM;
+				case "arbitrary" -> CEntitySelector.ARBITRARY;
 				default -> {
 					reader.getReader().setCursor(cursor);
 					throw IRREVERSIBLE_SORT_EXCEPTION.createWithContext(reader.getReader(), string);

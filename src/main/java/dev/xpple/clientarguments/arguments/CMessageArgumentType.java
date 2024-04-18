@@ -6,7 +6,6 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.EntitySelectorReader;
 import net.minecraft.command.argument.SignedArgumentType;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
@@ -95,7 +94,7 @@ public class CMessageArgumentType implements SignedArgumentType<CMessageArgument
 							entitySelector = entitySelectorReader.read();
 							break;
 						} catch (CommandSyntaxException var8) {
-							if (var8.getType() != EntitySelectorReader.MISSING_EXCEPTION && var8.getType() != EntitySelectorReader.UNKNOWN_SELECTOR_EXCEPTION) {
+							if (var8.getType() != CEntitySelectorReader.MISSING_EXCEPTION && var8.getType() != CEntitySelectorReader.UNKNOWN_SELECTOR_EXCEPTION) {
 								throw var8;
 							}
 
