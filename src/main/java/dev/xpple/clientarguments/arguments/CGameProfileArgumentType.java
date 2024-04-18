@@ -1,5 +1,6 @@
 package dev.xpple.clientarguments.arguments;
 
+import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -9,9 +10,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.command.CommandSource;
 import net.minecraft.text.Text;
 
@@ -19,7 +18,6 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class CGameProfileArgumentType implements ArgumentType<CGameProfileArgumentType.GameProfileArgument> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "dd12be42-52a9-4a91-a8a1-11c01849e498", "@e");
 	public static final SimpleCommandExceptionType UNKNOWN_PLAYER_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.player.unknown"));
 
@@ -27,7 +25,7 @@ public class CGameProfileArgumentType implements ArgumentType<CGameProfileArgume
 		return new CGameProfileArgumentType();
 	}
 
-	public static Collection<GameProfile> getCProfileArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Collection<GameProfile> getProfileArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		return context.getArgument(name, GameProfileArgument.class).getNames(context.getSource());
 	}
 
@@ -37,23 +35,12 @@ public class CGameProfileArgumentType implements ArgumentType<CGameProfileArgume
 			CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(stringReader);
 			CEntitySelector entitySelector = entitySelectorReader.read();
 			if (entitySelector.includesNonPlayers()) {
-				throw CEntityArgumentType.PLAYER_SELECTOR_HAS_ENTITIES_EXCEPTION.create();
-			} else {
-				return new SelectorBacked(entitySelector);
+				throw CEntityArgumentType.PLAYER_SELECTOR_HAS_ENTITIES_EXCEPTION.createWithContext(stringReader);
 			}
-		} else {
-			int cursor = stringReader.getCursor();
-
-			while (stringReader.canRead() && stringReader.peek() != ' ') {
-				stringReader.skip();
-			}
-
-			String string = stringReader.getString().substring(cursor, stringReader.getCursor());
-			return source -> Collections.singleton(MinecraftClient.getInstance().getNetworkHandler().getPlayerList().stream()
-					.map(PlayerListEntry::getProfile)
-					.filter(profile -> profile.getName().equals(string))
-					.findFirst().orElseThrow(UNKNOWN_PLAYER_EXCEPTION::create));
+			return new CGameProfileArgumentType.SelectorBacked(entitySelector);
 		}
+
+		throw UNKNOWN_PLAYER_EXCEPTION.create();
 	}
 
 	@Override
@@ -84,26 +71,25 @@ public class CGameProfileArgumentType implements ArgumentType<CGameProfileArgume
 	}
 
 	public static class SelectorBacked implements GameProfileArgument {
-
 		private final CEntitySelector selector;
 
 		public SelectorBacked(CEntitySelector selector) {
 			this.selector = selector;
 		}
 
-		public Collection<GameProfile> getNames(FabricClientCommandSource clientCommandSource) throws CommandSyntaxException {
-			List<AbstractClientPlayerEntity> list = this.selector.getPlayers(clientCommandSource);
+		@Override
+		public Collection<GameProfile> getNames(FabricClientCommandSource fabricClientCommandSource) throws CommandSyntaxException {
+			List<AbstractClientPlayerEntity> list = this.selector.getPlayers(fabricClientCommandSource);
 			if (list.isEmpty()) {
 				throw CEntityArgumentType.PLAYER_NOT_FOUND_EXCEPTION.create();
-			} else {
-				List<GameProfile> profiles = new ArrayList<>();
-
-				for (AbstractClientPlayerEntity abstractPlayer : list) {
-					profiles.add(abstractPlayer.getGameProfile());
-				}
-
-				return profiles;
 			}
+			List<GameProfile> list2 = Lists.newArrayList();
+
+			for (AbstractClientPlayerEntity abstractClientPlayerEntity : list) {
+				list2.add(abstractClientPlayerEntity.getGameProfile());
+			}
+
+			return list2;
 		}
 	}
 }

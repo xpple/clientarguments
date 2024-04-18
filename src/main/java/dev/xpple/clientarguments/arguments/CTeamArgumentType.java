@@ -18,15 +18,14 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public class CTeamArgumentType implements ArgumentType<String> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("foo", "123");
-	private static final DynamicCommandExceptionType UNKNOWN_TEAM_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("team.notFound", name));
+	private static final DynamicCommandExceptionType UNKNOWN_TEAM_EXCEPTION = new DynamicCommandExceptionType(name -> Text.stringifiedTranslatable("team.notFound", name));
 
 	public static CTeamArgumentType team() {
 		return new CTeamArgumentType();
 	}
 
-	public static Team getCTeam(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static Team getTeam(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		String string = context.getArgument(name, String.class);
 		Scoreboard scoreboard = context.getSource().getWorld().getScoreboard();
 		Team team = scoreboard.getTeam(string);

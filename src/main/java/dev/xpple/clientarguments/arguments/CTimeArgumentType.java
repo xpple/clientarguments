@@ -19,10 +19,9 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public class CTimeArgumentType implements ArgumentType<Integer> {
-
     private static final Collection<String> EXAMPLES = Arrays.asList("0d", "0s", "0t", "0");
     private static final SimpleCommandExceptionType INVALID_UNIT_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.time.invalid_unit"));
-    private static final Dynamic2CommandExceptionType TICK_COUNT_TOO_LOW_EXCEPTION = new Dynamic2CommandExceptionType((value, minimum) -> Text.translatable("argument.time.tick_count_too_low", minimum, value));
+    private static final Dynamic2CommandExceptionType TICK_COUNT_TOO_LOW_EXCEPTION = new Dynamic2CommandExceptionType((value, minimum) -> Text.stringifiedTranslatable("argument.time.tick_count_too_low", minimum, value));
     private static final Object2IntMap<String> UNITS = new Object2IntOpenHashMap<>();
     final int minimum;
 
@@ -46,25 +45,26 @@ public class CTimeArgumentType implements ArgumentType<Integer> {
         return new CTimeArgumentType(minimum);
     }
 
-    public static Integer getCTime(final CommandContext<FabricClientCommandSource> context, final String name) {
+    public static Integer getTime(final CommandContext<FabricClientCommandSource> context, final String name) {
         return context.getArgument(name, Integer.class);
     }
 
     @Override
     public Integer parse(final StringReader stringReader) throws CommandSyntaxException {
-        float time = stringReader.readFloat();
-        String unit = stringReader.readUnquotedString();
-        int unitFactor = UNITS.getOrDefault(unit, 0);
-        if (unitFactor == 0) {
-            throw INVALID_UNIT_EXCEPTION.create();
+        float f = stringReader.readFloat();
+        String string = stringReader.readUnquotedString();
+        int i = UNITS.getOrDefault(string, 0);
+        if (i == 0) {
+            throw INVALID_UNIT_EXCEPTION.createWithContext(stringReader);
         }
-        int ticks = Math.round(time * (float) unitFactor);
-        if (ticks < this.minimum) {
-            throw TICK_COUNT_TOO_LOW_EXCEPTION.create(ticks, this.minimum);
+        int j = Math.round(f * (float) i);
+        if (j < this.minimum) {
+            throw TICK_COUNT_TOO_LOW_EXCEPTION.createWithContext(stringReader, j, this.minimum);
         }
-        return ticks;
+        return j;
     }
 
+    @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
         StringReader stringReader = new StringReader(builder.getRemaining());
 

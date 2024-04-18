@@ -17,26 +17,28 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public class CScoreboardSlotArgumentType implements ArgumentType<ScoreboardDisplaySlot> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("sidebar", "foo.bar");
-	public static final DynamicCommandExceptionType INVALID_SLOT_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("argument.scoreboardDisplaySlot.invalid", name));
+	public static final DynamicCommandExceptionType INVALID_SLOT_EXCEPTION = new DynamicCommandExceptionType(name -> Text.stringifiedTranslatable("argument.scoreboardDisplaySlot.invalid", name));
+
+	private CScoreboardSlotArgumentType() {
+	}
 
 	public static CScoreboardSlotArgumentType scoreboardSlot() {
 		return new CScoreboardSlotArgumentType();
 	}
 
-	public static ScoreboardDisplaySlot getCScoreboardSlot(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static ScoreboardDisplaySlot getScoreboardSlot(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, ScoreboardDisplaySlot.class);
 	}
 
 	@Override
 	public ScoreboardDisplaySlot parse(final StringReader stringReader) throws CommandSyntaxException {
 		String string = stringReader.readUnquotedString();
-		ScoreboardDisplaySlot slotId = ScoreboardDisplaySlot.CODEC.byId(string);
-		if (slotId == null) {
-			throw INVALID_SLOT_EXCEPTION.create(string);
+		ScoreboardDisplaySlot scoreboardDisplaySlot = ScoreboardDisplaySlot.CODEC.byId(string);
+		if (scoreboardDisplaySlot == null) {
+			throw INVALID_SLOT_EXCEPTION.createWithContext(stringReader, string);
 		}
-		return slotId;
+		return scoreboardDisplaySlot;
 	}
 
 	@Override

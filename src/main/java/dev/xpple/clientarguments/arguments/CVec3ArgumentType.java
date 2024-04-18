@@ -16,11 +16,9 @@ import net.minecraft.util.math.Vec3d;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class CVec3ArgumentType implements ArgumentType<CPosArgument> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("0 0 0", "~ ~ ~", "^ ^ ^", "^1 ^ ^-5", "0.1 -0.5 .9", "~0.5 ~1 ~-5");
 	public static final SimpleCommandExceptionType INCOMPLETE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.pos3d.incomplete"));
 	public static final SimpleCommandExceptionType MIXED_COORDINATE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.pos.mixed"));
@@ -38,11 +36,11 @@ public class CVec3ArgumentType implements ArgumentType<CPosArgument> {
 		return new CVec3ArgumentType(centerIntegers);
 	}
 
-	public static Vec3d getCVec3(CommandContext<FabricClientCommandSource> context, String name) {
+	public static Vec3d getVec3(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, CPosArgument.class).toAbsolutePos(context.getSource());
 	}
 
-	public static CPosArgument getCPosArgument(CommandContext<FabricClientCommandSource> context, String name) {
+	public static CPosArgument getPosArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, CPosArgument.class);
 	}
 
@@ -55,16 +53,16 @@ public class CVec3ArgumentType implements ArgumentType<CPosArgument> {
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
 		if (!(context.getSource() instanceof CommandSource)) {
 			return Suggestions.empty();
-		} else {
-			String string = builder.getRemaining();
-			if (!string.isEmpty() && string.charAt(0) == '^') {
-				final Set<CommandSource.RelativePosition> singleton = Collections.singleton(CommandSource.RelativePosition.ZERO_LOCAL);
-				return CommandSource.suggestPositions(string, singleton, builder, CommandManager.getCommandValidator(this::parse));
-			} else {
-				final Collection<CommandSource.RelativePosition> positionSuggestions = ((CommandSource) context.getSource()).getPositionSuggestions();
-				return CommandSource.suggestPositions(string, positionSuggestions, builder, CommandManager.getCommandValidator(this::parse));
-			}
 		}
+		String string = builder.getRemaining();
+		Collection<CommandSource.RelativePosition> collection;
+		if (!string.isEmpty() && string.charAt(0) == '^') {
+			collection = Collections.singleton(CommandSource.RelativePosition.ZERO_LOCAL);
+		} else {
+			collection = ((CommandSource) context.getSource()).getPositionSuggestions();
+		}
+
+		return CommandSource.suggestPositions(string, collection, builder, CommandManager.getCommandValidator(this::parse));
 	}
 
 	@Override

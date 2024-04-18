@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 public class CRotationArgumentType implements ArgumentType<CPosArgument> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("0 0", "~ ~", "~-5 ~5");
 	public static final SimpleCommandExceptionType INCOMPLETE_ROTATION_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.rotation.incomplete"));
 
@@ -21,24 +20,24 @@ public class CRotationArgumentType implements ArgumentType<CPosArgument> {
 		return new CRotationArgumentType();
 	}
 
-	public static CPosArgument getCRotation(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static CPosArgument getRotation(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, CPosArgument.class);
 	}
 
 	@Override
 	public CPosArgument parse(final StringReader stringReader) throws CommandSyntaxException {
-		int cursor = stringReader.getCursor();
+		int i = stringReader.getCursor();
 		if (!stringReader.canRead()) {
 			throw INCOMPLETE_ROTATION_EXCEPTION.createWithContext(stringReader);
 		}
 		CoordinateArgument coordinateArgument = CoordinateArgument.parse(stringReader, false);
-		if (stringReader.canRead() && stringReader.peek() == ' ') {
-			stringReader.skip();
-			CoordinateArgument coordinateArgument2 = CoordinateArgument.parse(stringReader, false);
-			return new CDefaultPosArgument(coordinateArgument2, coordinateArgument, new CoordinateArgument(true, 0.0D));
-		}
-		stringReader.setCursor(cursor);
-		throw INCOMPLETE_ROTATION_EXCEPTION.createWithContext(stringReader);
+        if (!stringReader.canRead() || stringReader.peek() != ' ') {
+            stringReader.setCursor(i);
+            throw INCOMPLETE_ROTATION_EXCEPTION.createWithContext(stringReader);
+        }
+		stringReader.skip();
+		CoordinateArgument coordinateArgument2 = CoordinateArgument.parse(stringReader, false);
+		return new CDefaultPosArgument(coordinateArgument2, coordinateArgument, new CoordinateArgument(true, 0.0));
 	}
 
 	@Override

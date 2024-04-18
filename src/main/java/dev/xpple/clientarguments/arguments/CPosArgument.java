@@ -6,7 +6,6 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 
 public interface CPosArgument {
-
 	Vec3d toAbsolutePos(FabricClientCommandSource source);
 
 	Vec2f toAbsoluteRotation(FabricClientCommandSource source);

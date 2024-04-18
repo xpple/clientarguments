@@ -11,14 +11,16 @@ import java.util.Arrays;
 import java.util.Collection;
 
 public class CNbtElementArgumentType implements ArgumentType<NbtElement> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("0", "0b", "0l", "0.0", "\"foo\"", "{foo=bar}", "[0]");
+
+	private CNbtElementArgumentType() {
+	}
 
 	public static CNbtElementArgumentType nbtElement() {
 		return new CNbtElementArgumentType();
 	}
 
-	public static <S> NbtElement getCNbtElement(CommandContext<S> context, String name) {
+	public static <S> NbtElement getNbtElement(final CommandContext<S> context, final String name) {
 		return context.getArgument(name, NbtElement.class);
 	}
 

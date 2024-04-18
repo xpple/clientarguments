@@ -10,7 +10,6 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.CommandSource.RelativePosition;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
@@ -23,7 +22,6 @@ import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
 public class CBlockPosArgumentType implements ArgumentType<CPosArgument> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("0 0 0", "~ ~ ~", "^ ^ ^", "^1 ^ ^-5", "~0.5 ~1 ~-5");
 	public static final SimpleCommandExceptionType UNLOADED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.pos.unloaded"));
 	public static final SimpleCommandExceptionType OUT_OF_WORLD_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.pos.outofworld"));
@@ -33,29 +31,29 @@ public class CBlockPosArgumentType implements ArgumentType<CPosArgument> {
 		return new CBlockPosArgumentType();
 	}
 
-	public static BlockPos getCLoadedBlockPos(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static BlockPos getLoadedBlockPos(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		ClientWorld clientWorld = context.getSource().getWorld();
-		return getCLoadedBlockPos(context, clientWorld, name);
+		return getLoadedBlockPos(context, clientWorld, name);
 	}
 
-	public static BlockPos getCLoadedBlockPos(final CommandContext<FabricClientCommandSource> context, final ClientWorld world, final String name) throws CommandSyntaxException {
-		BlockPos blockPos = getCBlockPos(context, name);
+	public static BlockPos getLoadedBlockPos(final CommandContext<FabricClientCommandSource> context, final ClientWorld world, final String name) throws CommandSyntaxException {
+		BlockPos blockPos = getBlockPos(context, name);
 		ChunkPos chunkPos = new ChunkPos(blockPos);
 		if (!world.getChunkManager().isChunkLoaded(chunkPos.x, chunkPos.z)) {
 			throw UNLOADED_EXCEPTION.create();
-		} else if (!world.isInBuildLimit(blockPos)) {
-			throw OUT_OF_WORLD_EXCEPTION.create();
-		} else {
-			return blockPos;
 		}
+		if (!world.isInBuildLimit(blockPos)) {
+			throw OUT_OF_WORLD_EXCEPTION.create();
+		}
+		return blockPos;
 	}
 
-	public static BlockPos getCBlockPos(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static BlockPos getBlockPos(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, CPosArgument.class).toAbsoluteBlockPos(context.getSource());
 	}
 
-	public static BlockPos getCValidBlockPos(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
-		BlockPos blockPos = getCBlockPos(context, name);
+	public static BlockPos getValidBlockPos(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
+		BlockPos blockPos = getBlockPos(context, name);
 		if (!World.isValid(blockPos)) {
 			throw OUT_OF_BOUNDS_EXCEPTION.create();
 		}
@@ -75,7 +73,7 @@ public class CBlockPosArgumentType implements ArgumentType<CPosArgument> {
 		String string = builder.getRemaining();
 		Collection<CommandSource.RelativePosition> collection;
 		if (!string.isEmpty() && string.charAt(0) == '^') {
-			collection = Collections.singleton(RelativePosition.ZERO_LOCAL);
+			collection = Collections.singleton(CommandSource.RelativePosition.ZERO_LOCAL);
 		} else {
 			collection = ((CommandSource) context.getSource()).getBlockPositionSuggestions();
 		}

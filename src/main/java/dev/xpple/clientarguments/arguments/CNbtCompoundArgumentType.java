@@ -11,14 +11,16 @@ import java.util.Arrays;
 import java.util.Collection;
 
 public class CNbtCompoundArgumentType implements ArgumentType<NbtCompound> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("{}", "{foo=bar}");
+
+	private CNbtCompoundArgumentType() {
+	}
 
 	public static CNbtCompoundArgumentType nbtCompound() {
 		return new CNbtCompoundArgumentType();
 	}
 
-	public static <S> NbtCompound getCNbtCompound(CommandContext<S> context, String name) {
+	public static <S> NbtCompound getNbtCompound(final CommandContext<S> context, final String name) {
 		return context.getArgument(name, NbtCompound.class);
 	}
 

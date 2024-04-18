@@ -23,15 +23,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiFunction;
 
 public class CEntityAnchorArgumentType implements ArgumentType<CEntityAnchorArgumentType.EntityAnchor> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("eyes", "feet");
-	private static final DynamicCommandExceptionType INVALID_ANCHOR_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("argument.anchor.invalid", name));
+	private static final DynamicCommandExceptionType INVALID_ANCHOR_EXCEPTION = new DynamicCommandExceptionType(name -> Text.stringifiedTranslatable("argument.anchor.invalid", name));
 
 	public static CEntityAnchorArgumentType entityAnchor() {
 		return new CEntityAnchorArgumentType();
 	}
 
-	public static EntityAnchor getCEntityAnchor(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static EntityAnchor getEntityAnchor(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, EntityAnchor.class);
 	}
 
@@ -62,16 +61,14 @@ public class CEntityAnchorArgumentType implements ArgumentType<CEntityAnchorArgu
 		EYES("eyes", (pos, entity) -> new Vec3d(pos.x, pos.y + (double) entity.getStandingEyeHeight(), pos.z));
 
 		static final Map<String, EntityAnchor> ANCHORS = Util.make(Maps.newHashMap(), map -> {
-			EntityAnchor[] var1 = values();
-
-			for (EntityAnchor entityAnchor : var1) {
+			for (EntityAnchor entityAnchor : values()) {
 				map.put(entityAnchor.id, entityAnchor);
 			}
 		});
 		private final String id;
 		private final BiFunction<Vec3d, Entity, Vec3d> offset;
 
-		EntityAnchor(String id, BiFunction<Vec3d, Entity, Vec3d> offset) {
+		EntityAnchor(final String id, final BiFunction<Vec3d, Entity, Vec3d> offset) {
 			this.id = id;
 			this.offset = offset;
 		}

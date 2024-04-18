@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import net.fabricmc.fabric.api.command.v2.FabricEntitySelectorReader;
 import net.minecraft.command.FloatRangeArgument;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -24,15 +25,13 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.*;
 
-public class CEntitySelectorReader {
+public class CEntitySelectorReader implements FabricEntitySelectorReader {
 	public static final SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.invalid"));
-	public static final DynamicCommandExceptionType UNKNOWN_SELECTOR_EXCEPTION = new DynamicCommandExceptionType(selectorType -> Text.translatable("argument.entity.selector.unknown", selectorType));
+	public static final DynamicCommandExceptionType UNKNOWN_SELECTOR_EXCEPTION = new DynamicCommandExceptionType(selectorType -> Text.stringifiedTranslatable("argument.entity.selector.unknown", selectorType));
 	public static final SimpleCommandExceptionType NOT_ALLOWED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.selector.not_allowed"));
 	public static final SimpleCommandExceptionType MISSING_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.selector.missing"));
 	public static final SimpleCommandExceptionType UNTERMINATED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.options.unterminated"));
-	public static final DynamicCommandExceptionType VALUELESS_EXCEPTION = new DynamicCommandExceptionType(option -> Text.translatable("argument.entity.options.valueless", option));
-	public static final BiConsumer<Vec3d, List<? extends Entity>> ARBITRARY = (pos, entities) -> {
-	};
+	public static final DynamicCommandExceptionType VALUELESS_EXCEPTION = new DynamicCommandExceptionType(option -> Text.stringifiedTranslatable("argument.entity.options.valueless", option));
 	public static final BiConsumer<Vec3d, List<? extends Entity>> NEAREST = (pos, entities) -> entities.sort((entity1, entity2) -> Doubles.compare(entity1.squaredDistanceTo(pos), entity2.squaredDistanceTo(pos)));
 	public static final BiConsumer<Vec3d, List<? extends Entity>> FURTHEST = (pos, entities) -> entities.sort((entity1, entity2) -> Doubles.compare(entity2.squaredDistanceTo(pos), entity1.squaredDistanceTo(pos)));
 	public static final BiConsumer<Vec3d, List<? extends Entity>> RANDOM = (pos, entities) -> Collections.shuffle(entities);
@@ -58,7 +57,7 @@ public class CEntitySelectorReader {
 	private FloatRangeArgument pitchRange = FloatRangeArgument.ANY;
 	private FloatRangeArgument yawRange = FloatRangeArgument.ANY;
 	private Predicate<Entity> predicate = entity -> true;
-	private BiConsumer<Vec3d, List<? extends Entity>> sorter = ARBITRARY;
+	private BiConsumer<Vec3d, List<? extends Entity>> sorter = CEntitySelector.ARBITRARY;
 	private boolean senderOnly;
 	@Nullable
 	private String playerName;
@@ -92,16 +91,25 @@ public class CEntitySelectorReader {
 
 	public CEntitySelector build() {
 		Box box;
-		if (this.dx != null || this.dy != null || this.dz != null) {
-			box = this.createBox(this.dx == null ? 0.0 : this.dx, this.dy == null ? 0.0 : this.dy, this.dz == null ? 0.0 : this.dz);
-		} else if (this.distance.max().isPresent()) {
-			double d = this.distance.max().get();
-			box = new Box(-d, -d, -d, d + 1.0, d + 1.0, d + 1.0);
+		if (this.dx == null && this.dy == null && this.dz == null) {
+			if (this.distance.max().isPresent()) {
+				double d = this.distance.max().get();
+				box = new Box(-d, -d, -d, d + 1.0, d + 1.0, d + 1.0);
+			} else {
+				box = null;
+			}
 		} else {
-			box = null;
+			box = this.createBox(this.dx == null ? 0.0 : this.dx, this.dy == null ? 0.0 : this.dy, this.dz == null ? 0.0 : this.dz);
 		}
-		Function<Vec3d, Vec3d> d = this.x == null && this.y == null && this.z == null ? pos -> pos : pos -> new Vec3d(this.x == null ? pos.x : this.x, this.y == null ? pos.y : this.y, this.z == null ? pos.z : this.z);
-		return new CEntitySelector(this.limit, this.includesNonPlayers, this.predicate, this.distance, d, box, this.sorter, this.senderOnly, this.playerName, this.uuid, this.entityType, this.usesAt);
+
+		Function<Vec3d, Vec3d> function;
+		if (this.x == null && this.y == null && this.z == null) {
+			function = pos -> pos;
+		} else {
+			function = pos -> new Vec3d(this.x == null ? pos.x : this.x, this.y == null ? pos.y : this.y, this.z == null ? pos.z : this.z);
+		}
+
+		return new CEntitySelector(this.limit, this.includesNonPlayers, this.predicate, this.distance, function, box, this.sorter, this.senderOnly, this.playerName, this.uuid, this.entityType, this.usesAt);
 	}
 
 	private Box createBox(double x, double y, double z) {
@@ -121,28 +129,26 @@ public class CEntitySelectorReader {
 		if (this.pitchRange != FloatRangeArgument.ANY) {
 			this.predicate = this.predicate.and(this.rotationPredicate(this.pitchRange, Entity::getPitch));
 		}
+
 		if (this.yawRange != FloatRangeArgument.ANY) {
 			this.predicate = this.predicate.and(this.rotationPredicate(this.yawRange, Entity::getYaw));
 		}
+
 		if (!this.levelRange.isDummy()) {
-			this.predicate = this.predicate.and(entity -> {
-				if (!(entity instanceof ServerPlayerEntity)) {
-					return false;
-				}
-				return this.levelRange.test(((ServerPlayerEntity)entity).experienceLevel);
-			});
+			this.predicate = this.predicate.and(entity -> entity instanceof ServerPlayerEntity && this.levelRange.test(((ServerPlayerEntity) entity).experienceLevel));
 		}
 	}
 
 	private Predicate<Entity> rotationPredicate(FloatRangeArgument angleRange, ToDoubleFunction<Entity> entityToAngle) {
-		double d = MathHelper.wrapDegrees(angleRange.min() == null ? 0.0f : angleRange.min());
-		double e = MathHelper.wrapDegrees(angleRange.max() == null ? 359.0f : angleRange.max());
+		double d = MathHelper.wrapDegrees(angleRange.min() == null ? 0.0F : angleRange.min());
+		double e = MathHelper.wrapDegrees(angleRange.max() == null ? 359.0F : angleRange.max());
 		return entity -> {
 			double f = MathHelper.wrapDegrees(entityToAngle.applyAsDouble(entity));
 			if (d > e) {
 				return f >= d || f <= e;
+			} else {
+				return f >= d && f <= e;
 			}
-			return f >= d && f <= e;
 		};
 	}
 
@@ -162,7 +168,7 @@ public class CEntitySelectorReader {
 		} else if (c == 'a') {
 			this.limit = Integer.MAX_VALUE;
 			this.includesNonPlayers = false;
-			this.sorter = ARBITRARY;
+			this.sorter = CEntitySelector.ARBITRARY;
 			this.setEntityType(EntityType.PLAYER);
 		} else if (c == 'r') {
 			this.limit = 1;
@@ -173,15 +179,18 @@ public class CEntitySelectorReader {
 			this.limit = 1;
 			this.includesNonPlayers = true;
 			this.senderOnly = true;
-		} else if (c == 'e') {
+		} else {
+			if (c != 'e') {
+				this.reader.setCursor(i);
+				throw UNKNOWN_SELECTOR_EXCEPTION.createWithContext(this.reader, "@" + c);
+			}
+
 			this.limit = Integer.MAX_VALUE;
 			this.includesNonPlayers = true;
-			this.sorter = ARBITRARY;
+			this.sorter = CEntitySelector.ARBITRARY;
 			this.predicate = Entity::isAlive;
-		} else {
-			this.reader.setCursor(i);
-			throw UNKNOWN_SELECTOR_EXCEPTION.createWithContext(this.reader, "@" + c);
 		}
+
 		this.suggestionProvider = this::suggestOpen;
 		if (this.reader.canRead() && this.reader.peek() == '[') {
 			this.reader.skip();
@@ -194,26 +203,30 @@ public class CEntitySelectorReader {
 		if (this.reader.canRead()) {
 			this.suggestionProvider = this::suggestNormal;
 		}
-		int i = this.reader.getCursor();
+
+		int cursor = this.reader.getCursor();
 		String string = this.reader.readString();
+
 		try {
 			this.uuid = UUID.fromString(string);
 			this.includesNonPlayers = true;
-		}
-		catch (IllegalArgumentException illegalArgumentException) {
+		} catch (IllegalArgumentException e) {
 			if (string.isEmpty() || string.length() > 16) {
-				this.reader.setCursor(i);
+				this.reader.setCursor(cursor);
 				throw INVALID_ENTITY_EXCEPTION.createWithContext(this.reader);
 			}
+
 			this.includesNonPlayers = false;
 			this.playerName = string;
 		}
+
 		this.limit = 1;
 	}
 
 	protected void readArguments() throws CommandSyntaxException {
 		this.suggestionProvider = this::suggestOption;
 		this.reader.skipWhitespace();
+
 		while (this.reader.canRead() && this.reader.peek() != ']') {
 			this.reader.skipWhitespace();
 			int i = this.reader.getCursor();
@@ -224,27 +237,32 @@ public class CEntitySelectorReader {
 				this.reader.setCursor(i);
 				throw VALUELESS_EXCEPTION.createWithContext(this.reader, string);
 			}
+
 			this.reader.skip();
 			this.reader.skipWhitespace();
 			this.suggestionProvider = DEFAULT_SUGGESTION_PROVIDER;
 			selectorHandler.handle(this);
 			this.reader.skipWhitespace();
 			this.suggestionProvider = this::suggestEndNext;
-			if (!this.reader.canRead()) continue;
-			if (this.reader.peek() == ',') {
+			if (this.reader.canRead()) {
+				if (this.reader.peek() != ',') {
+					if (this.reader.peek() != ']') {
+						throw UNTERMINATED_EXCEPTION.createWithContext(this.reader);
+					}
+					break;
+				}
+
 				this.reader.skip();
 				this.suggestionProvider = this::suggestOption;
-				continue;
 			}
-			if (this.reader.peek() == ']') break;
-			throw UNTERMINATED_EXCEPTION.createWithContext(this.reader);
 		}
-		if (!this.reader.canRead()) {
-			throw UNTERMINATED_EXCEPTION.createWithContext(this.reader);
-		}
+
+        if (!this.reader.canRead()) {
+            throw UNTERMINATED_EXCEPTION.createWithContext(this.reader);
+        }
 		this.reader.skip();
 		this.suggestionProvider = DEFAULT_SUGGESTION_PROVIDER;
-	}
+    }
 
 	public boolean readNegationCharacter() {
 		this.reader.skipWhitespace();
@@ -383,11 +401,13 @@ public class CEntitySelectorReader {
 			if (!this.atAllowed) {
 				throw NOT_ALLOWED_EXCEPTION.createWithContext(this.reader);
 			}
+
 			this.reader.skip();
 			this.readAtVariable();
 		} else {
 			this.readRegular();
 		}
+
 		this.buildPredicate();
 		return this.build();
 	}
@@ -403,8 +423,9 @@ public class CEntitySelectorReader {
 	private CompletableFuture<Suggestions> suggestSelector(SuggestionsBuilder builder, Consumer<SuggestionsBuilder> consumer) {
 		consumer.accept(builder);
 		if (this.atAllowed) {
-			CEntitySelectorReader.suggestSelector(builder);
+			suggestSelector(builder);
 		}
+
 		return builder.buildFuture();
 	}
 
@@ -416,7 +437,7 @@ public class CEntitySelectorReader {
 
 	private CompletableFuture<Suggestions> suggestSelectorRest(SuggestionsBuilder builder, Consumer<SuggestionsBuilder> consumer) {
 		SuggestionsBuilder suggestionsBuilder = builder.createOffset(builder.getStart() - 1);
-		CEntitySelectorReader.suggestSelector(suggestionsBuilder);
+		suggestSelector(suggestionsBuilder);
 		builder.add(suggestionsBuilder);
 		return builder.buildFuture();
 	}

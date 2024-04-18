@@ -11,26 +11,24 @@ import java.util.Arrays;
 import java.util.Collection;
 
 public interface CNumberRangeArgumentType<T extends NumberRange<?>> extends ArgumentType<T> {
-
 	static IntRangeArgumentType intRange() {
-		return new IntRangeArgumentType();
+		return new CNumberRangeArgumentType.IntRangeArgumentType();
 	}
 
 	static FloatRangeArgumentType floatRange() {
-		return new FloatRangeArgumentType();
+		return new CNumberRangeArgumentType.FloatRangeArgumentType();
 	}
 
-	class IntRangeArgumentType implements CNumberRangeArgumentType<NumberRange.IntRange> {
+	class FloatRangeArgumentType implements CNumberRangeArgumentType<NumberRange.DoubleRange> {
+		private static final Collection<String> EXAMPLES = Arrays.asList("0..5.2", "0", "-5.4", "-100.76..", "..100");
 
-		private static final Collection<String> EXAMPLES = Arrays.asList("0..5", "0", "-5", "-100..", "..100");
-
-		public static NumberRange.IntRange getCRangeArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
-			return context.getArgument(name, NumberRange.IntRange.class);
+		public static NumberRange.DoubleRange getRangeArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
+			return context.getArgument(name, NumberRange.DoubleRange.class);
 		}
 
 		@Override
-		public NumberRange.IntRange parse(final StringReader stringReader) throws CommandSyntaxException {
-			return NumberRange.IntRange.parse(stringReader);
+		public NumberRange.DoubleRange parse(final StringReader stringReader) throws CommandSyntaxException {
+			return NumberRange.DoubleRange.parse(stringReader);
 		}
 
 		@Override
@@ -39,17 +37,16 @@ public interface CNumberRangeArgumentType<T extends NumberRange<?>> extends Argu
 		}
 	}
 
-	class FloatRangeArgumentType implements CNumberRangeArgumentType<NumberRange.DoubleRange> {
+	class IntRangeArgumentType implements CNumberRangeArgumentType<NumberRange.IntRange> {
+		private static final Collection<String> EXAMPLES = Arrays.asList("0..5", "0", "-5", "-100..", "..100");
 
-		private static final Collection<String> EXAMPLES = Arrays.asList("0..5.2", "0", "-5.4", "-100.76..", "..100");
-
-		public static NumberRange.DoubleRange getCRangeArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
-			return context.getArgument(name, NumberRange.DoubleRange.class);
+		public static NumberRange.IntRange getRangeArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
+			return context.getArgument(name, NumberRange.IntRange.class);
 		}
 
 		@Override
-		public NumberRange.DoubleRange parse(final StringReader stringReader) throws CommandSyntaxException {
-			return NumberRange.DoubleRange.parse(stringReader);
+		public NumberRange.IntRange parse(final StringReader stringReader) throws CommandSyntaxException {
+			return NumberRange.IntRange.parse(stringReader);
 		}
 
 		@Override

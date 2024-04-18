@@ -6,19 +6,18 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.predicate.NumberRange;
 import net.minecraft.text.Text;
 import net.minecraft.text.Texts;
 import net.minecraft.util.TypeFilter;
+import net.minecraft.util.function.LazyIterationConsumer;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -28,18 +27,19 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class CEntitySelector {
-
+	public static final BiConsumer<Vec3d, List<? extends Entity>> ARBITRARY = (pos, entities) -> {
+	};
 	private static final TypeFilter<Entity, ?> PASSTHROUGH_FILTER = new TypeFilter<>() {
 		@Override
-		public Entity downcast(Entity entity) {
-			return entity;
-		}
+        public Entity downcast(Entity entity) {
+            return entity;
+        }
 
-		@Override
-		public Class<? extends Entity> getBaseClass() {
-			return Entity.class;
-		}
-	};
+        @Override
+        public Class<? extends Entity> getBaseClass() {
+            return Entity.class;
+        }
+    };
 	private final int limit;
 	private final boolean includesNonPlayers;
 	private final Predicate<Entity> basePredicate;
@@ -95,99 +95,109 @@ public class CEntitySelector {
 		if (list.size() > 1) {
 			throw CEntityArgumentType.TOO_MANY_ENTITIES_EXCEPTION.create();
 		}
-		return list.get(0);
+		return list.getFirst();
 	}
 
 	public List<? extends Entity> getEntities(FabricClientCommandSource source) throws CommandSyntaxException {
+		return this.getUnfilteredEntities(source).stream().filter(entity -> entity.getType().isEnabled(source.getEnabledFeatures())).toList();
+	}
+
+	public List<? extends Entity> getUnfilteredEntities(FabricClientCommandSource source) throws CommandSyntaxException {
 		if (!this.includesNonPlayers) {
 			return this.getPlayers(source);
 		}
 		if (this.playerName != null) {
 			AbstractClientPlayerEntity abstractClientPlayerEntity = Streams.stream(source.getWorld().getEntities())
-					.filter(entity -> entity instanceof AbstractClientPlayerEntity)
-					.map(entity -> (AbstractClientPlayerEntity) entity)
-					.filter(abstractPlayer -> abstractPlayer.getName().getString().equals(this.playerName))
-					.findAny().orElse(null);
+				.filter(entity -> entity instanceof AbstractClientPlayerEntity)
+				.map(entity -> (AbstractClientPlayerEntity) entity)
+				.filter(abstractPlayer -> abstractPlayer.getName().getString().equals(this.playerName))
+				.findAny().orElse(null);
 			return abstractClientPlayerEntity == null ? Collections.emptyList() : Lists.newArrayList(abstractClientPlayerEntity);
 		}
 		if (this.uuid != null) {
 			Entity foundEntity = Streams.stream(source.getWorld().getEntities())
-					.filter(entity -> entity.getUuid().equals(this.uuid))
-					.findAny().orElse(null);
+				.filter(entity -> entity.getUuid().equals(this.uuid))
+				.findAny().orElse(null);
 			return foundEntity == null ? Collections.emptyList() : Lists.newArrayList(foundEntity);
 		}
-		Vec3d pos = this.positionOffset.apply(source.getPosition());
-		Predicate<Entity> predicate = this.getPositionPredicate(pos);
+
+		Vec3d vec3d = this.positionOffset.apply(source.getPosition());
+		Predicate<Entity> predicate = this.getPositionPredicate(vec3d);
 		if (this.senderOnly) {
-			if (source.getEntity() != null && predicate.test(source.getEntity())) {
-				return Lists.newArrayList(source.getEntity());
-			}
-			return Collections.emptyList();
+			return source.getEntity() != null && predicate.test(source.getEntity())
+				? Lists.newArrayList(source.getEntity())
+				: Collections.emptyList();
 		}
-		ArrayList<Entity> entity = new ArrayList<>();
-		this.appendEntitiesFromWorld(entity, source.getWorld(), pos, predicate);
-		return this.getEntities(pos, entity);
+		List<Entity> list = Lists.newArrayList();
+		this.appendEntitiesFromWorld(list, source.getWorld(), vec3d, predicate);
+		return this.getEntities(vec3d, list);
 	}
 
-	private void appendEntitiesFromWorld(List<Entity> result, ClientWorld clientWorld, Vec3d pos, Predicate<Entity> predicate) {
-		if (this.box != null) {
-			result.addAll(clientWorld.getEntitiesByType(this.entityFilter, this.box.offset(pos), predicate));
-		} else {
-			clientWorld.getEntities().forEach(entity -> {
-				if (predicate.test(entity)) {
-					result.add(entity);
-				}
-				if (entity instanceof EnderDragonEntity enderDragon) {
-					for (EnderDragonPart bodyPart : enderDragon.getBodyParts()) {
-						Entity e = entityFilter.downcast(bodyPart);
-						if (e == null || !predicate.test(e)) {
-							continue;
+	private void appendEntitiesFromWorld(List<Entity> entities, ClientWorld world, Vec3d pos, Predicate<Entity> predicate) {
+		int appendLimit = this.getAppendLimit();
+		if (entities.size() < appendLimit) {
+			if (this.box != null) {
+				world.collectEntitiesByType(this.entityFilter, this.box.offset(pos), predicate, entities, appendLimit);
+			} else {
+				world.getEntityLookup().forEach(this.entityFilter, entity -> {
+					if (predicate.test(entity)) {
+						entities.add(entity);
+						if (entities.size() >= appendLimit) {
+							return LazyIterationConsumer.NextIteration.ABORT;
 						}
-						result.add(e);
 					}
-				}
-			});
+
+					return LazyIterationConsumer.NextIteration.CONTINUE;
+				});
+			}
 		}
+	}
+
+	private int getAppendLimit() {
+		return this.sorter == ARBITRARY ? this.limit : Integer.MAX_VALUE;
 	}
 
 	public AbstractClientPlayerEntity getPlayer(FabricClientCommandSource source) throws CommandSyntaxException {
 		List<AbstractClientPlayerEntity> list = this.getPlayers(source);
 		if (list.size() != 1) {
-			throw CEntityArgumentType.PLAYER_NOT_FOUND_EXCEPTION.create();
+			throw EntityArgumentType.PLAYER_NOT_FOUND_EXCEPTION.create();
 		}
-		return list.get(0);
+		return list.getFirst();
 	}
 
 	public List<AbstractClientPlayerEntity> getPlayers(FabricClientCommandSource source) throws CommandSyntaxException {
 		AbstractClientPlayerEntity abstractClientPlayerEntity;
 		if (this.playerName != null) {
 			abstractClientPlayerEntity = Streams.stream(source.getWorld().getEntities())
-					.filter(entity -> entity instanceof AbstractClientPlayerEntity)
-					.map(entity -> (AbstractClientPlayerEntity) entity)
-					.filter(abstractPlayer -> abstractPlayer.getName().getString().equals(this.playerName))
-					.findAny().orElse(null);
+				.filter(entity -> entity instanceof AbstractClientPlayerEntity)
+				.map(entity -> (AbstractClientPlayerEntity) entity)
+				.filter(abstractPlayer -> abstractPlayer.getName().getString().equals(this.playerName))
+				.findAny().orElse(null);
 			return abstractClientPlayerEntity == null ? Collections.emptyList() : Lists.newArrayList(abstractClientPlayerEntity);
 		}
 		if (this.uuid != null) {
 			abstractClientPlayerEntity = Streams.stream(source.getWorld().getEntities())
-					.filter(entity -> entity instanceof AbstractClientPlayerEntity)
-					.map(entity -> (AbstractClientPlayerEntity) entity)
-					.filter(entity -> entity.getUuid().equals(this.uuid))
-					.findAny().orElse(null);
+				.filter(entity -> entity instanceof AbstractClientPlayerEntity)
+				.map(entity -> (AbstractClientPlayerEntity) entity)
+				.filter(entity -> entity.getUuid().equals(this.uuid))
+				.findAny().orElse(null);
 			return abstractClientPlayerEntity == null ? Collections.emptyList() : Lists.newArrayList(abstractClientPlayerEntity);
 		}
-		Vec3d pos = this.positionOffset.apply(source.getPosition());
-		Predicate<Entity> predicate = this.getPositionPredicate(pos);
+		Vec3d vec3d = this.positionOffset.apply(source.getPosition());
+		Predicate<Entity> predicate = this.getPositionPredicate(vec3d);
 		if (this.senderOnly) {
 			if (source.getEntity() instanceof AbstractClientPlayerEntity player && predicate.test(player)) {
 				return Lists.newArrayList(player);
 			}
+
 			return Collections.emptyList();
 		}
 		List<AbstractClientPlayerEntity> entities = source.getWorld().getPlayers().stream()
-				.filter(predicate)
-				.collect(Collectors.toList());
-		return this.getEntities(pos, entities);
+			.filter(predicate)
+			.limit(this.getAppendLimit())
+			.collect(Collectors.toList());
+
+		return this.getEntities(vec3d, entities);
 	}
 
 	private Predicate<Entity> getPositionPredicate(Vec3d pos) {
@@ -196,9 +206,11 @@ public class CEntitySelector {
 			Box box = this.box.offset(pos);
 			predicate = predicate.and(entity -> box.intersects(entity.getBoundingBox()));
 		}
+
 		if (!this.distance.isDummy()) {
 			predicate = predicate.and(entity -> this.distance.testSqrt(entity.squaredDistanceTo(pos)));
 		}
+
 		return predicate;
 	}
 
@@ -206,6 +218,7 @@ public class CEntitySelector {
 		if (entities.size() > 1) {
 			this.sorter.accept(pos, entities);
 		}
+
 		return entities.subList(0, Math.min(this.limit, entities.size()));
 	}
 

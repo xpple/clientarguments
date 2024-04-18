@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 
 public class CSwizzleArgumentType implements ArgumentType<EnumSet<Direction.Axis>> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("xyz", "x");
 	private static final SimpleCommandExceptionType INVALID_SWIZZLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("arguments.swizzle.invalid"));
 
@@ -23,7 +22,7 @@ public class CSwizzleArgumentType implements ArgumentType<EnumSet<Direction.Axis
 	}
 
 	@SuppressWarnings("unchecked")
-	public static EnumSet<Direction.Axis> getCSwizzle(final CommandContext<FabricClientCommandSource> context, final String name) {
+    public static EnumSet<Direction.Axis> getSwizzle(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return (EnumSet<Direction.Axis>) context.getArgument(name, EnumSet.class);
 	}
 
@@ -33,18 +32,18 @@ public class CSwizzleArgumentType implements ArgumentType<EnumSet<Direction.Axis
 
 		while (stringReader.canRead() && stringReader.peek() != ' ') {
 			char c = stringReader.read();
-			Direction.Axis axis4 = switch (c) {
+
+			Direction.Axis axis = switch(c) {
 				case 'x' -> Direction.Axis.X;
 				case 'y' -> Direction.Axis.Y;
 				case 'z' -> Direction.Axis.Z;
-				default -> throw INVALID_SWIZZLE_EXCEPTION.create();
+				default -> throw INVALID_SWIZZLE_EXCEPTION.createWithContext(stringReader);
 			};
-
-			if (enumSet.contains(axis4)) {
-				throw INVALID_SWIZZLE_EXCEPTION.create();
+			if (enumSet.contains(axis)) {
+				throw INVALID_SWIZZLE_EXCEPTION.createWithContext(stringReader);
 			}
 
-			enumSet.add(axis4);
+			enumSet.add(axis);
 		}
 
 		return enumSet;

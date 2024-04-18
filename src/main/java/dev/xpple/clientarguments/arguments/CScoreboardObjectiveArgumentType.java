@@ -19,14 +19,14 @@ import java.util.concurrent.CompletableFuture;
 
 public class CScoreboardObjectiveArgumentType implements ArgumentType<String> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("foo", "*", "012");
-	private static final DynamicCommandExceptionType UNKNOWN_OBJECTIVE_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("arguments.objective.notFound", name));
-	private static final DynamicCommandExceptionType READONLY_OBJECTIVE_EXCEPTION = new DynamicCommandExceptionType(name -> Text.translatable("arguments.objective.readonly", name));
+	private static final DynamicCommandExceptionType UNKNOWN_OBJECTIVE_EXCEPTION = new DynamicCommandExceptionType(name -> Text.stringifiedTranslatable("arguments.objective.notFound", name));
+	private static final DynamicCommandExceptionType READONLY_OBJECTIVE_EXCEPTION = new DynamicCommandExceptionType(name -> Text.stringifiedTranslatable("arguments.objective.readonly", name));
 
 	public static CScoreboardObjectiveArgumentType scoreboardObjective() {
 		return new CScoreboardObjectiveArgumentType();
 	}
 
-	public static ScoreboardObjective getCObjective(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+	public static ScoreboardObjective getObjective(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		String string = context.getArgument(name, String.class);
 		Scoreboard scoreboard = context.getSource().getWorld().getScoreboard();
 		ScoreboardObjective scoreboardObjective = scoreboard.getNullableObjective(string);
@@ -36,8 +36,8 @@ public class CScoreboardObjectiveArgumentType implements ArgumentType<String> {
 		return scoreboardObjective;
 	}
 
-	public static ScoreboardObjective getCWritableObjective(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		ScoreboardObjective scoreboardObjective = getCObjective(context, name);
+	public static ScoreboardObjective getWritableObjective(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+		ScoreboardObjective scoreboardObjective = getObjective(context, name);
 		if (scoreboardObjective.getCriterion().isReadOnly()) {
 			throw READONLY_OBJECTIVE_EXCEPTION.create(scoreboardObjective.getName());
 		}
@@ -51,14 +51,11 @@ public class CScoreboardObjectiveArgumentType implements ArgumentType<String> {
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-		S source = context.getSource();
-		if (source instanceof FabricClientCommandSource fabricSource) {
-			return CommandSource.suggestMatching(fabricSource.getWorld().getScoreboard().getObjectiveNames(), builder);
+		if (context.getSource() instanceof FabricClientCommandSource fabricClientCommandSource) {
+			return CommandSource.suggestMatching(fabricClientCommandSource.getWorld().getScoreboard().getObjectiveNames(), builder);
+		} else {
+			return context.getSource() instanceof CommandSource commandSource ? commandSource.getCompletions(context) : Suggestions.empty();
 		}
-		if (source instanceof CommandSource commandSource) {
-			return commandSource.getCompletions(context);
-		}
-		return Suggestions.empty();
 	}
 
 	@Override

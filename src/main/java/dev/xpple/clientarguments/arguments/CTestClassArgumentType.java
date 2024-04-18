@@ -18,26 +18,24 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public class CTestClassArgumentType implements ArgumentType<String> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("techtests", "mobtests");
-
-	@Override
-	public String parse(final StringReader stringReader) throws CommandSyntaxException {
-		String string = stringReader.readUnquotedString();
-		if (TestFunctions.testClassExists(string)) {
-			return string;
-		} else {
-			Message message = Text.literal("No such test class: " + string);
-			throw new CommandSyntaxException(new SimpleCommandExceptionType(message), message);
-		}
-	}
 
 	public static CTestClassArgumentType testClass() {
 		return new CTestClassArgumentType();
 	}
 
-	public static String getCTestClass(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static String getTestClass(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, String.class);
+	}
+
+	@Override
+	public String parse(StringReader stringReader) throws CommandSyntaxException {
+		String string = stringReader.readUnquotedString();
+		if (!TestFunctions.testClassExists(string)) {
+			Message message = Text.literal("No such test class: " + string);
+			throw new CommandSyntaxException(new SimpleCommandExceptionType(message), message);
+		}
+		return string;
 	}
 
 	@Override

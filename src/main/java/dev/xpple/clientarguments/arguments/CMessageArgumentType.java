@@ -2,176 +2,116 @@ package dev.xpple.clientarguments.arguments;
 
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.EntitySelectorReader;
+import net.minecraft.command.argument.SignedArgumentType;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-public class CMessageArgumentType implements ArgumentType<CMessageArgumentType.MessageFormat> {
+public class CMessageArgumentType implements SignedArgumentType<CMessageArgumentType.MessageFormat> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("Hello world!", "foo", "@e", "Hello @p :)");
-
-	public CMessageArgumentType() {
-	}
+	static final Dynamic2CommandExceptionType MESSAGE_TOO_LONG_EXCEPTION = new Dynamic2CommandExceptionType((length, maxLength) -> Text.stringifiedTranslatable("argument.message.too_long", length, maxLength));
 
 	public static CMessageArgumentType message() {
 		return new CMessageArgumentType();
 	}
 
-	public static Text getCMessage(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
+	public static Text getMessage(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		MessageFormat messageFormat = context.getArgument(name, MessageFormat.class);
 		return messageFormat.format(context.getSource());
 	}
 
+	@Override
 	public MessageFormat parse(StringReader stringReader) throws CommandSyntaxException {
 		return MessageFormat.parse(stringReader, true);
 	}
 
+	@Override
 	public Collection<String> getExamples() {
 		return EXAMPLES;
 	}
 
-	public Text toText(MessageFormat messageFormat) {
-		return Text.literal(messageFormat.getContents());
-	}
-
-	public CompletableFuture<Text> decorate(FabricClientCommandSource source, MessageFormat messageFormat) throws CommandSyntaxException {
-		return messageFormat.decorate(source);
-	}
-
-	public Class<MessageFormat> getFormatClass() {
-		return MessageFormat.class;
-	}
-
-	public static class MessageFormat {
-		final String contents;
-		private final MessageSelector[] selectors;
-
-		public MessageFormat(String contents, MessageSelector[] selectors) {
-			this.contents = contents;
-			this.selectors = selectors;
-		}
-
-		public String getContents() {
-			return this.contents;
-		}
-
-		public MessageSelector[] getSelectors() {
-			return this.selectors;
-		}
-
-		CompletableFuture<Text> decorate(FabricClientCommandSource source) throws CommandSyntaxException {
-			Text text = this.format(source);
-			return CompletableFuture.completedFuture(text);
-		}
-
+	public record MessageFormat(String contents, MessageSelector[] selectors) {
 		Text format(FabricClientCommandSource source) throws CommandSyntaxException {
 			return this.format(source, source.hasPermissionLevel(2));
 		}
 
 		public Text format(FabricClientCommandSource source, boolean canUseSelectors) throws CommandSyntaxException {
-			if (this.selectors.length != 0 && canUseSelectors) {
-				MutableText mutableText = Text.literal(this.contents.substring(0, this.selectors[0].getStart()));
-				int i = this.selectors[0].getStart();
+            if (this.selectors.length == 0 || !canUseSelectors) {
+                return Text.literal(this.contents);
+            }
+            MutableText mutableText = Text.literal(this.contents.substring(0, this.selectors[0].start()));
+            int i = this.selectors[0].start();
 
-				for(MessageSelector messageSelector : this.selectors) {
-					Text text = messageSelector.format(source);
-					if (i < messageSelector.getStart()) {
-						mutableText.append(this.contents.substring(i, messageSelector.getStart()));
-					}
+            for (MessageSelector messageSelector : this.selectors) {
+                Text text = messageSelector.format(source);
+                if (i < messageSelector.start()) {
+                    mutableText.append(this.contents.substring(i, messageSelector.start()));
+                }
 
-					if (text != null) {
-						mutableText.append(text);
-					}
+                mutableText.append(text);
+                i = messageSelector.end();
+            }
 
-					i = messageSelector.getEnd();
-				}
+            if (i < this.contents.length()) {
+                mutableText.append(this.contents.substring(i));
+            }
 
-				if (i < this.contents.length()) {
-					mutableText.append(this.contents.substring(i));
-				}
-
-				return mutableText;
-			} else {
-				return Text.literal(this.contents);
-			}
-		}
+            return mutableText;
+        }
 
 		public static MessageFormat parse(StringReader reader, boolean canUseSelectors) throws CommandSyntaxException {
-			String string = reader.getString().substring(reader.getCursor(), reader.getTotalLength());
+			if (reader.getRemainingLength() > 256) {
+				throw CMessageArgumentType.MESSAGE_TOO_LONG_EXCEPTION.create(reader.getRemainingLength(), 256);
+			}
+			String string = reader.getRemaining();
 			if (!canUseSelectors) {
 				reader.setCursor(reader.getTotalLength());
 				return new MessageFormat(string, new MessageSelector[0]);
-			} else {
-				List<MessageSelector> list = Lists.newArrayList();
-				int i = reader.getCursor();
+			}
+			List<MessageSelector> list = Lists.newArrayList();
+			int i = reader.getCursor();
 
-				while(true) {
-					int j;
-					CEntitySelector entitySelector;
-					while(true) {
-						if (!reader.canRead()) {
-							return new MessageFormat(string, list.toArray(new MessageSelector[0]));
-						}
-
-						if (reader.peek() == '@') {
-							j = reader.getCursor();
-
-							try {
-								CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(reader);
-								entitySelector = entitySelectorReader.read();
-								break;
-							} catch (CommandSyntaxException e) {
-								if (e.getType() != CEntitySelectorReader.MISSING_EXCEPTION
-										&& e.getType() != CEntitySelectorReader.UNKNOWN_SELECTOR_EXCEPTION) {
-									throw e;
-								}
-
-								reader.setCursor(j + 1);
-							}
-						} else {
-							reader.skip();
-						}
+			while (true) {
+				int j;
+				CEntitySelector entitySelector;
+				while (true) {
+					if (!reader.canRead()) {
+						return new MessageFormat(string, list.toArray(new MessageSelector[0]));
 					}
 
-					list.add(new MessageSelector(j - i, reader.getCursor() - i, entitySelector));
+					if (reader.peek() == '@') {
+						j = reader.getCursor();
+
+						try {
+							CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(reader);
+							entitySelector = entitySelectorReader.read();
+							break;
+						} catch (CommandSyntaxException var8) {
+							if (var8.getType() != EntitySelectorReader.MISSING_EXCEPTION && var8.getType() != EntitySelectorReader.UNKNOWN_SELECTOR_EXCEPTION) {
+								throw var8;
+							}
+
+							reader.setCursor(j + 1);
+						}
+					} else {
+						reader.skip();
+					}
 				}
+
+				list.add(new MessageSelector(j - i, reader.getCursor() - i, entitySelector));
 			}
 		}
 	}
 
-	public static class MessageSelector {
-		private final int start;
-		private final int end;
-		private final CEntitySelector selector;
-
-		public MessageSelector(int start, int end, CEntitySelector selector) {
-			this.start = start;
-			this.end = end;
-			this.selector = selector;
-		}
-
-		public int getStart() {
-			return this.start;
-		}
-
-		public int getEnd() {
-			return this.end;
-		}
-
-		public CEntitySelector getSelector() {
-			return this.selector;
-		}
-
-		@Nullable
+	public record MessageSelector(int start, int end, CEntitySelector selector) {
 		public Text format(FabricClientCommandSource source) throws CommandSyntaxException {
 			return CEntitySelector.getNames(this.selector.getEntities(source));
 		}

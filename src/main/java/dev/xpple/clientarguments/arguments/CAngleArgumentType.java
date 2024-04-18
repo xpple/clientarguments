@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.argument.CoordinateArgument;
 import net.minecraft.text.Text;
@@ -14,7 +15,6 @@ import java.util.Arrays;
 import java.util.Collection;
 
 public class CAngleArgumentType implements ArgumentType<CAngleArgumentType.Angle> {
-
 	private static final Collection<String> EXAMPLES = Arrays.asList("0", "~", "~-5");
 	public static final SimpleCommandExceptionType INCOMPLETE_ANGLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.angle.incomplete"));
 	public static final SimpleCommandExceptionType INVALID_ANGLE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.angle.invalid"));
@@ -23,7 +23,7 @@ public class CAngleArgumentType implements ArgumentType<CAngleArgumentType.Angle
 		return new CAngleArgumentType();
 	}
 
-	public static float getCAngle(final CommandContext<FabricClientCommandSource> context, final String name) {
+	public static float getAngle(final CommandContext<FabricClientCommandSource> context, final String name) {
 		return context.getArgument(name, Angle.class).getAngle(context.getSource());
 	}
 
@@ -34,11 +34,11 @@ public class CAngleArgumentType implements ArgumentType<CAngleArgumentType.Angle
 		}
 		boolean relative = CoordinateArgument.isRelative(stringReader);
 		float angle = stringReader.canRead() && stringReader.peek() != ' ' ? stringReader.readFloat() : 0.0F;
-		if (!Float.isNaN(angle) && !Float.isInfinite(angle)) {
-			return new Angle(angle, relative);
-		}
-		throw INVALID_ANGLE_EXCEPTION.createWithContext(stringReader);
-	}
+        if (Float.isNaN(angle) || Float.isInfinite(angle)) {
+            throw INVALID_ANGLE_EXCEPTION.createWithContext(stringReader);
+        }
+		return new Angle(angle, relative);
+    }
 
 	@Override
 	public Collection<String> getExamples() {
