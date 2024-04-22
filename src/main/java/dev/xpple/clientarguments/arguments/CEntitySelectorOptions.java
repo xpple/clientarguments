@@ -10,6 +10,7 @@ import net.minecraft.advancement.AdvancementProgress;
 import net.minecraft.advancement.criterion.CriterionProgress;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.FloatRangeArgument;
 import net.minecraft.entity.EntityType;
@@ -170,7 +171,11 @@ public class CEntitySelectorOptions {
 				if (!(entity instanceof AbstractClientPlayerEntity abstractClientPlayerEntity)) {
 					return false;
 				}
-                GameMode gameMode2 = MinecraftClient.getInstance().player.networkHandler.getPlayerListEntry(abstractClientPlayerEntity.getUuid()).getGameMode();
+                PlayerListEntry playerListEntry = MinecraftClient.getInstance().player.networkHandler.getPlayerListEntry(abstractClientPlayerEntity.getUuid());
+                if (playerListEntry == null) {
+                    return false;
+                }
+                GameMode gameMode2 = playerListEntry.getGameMode();
                 return bl == (gameMode2 != gameMode);
 			});
 			if (bl) {
