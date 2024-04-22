@@ -1,57 +1,51 @@
 package dev.xpple.clientarguments.arguments;
 
-import java.util.Set;
-import java.util.function.Predicate;
+import com.mojang.brigadier.StringReader;
+import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.pattern.CachedBlockPosition;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.state.property.Property;
-import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.Nullable;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.arguments.blocks.BlockStateParser;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.block.Block;
 
-public class CBlockStateArgument implements Predicate<CachedBlockPosition> {
-    private final BlockState state;
-    private final Set<Property<?>> properties;
-    @Nullable
-    private final NbtCompound data;
+public class CBlockStateArgument implements ArgumentType<CBlockInput> {
+    private static final Collection<String> EXAMPLES = Arrays.asList("stone", "minecraft:stone", "stone[foo=bar]", "foo{bar=baz}");
+    private final HolderLookup<Block> registryWrapper;
 
-    public CBlockStateArgument(BlockState state, Set<Property<?>> properties, @Nullable NbtCompound data) {
-        this.state = state;
-        this.properties = properties;
-        this.data = data;
+    public CBlockStateArgument(CommandBuildContext buildContext) {
+        this.registryWrapper = buildContext.lookupOrThrow(Registries.BLOCK);
     }
 
-    public BlockState getBlockState() {
-        return this.state;
+    public static CBlockStateArgument blockState(CommandBuildContext buildContext) {
+        return new CBlockStateArgument(buildContext);
     }
 
-    public Set<Property<?>> getProperties() {
-        return this.properties;
+    @Override
+    public CBlockInput parse(final StringReader stringReader) throws CommandSyntaxException {
+        BlockStateParser.BlockResult blockResult = BlockStateParser.parseForBlock(this.registryWrapper, stringReader, true);
+        return new CBlockInput(blockResult.blockState(), blockResult.properties().keySet(), blockResult.nbt());
     }
 
-    public boolean test(CachedBlockPosition cachedBlockPosition) {
-        BlockState blockState = cachedBlockPosition.getBlockState();
-        if (!blockState.isOf(this.state.getBlock())) {
-            return false;
-        }
-        for (Property<?> property : this.properties) {
-            if (blockState.get(property) != this.state.get(property)) {
-                return false;
-            }
-        }
-
-        if (this.data == null) {
-            return true;
-        }
-        BlockEntity blockEntity = cachedBlockPosition.getBlockEntity();
-        return blockEntity != null && NbtHelper.matches(this.data, blockEntity.createNbtWithIdentifyingData(cachedBlockPosition.getWorld().getRegistryManager()), true);
+    public static CBlockInput getBlockState(final CommandContext<FabricClientCommandSource> context, final String name) {
+        return context.getArgument(name, CBlockInput.class);
     }
 
-    public boolean test(ClientWorld world, BlockPos pos) {
-        return this.test(new CachedBlockPosition(world, pos, false));
+    @Override
+    public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
+        return BlockStateParser.fillSuggestions(this.registryWrapper, builder, false, true);
+    }
+
+    @Override
+    public Collection<String> getExamples() {
+        return EXAMPLES;
     }
 }

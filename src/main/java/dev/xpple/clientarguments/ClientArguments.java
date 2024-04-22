@@ -9,60 +9,60 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
-import dev.xpple.clientarguments.arguments.CNumberRangeArgumentType.IntRangeArgumentType;
-import dev.xpple.clientarguments.arguments.CNumberRangeArgumentType.FloatRangeArgumentType;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.text.Text;
-import net.minecraft.world.GameMode;
+import dev.xpple.clientarguments.arguments.CRangeArgument.Ints;
+import dev.xpple.clientarguments.arguments.CRangeArgument.Floats;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.GameType;
 
-import static dev.xpple.clientarguments.arguments.CAngleArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CBlockPosArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CBlockPredicateArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CBlockStateArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CColorArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CColumnPosArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CDimensionArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CEntityAnchorArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CEntityArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CEnumArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CGameProfileArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CIdentifierArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CItemPredicateArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CItemSlotArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CItemStackArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CMessageArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CNbtCompoundArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CNbtElementArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CNbtPathArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CNumberRangeArgumentType.*;
-import static dev.xpple.clientarguments.arguments.COperationArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CParticleEffectArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CRegistryEntryArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CRegistryEntryPredicateArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CRegistryEntryReferenceArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CRegistryKeyArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CRegistryPredicateArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CRotationArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CScoreHolderArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CScoreboardCriterionArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CScoreboardObjectiveArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CScoreboardSlotArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CSlotRangeArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CStyleArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CSwizzleArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CTeamArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CTestClassArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CTestFunctionArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CTextArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CTimeArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CUuidArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CVec2ArgumentType.*;
-import static dev.xpple.clientarguments.arguments.CVec3ArgumentType.*;
+import static dev.xpple.clientarguments.arguments.CAngleArgument.*;
+import static dev.xpple.clientarguments.arguments.CBlockPosArgument.*;
+import static dev.xpple.clientarguments.arguments.CBlockPredicateArgument.*;
+import static dev.xpple.clientarguments.arguments.CBlockStateArgument.*;
+import static dev.xpple.clientarguments.arguments.CColorArgument.*;
+import static dev.xpple.clientarguments.arguments.CColumnPosArgument.*;
+import static dev.xpple.clientarguments.arguments.CDimensionArgument.*;
+import static dev.xpple.clientarguments.arguments.CEntityAnchorArgument.*;
+import static dev.xpple.clientarguments.arguments.CEntityArgument.*;
+import static dev.xpple.clientarguments.arguments.CEnumArgument.*;
+import static dev.xpple.clientarguments.arguments.CGameProfileArgument.*;
+import static dev.xpple.clientarguments.arguments.CResourceLocationArgument.*;
+import static dev.xpple.clientarguments.arguments.CItemPredicateArgument.*;
+import static dev.xpple.clientarguments.arguments.CSlotArgument.*;
+import static dev.xpple.clientarguments.arguments.CItemArgument.*;
+import static dev.xpple.clientarguments.arguments.CMessageArgument.*;
+import static dev.xpple.clientarguments.arguments.CCompoundTagArgument.*;
+import static dev.xpple.clientarguments.arguments.CNbtTagArgument.*;
+import static dev.xpple.clientarguments.arguments.CNbtPathArgument.*;
+import static dev.xpple.clientarguments.arguments.CRangeArgument.*;
+import static dev.xpple.clientarguments.arguments.COperationArgument.*;
+import static dev.xpple.clientarguments.arguments.CParticleArgument.*;
+import static dev.xpple.clientarguments.arguments.CResourceOrIdArgument.*;
+import static dev.xpple.clientarguments.arguments.CResourceOrTagArgument.*;
+import static dev.xpple.clientarguments.arguments.CResourceArgument.*;
+import static dev.xpple.clientarguments.arguments.CResourceKeyArgument.*;
+import static dev.xpple.clientarguments.arguments.CResourceOrTagKeyArgument.*;
+import static dev.xpple.clientarguments.arguments.CRotationArgument.*;
+import static dev.xpple.clientarguments.arguments.CScoreHolderArgument.*;
+import static dev.xpple.clientarguments.arguments.CObjectiveCriteriaArgument.*;
+import static dev.xpple.clientarguments.arguments.CObjectiveArgument.*;
+import static dev.xpple.clientarguments.arguments.CScoreboardSlotArgument.*;
+import static dev.xpple.clientarguments.arguments.CSlotsArgument.*;
+import static dev.xpple.clientarguments.arguments.CStyleArgument.*;
+import static dev.xpple.clientarguments.arguments.CSwizzleArgument.*;
+import static dev.xpple.clientarguments.arguments.CTeamArgument.*;
+import static dev.xpple.clientarguments.arguments.CTestClassNameArgument.*;
+import static dev.xpple.clientarguments.arguments.CTestFunctionArgument.*;
+import static dev.xpple.clientarguments.arguments.CComponentArgument.*;
+import static dev.xpple.clientarguments.arguments.CTimeArgument.*;
+import static dev.xpple.clientarguments.arguments.CUuidArgument.*;
+import static dev.xpple.clientarguments.arguments.CVec2Argument.*;
+import static dev.xpple.clientarguments.arguments.CVec3Argument.*;
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.*;
 
 public class ClientArguments implements ClientModInitializer {
-    private static final DynamicCommandExceptionType STRUCTURE_INVALID_EXCEPTION = new DynamicCommandExceptionType(id -> Text.stringifiedTranslatable("commands.locate.structure.invalid", id));
+    private static final DynamicCommandExceptionType STRUCTURE_INVALID_EXCEPTION = new DynamicCommandExceptionType(id -> Component.translatableEscape("commands.locate.structure.invalid", id));
 
     @Override
     public void onInitializeClient() {
@@ -78,7 +78,7 @@ public class ClientArguments implements ClientModInitializer {
      * Registering this test command will trigger {@link com.mojang.brigadier.tree.CommandNode#findAmbiguities(AmbiguityConsumer)},
      * which checks the validity of the example inputs - and with that also the validity of the argument in question.
      */
-    private static void registerTestCommand(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+    private static void registerTestCommand(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext registryAccess) {
         dispatcher.register(literal("clientarguments:test")
             .then(literal("angle").then(argument("angle", angle())
                 .executes(ctx -> consume(getAngle(ctx, "angle")))))
@@ -98,12 +98,12 @@ public class ClientArguments implements ClientModInitializer {
                 .executes(ctx -> consume(getEntityAnchor(ctx, "entityanchor")))))
             .then(literal("entity").then(argument("entity", entity())
                 .executes(ctx -> consume(getEntity(ctx, "entity")))))
-            .then(literal("enum").then(argument("enum", enumArg(GameMode.class))
+            .then(literal("enum").then(argument("enum", enumArg(GameType.class))
                 .executes(ctx -> consume(getEnum(ctx, "enum")))))
             .then(literal("gameprofile").then(argument("gameprofile", gameProfile())
                 .executes(ctx -> consume(getProfileArgument(ctx, "gameprofile")))))
-            .then(literal("identifier").then(argument("identifier", identifier())
-                .executes(ctx -> consume(getIdentifier(ctx, "identifier")))))
+            .then(literal("identifier").then(argument("identifier", id())
+                .executes(ctx -> consume(getId(ctx, "identifier")))))
             .then(literal("itempredicate").then(argument("itempredicate", itemPredicate(registryAccess))
                 .executes(ctx -> consume(getItemStackPredicate(ctx, "itempredicate")))))
             .then(literal("itemslot").then(argument("itemslot", itemSlot())
@@ -112,54 +112,54 @@ public class ClientArguments implements ClientModInitializer {
                 .executes(ctx -> consume(getItemStackArgument(ctx, "itemstack")))))
             .then(literal("message").then(argument("message", message())
                 .executes(ctx -> consume(getMessage(ctx, "message")))))
-            .then(literal("nbtcompound").then(argument("nbtcompound", nbtCompound())
-                .executes(ctx -> consume(getNbtCompound(ctx, "nbtcompound")))))
-            .then(literal("nbtelement").then(argument("nbtelement", nbtElement())
-                .executes(ctx -> consume(getNbtElement(ctx, "nbtelement")))))
+            .then(literal("nbtcompound").then(argument("nbtcompound", compoundTag())
+                .executes(ctx -> consume(getCompoundTag(ctx, "nbtcompound")))))
+            .then(literal("nbtelement").then(argument("nbtelement", nbtTag())
+                .executes(ctx -> consume(getNbtTag(ctx, "nbtelement")))))
             .then(literal("nbtpath").then(argument("nbtpath", nbtPath())
                 .executes(ctx -> consume(getNbtPath(ctx, "nbtpath")))))
             .then(literal("intrange").then(argument("intrange", intRange())
-                .executes(ctx -> consume(IntRangeArgumentType.getRangeArgument(ctx, "intrange")))))
+                .executes(ctx -> consume(Ints.getRangeArgument(ctx, "intrange")))))
             .then(literal("floatrange").then(argument("floatrange", floatRange())
-                .executes(ctx -> consume(FloatRangeArgumentType.getRangeArgument(ctx, "floatrange")))))
+                .executes(ctx -> consume(Floats.getRangeArgument(ctx, "floatrange")))))
             .then(literal("operation").then(argument("operation", operation())
                 .executes(ctx -> consume(getOperation(ctx, "operation")))))
-            .then(literal("particleeffect").then(argument("particleeffect", particleEffect(registryAccess))
+            .then(literal("particleeffect").then(argument("particleeffect", particle(registryAccess))
                 .executes(ctx -> consume(getParticle(ctx, "particleeffect")))))
             .then(literal("registryentry").then(argument("registryentry", lootTable(registryAccess))
                 .executes(ctx -> consume(getLootTable(ctx, "registryentry")))))
-            .then(literal("registryentrypredicate").then(argument("registryentrypredicate", registryEntryPredicate(registryAccess, RegistryKeys.BIOME))
-                .executes(ctx -> consume(getRegistryEntryPredicate(ctx, "registryentrypredicate", RegistryKeys.BIOME)))))
-            .then(literal("registryentryreference").then(argument("registryentryreference", registryEntry(registryAccess, RegistryKeys.ENCHANTMENT))
+            .then(literal("registryentrypredicate").then(argument("registryentrypredicate", resourceOrTag(registryAccess, Registries.BIOME))
+                .executes(ctx -> consume(getResourceOrTag(ctx, "registryentrypredicate", Registries.BIOME)))))
+            .then(literal("registryentryreference").then(argument("registryentryreference", registryEntry(registryAccess, Registries.ENCHANTMENT))
                 .executes(ctx -> consume(getEnchantment(ctx, "registryentryreference")))))
-            .then(literal("registrykey").then(argument("registrykey", registryKey(RegistryKeys.STRUCTURE))
-                .executes(ctx -> consume(getKey(ctx, "registrykey", RegistryKeys.STRUCTURE, STRUCTURE_INVALID_EXCEPTION)))))
-            .then(literal("registrypredicate").then(argument("registrypredicate", registryPredicate(RegistryKeys.STRUCTURE))
-                .executes(ctx -> consume(getPredicate(ctx, "registrypredicate", RegistryKeys.STRUCTURE, STRUCTURE_INVALID_EXCEPTION)))))
+            .then(literal("registrykey").then(argument("registrykey", key(Registries.STRUCTURE))
+                .executes(ctx -> consume(getKey(ctx, "registrykey", Registries.STRUCTURE, STRUCTURE_INVALID_EXCEPTION)))))
+            .then(literal("registrypredicate").then(argument("registrypredicate", registryPredicate(Registries.STRUCTURE))
+                .executes(ctx -> consume(getPredicate(ctx, "registrypredicate", Registries.STRUCTURE, STRUCTURE_INVALID_EXCEPTION)))))
             .then(literal("rotation").then(argument("rotation", rotation())
                 .executes(ctx -> consume(getRotation(ctx, "rotation")))))
-            .then(literal("scoreboardcriterion").then(argument("scoreboardcriterion", scoreboardCriterion())
-                .executes(ctx -> consume(getCriterion(ctx, "scoreboardcriterion")))))
-            .then(literal("scoreboardobjective").then(argument("scoreboardobjective", scoreboardObjective())
+            .then(literal("scoreboardcriterion").then(argument("scoreboardcriterion", criteria())
+                .executes(ctx -> consume(getCriteria(ctx, "scoreboardcriterion")))))
+            .then(literal("scoreboardobjective").then(argument("scoreboardobjective", objective())
                 .executes(ctx -> consume(getObjective(ctx, "scoreboardobjective")))))
             .then(literal("scoreboardslot").then(argument("scoreboardslot", scoreboardSlot())
                 .executes(ctx -> consume(getScoreboardSlot(ctx, "scoreboardslot")))))
             .then(literal("scoreholder").then(argument("scoreholder", scoreHolder())
                 .executes(ctx -> consume(getScoreHolder(ctx, "scoreholder")))))
-            .then(literal("slotrange").then(argument("slotrange", slotRange())
-                .executes(ctx -> consume(getSlotRange(ctx, "slotrange")))))
+            .then(literal("slotrange").then(argument("slotrange", slots())
+                .executes(ctx -> consume(getSlots(ctx, "slotrange")))))
             .then(literal("style").then(argument("style", style(registryAccess))
                 .executes(ctx -> consume(getStyle(ctx, "style")))))
             .then(literal("swizzle").then(argument("swizzle", swizzle())
                 .executes(ctx -> consume(getSwizzle(ctx, "swizzle")))))
             .then(literal("team").then(argument("team", team())
                 .executes(ctx -> consume(getTeam(ctx, "team")))))
-            .then(literal("testclass").then(argument("testclass", testClass())
-                .executes(ctx -> consume(getTestClass(ctx, "testclass")))))
+            .then(literal("testclass").then(argument("testclass", testClassName())
+                .executes(ctx -> consume(getTestClassName(ctx, "testclass")))))
             .then(literal("testfunction").then(argument("testfunction", testFunction())
                 .executes(ctx -> consume(getFunction(ctx, "testfunction")))))
-            .then(literal("text").then(argument("text", text(registryAccess))
-                .executes(ctx -> consume(getTextArgument(ctx, "text")))))
+            .then(literal("text").then(argument("text", textComponent(registryAccess))
+                .executes(ctx -> consume(getComponent(ctx, "text")))))
             .then(literal("time").then(argument("time", time())
                 .executes(ctx -> consume(getTime(ctx, "time")))))
             .then(literal("uuid").then(argument("uuid", uuid())

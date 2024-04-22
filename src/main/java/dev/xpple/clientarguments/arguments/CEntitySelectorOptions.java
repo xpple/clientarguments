@@ -6,47 +6,47 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.advancement.AdvancementProgress;
-import net.minecraft.advancement.criterion.CriterionProgress;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.FloatRangeArgument;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.predicate.NumberRange;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.scoreboard.AbstractTeam;
-import net.minecraft.scoreboard.ReadableScoreboardScore;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.GameMode;
+import net.minecraft.advancements.AdvancementProgress;
+import net.minecraft.advancements.CriterionProgress;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.ReadOnlyScoreInfo;
+import net.minecraft.world.scores.Scoreboard;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.GameType;
 
-import java.util.*;
+import java.util.Map; import java.util.Arrays; import java.util.Locale; import java.util.Objects; 
 import java.util.function.Predicate;
 
 public class CEntitySelectorOptions {
 	private static final Map<String, SelectorOption> OPTIONS = Maps.newHashMap();
-	public static final DynamicCommandExceptionType UNKNOWN_OPTION_EXCEPTION = new DynamicCommandExceptionType(option -> Text.stringifiedTranslatable("argument.entity.options.unknown", option));
-	public static final DynamicCommandExceptionType INAPPLICABLE_OPTION_EXCEPTION = new DynamicCommandExceptionType(option -> Text.stringifiedTranslatable("argument.entity.options.inapplicable", option));
-	public static final SimpleCommandExceptionType NEGATIVE_DISTANCE_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.options.distance.negative"));
-	public static final SimpleCommandExceptionType NEGATIVE_LEVEL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.options.level.negative"));
-	public static final SimpleCommandExceptionType TOO_SMALL_LEVEL_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.options.limit.toosmall"));
-	public static final DynamicCommandExceptionType IRREVERSIBLE_SORT_EXCEPTION = new DynamicCommandExceptionType(sortType -> Text.stringifiedTranslatable("argument.entity.options.sort.irreversible", sortType));
-	public static final DynamicCommandExceptionType INVALID_MODE_EXCEPTION = new DynamicCommandExceptionType(gameMode -> Text.stringifiedTranslatable("argument.entity.options.mode.invalid", gameMode));
-	public static final DynamicCommandExceptionType INVALID_TYPE_EXCEPTION = new DynamicCommandExceptionType(entity -> Text.stringifiedTranslatable("argument.entity.options.type.invalid", entity));
+	public static final DynamicCommandExceptionType UNKNOWN_OPTION_EXCEPTION = new DynamicCommandExceptionType(option -> Component.translatableEscape("argument.entity.options.unknown", option));
+	public static final DynamicCommandExceptionType INAPPLICABLE_OPTION_EXCEPTION = new DynamicCommandExceptionType(option -> Component.translatableEscape("argument.entity.options.inapplicable", option));
+	public static final SimpleCommandExceptionType NEGATIVE_DISTANCE_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.distance.negative"));
+	public static final SimpleCommandExceptionType NEGATIVE_LEVEL_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.level.negative"));
+	public static final SimpleCommandExceptionType TOO_SMALL_LEVEL_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.limit.toosmall"));
+	public static final DynamicCommandExceptionType IRREVERSIBLE_SORT_EXCEPTION = new DynamicCommandExceptionType(sortType -> Component.translatableEscape("argument.entity.options.sort.irreversible", sortType));
+	public static final DynamicCommandExceptionType INVALID_MODE_EXCEPTION = new DynamicCommandExceptionType(gameMode -> Component.translatableEscape("argument.entity.options.mode.invalid", gameMode));
+	public static final DynamicCommandExceptionType INVALID_TYPE_EXCEPTION = new DynamicCommandExceptionType(entity -> Component.translatableEscape("argument.entity.options.type.invalid", entity));
 
-	private static void putOption(String id, SelectorHandler handler, Predicate<CEntitySelectorReader> condition, Text description) {
+	private static void putOption(String id, SelectorHandler handler, Predicate<CEntitySelectorReader> condition, Component description) {
 		OPTIONS.put(id, new SelectorOption(handler, condition, description));
 	}
 
@@ -69,20 +69,20 @@ public class CEntitySelectorOptions {
 			}
 
 			reader.setPredicate(entity -> entity.getName().getString().equals(string) != bl);
-        }, reader -> !reader.selectsName(), Text.translatable("argument.entity.options.name.description"));
+        }, reader -> !reader.selectsName(), Component.translatable("argument.entity.options.name.description"));
         putOption("distance", reader -> {
             int cursor = reader.getReader().getCursor();
-            NumberRange.DoubleRange doubleRange = NumberRange.DoubleRange.parse(reader.getReader());
+            MinMaxBounds.Doubles doubleRange = MinMaxBounds.Doubles.fromReader(reader.getReader());
             if ((doubleRange.min().isEmpty() || !(doubleRange.min().get() < 0.0)) && (doubleRange.max().isEmpty() || !(doubleRange.max().get() < 0.0))) {
                 reader.setDistance(doubleRange);
             } else {
                 reader.getReader().setCursor(cursor);
                 throw NEGATIVE_DISTANCE_EXCEPTION.createWithContext(reader.getReader());
             }
-        }, reader -> reader.getDistance().isDummy(), Text.translatable("argument.entity.options.distance.description"));
+        }, reader -> reader.getDistance().isAny(), Component.translatable("argument.entity.options.distance.description"));
         putOption("level", reader -> {
             int cursor = reader.getReader().getCursor();
-            NumberRange.IntRange intRange = NumberRange.IntRange.parse(reader.getReader());
+            MinMaxBounds.Ints intRange = MinMaxBounds.Ints.fromReader(reader.getReader());
             if ((intRange.min().isEmpty() || intRange.min().get() >= 0) && (intRange.max().isEmpty() || intRange.max().get() >= 0)) {
                 reader.setLevelRange(intRange);
                 reader.setIncludesNonPlayers(false);
@@ -90,15 +90,15 @@ public class CEntitySelectorOptions {
                 reader.getReader().setCursor(cursor);
                 throw NEGATIVE_LEVEL_EXCEPTION.createWithContext(reader.getReader());
             }
-        }, reader -> reader.getLevelRange().isDummy(), Text.translatable("argument.entity.options.level.description"));
-        putOption("x", reader -> reader.setX(reader.getReader().readDouble()), reader -> reader.getX() == null, Text.translatable("argument.entity.options.x.description"));
-        putOption("y", reader -> reader.setY(reader.getReader().readDouble()), reader -> reader.getY() == null, Text.translatable("argument.entity.options.y.description"));
-        putOption("z", reader -> reader.setZ(reader.getReader().readDouble()), reader -> reader.getZ() == null, Text.translatable("argument.entity.options.z.description"));
-        putOption("dx", reader -> reader.setDx(reader.getReader().readDouble()), reader -> reader.getDx() == null, Text.translatable("argument.entity.options.dx.description"));
-        putOption("dy", reader -> reader.setDy(reader.getReader().readDouble()), reader -> reader.getDy() == null, Text.translatable("argument.entity.options.dy.description"));
-        putOption("dz", reader -> reader.setDz(reader.getReader().readDouble()), reader -> reader.getDz() == null, Text.translatable("argument.entity.options.dz.description"));
-        putOption("x_rotation", reader -> reader.setPitchRange(FloatRangeArgument.parse(reader.getReader(), true, MathHelper::wrapDegrees)), reader -> reader.getPitchRange() == FloatRangeArgument.ANY, Text.translatable("argument.entity.options.x_rotation.description"));
-        putOption("y_rotation", reader -> reader.setYawRange(FloatRangeArgument.parse(reader.getReader(), true, MathHelper::wrapDegrees)), reader -> reader.getYawRange() == FloatRangeArgument.ANY, Text.translatable("argument.entity.options.y_rotation.description"));
+        }, reader -> reader.getLevelRange().isAny(), Component.translatable("argument.entity.options.level.description"));
+        putOption("x", reader -> reader.setX(reader.getReader().readDouble()), reader -> reader.getX() == null, Component.translatable("argument.entity.options.x.description"));
+        putOption("y", reader -> reader.setY(reader.getReader().readDouble()), reader -> reader.getY() == null, Component.translatable("argument.entity.options.y.description"));
+        putOption("z", reader -> reader.setZ(reader.getReader().readDouble()), reader -> reader.getZ() == null, Component.translatable("argument.entity.options.z.description"));
+        putOption("dx", reader -> reader.setDx(reader.getReader().readDouble()), reader -> reader.getDx() == null, Component.translatable("argument.entity.options.dx.description"));
+        putOption("dy", reader -> reader.setDy(reader.getReader().readDouble()), reader -> reader.getDy() == null, Component.translatable("argument.entity.options.dy.description"));
+        putOption("dz", reader -> reader.setDz(reader.getReader().readDouble()), reader -> reader.getDz() == null, Component.translatable("argument.entity.options.dz.description"));
+        putOption("x_rotation", reader -> reader.setPitchRange(WrappedMinMaxBounds.fromReader(reader.getReader(), true, Mth::wrapDegrees)), reader -> reader.getPitchRange() == WrappedMinMaxBounds.ANY, Component.translatable("argument.entity.options.x_rotation.description"));
+        putOption("y_rotation", reader -> reader.setYawRange(WrappedMinMaxBounds.fromReader(reader.getReader(), true, Mth::wrapDegrees)), reader -> reader.getYawRange() == WrappedMinMaxBounds.ANY, Component.translatable("argument.entity.options.y_rotation.description"));
         putOption("limit", reader -> {
             int cursor = reader.getReader().getCursor();
             int j = reader.getReader().readInt();
@@ -108,11 +108,11 @@ public class CEntitySelectorOptions {
             }
 			reader.setLimit(j);
 			reader.setHasLimit(true);
-        }, reader -> !reader.isSenderOnly() && !reader.hasLimit(), Text.translatable("argument.entity.options.limit.description"));
+        }, reader -> !reader.isSenderOnly() && !reader.hasLimit(), Component.translatable("argument.entity.options.limit.description"));
         putOption("sort", reader -> {
             int cursor = reader.getReader().getCursor();
             String string = reader.getReader().readUnquotedString();
-            reader.setSuggestionProvider((builder, consumer) -> CommandSource.suggestMatching(Arrays.asList("nearest", "furthest", "random", "arbitrary"), builder));
+            reader.setSuggestionProvider((builder, consumer) -> SharedSuggestionProvider.suggest(Arrays.asList("nearest", "furthest", "random", "arbitrary"), builder));
 
             reader.setSorter(switch (string) {
 				case "nearest" -> CEntitySelectorReader.NEAREST;
@@ -125,7 +125,7 @@ public class CEntitySelectorOptions {
 				}
 			});
             reader.setHasSorter(true);
-        }, reader -> !reader.isSenderOnly() && !reader.hasSorter(), Text.translatable("argument.entity.options.sort.description"));
+        }, reader -> !reader.isSenderOnly() && !reader.hasSorter(), Component.translatable("argument.entity.options.sort.description"));
         putOption("gamemode", reader -> {
             reader.setSuggestionProvider((builder, consumer) -> {
                 String stringxx = builder.getRemaining().toLowerCase(Locale.ROOT);
@@ -140,14 +140,14 @@ public class CEntitySelectorOptions {
                     }
                 }
 
-                for (GameMode gameModexx : GameMode.values()) {
-                    if (gameModexx.getName().toLowerCase(Locale.ROOT).startsWith(stringxx)) {
+                for (GameType gameType : GameType.values()) {
+                    if (gameType.getName().toLowerCase(Locale.ROOT).startsWith(stringxx)) {
                         if (bl2) {
-                            builder.suggest("!" + gameModexx.getName());
+                            builder.suggest("!" + gameType.getName());
                         }
 
                         if (blxx) {
-                            builder.suggest(gameModexx.getName());
+                            builder.suggest(gameType.getName());
                         }
                     }
                 }
@@ -161,29 +161,29 @@ public class CEntitySelectorOptions {
                 throw INAPPLICABLE_OPTION_EXCEPTION.createWithContext(reader.getReader(), "gamemode");
             }
 			String string = reader.getReader().readUnquotedString();
-			GameMode gameMode = GameMode.byName(string, null);
-			if (gameMode == null) {
+			GameType gameType = GameType.byName(string, null);
+			if (gameType == null) {
 				reader.getReader().setCursor(cursor);
 				throw INVALID_MODE_EXCEPTION.createWithContext(reader.getReader(), string);
 			}
 			reader.setIncludesNonPlayers(false);
 			reader.setPredicate(entity -> {
-				if (!(entity instanceof AbstractClientPlayerEntity abstractClientPlayerEntity)) {
+				if (!(entity instanceof AbstractClientPlayer abstractClientPlayerEntity)) {
 					return false;
 				}
-                PlayerListEntry playerListEntry = MinecraftClient.getInstance().player.networkHandler.getPlayerListEntry(abstractClientPlayerEntity.getUuid());
+                PlayerInfo playerListEntry = Minecraft.getInstance().player.connection.getPlayerInfo(abstractClientPlayerEntity.getUUID());
                 if (playerListEntry == null) {
                     return false;
                 }
-                GameMode gameMode2 = playerListEntry.getGameMode();
-                return bl == (gameMode2 != gameMode);
+                GameType gameType2 = playerListEntry.getGameMode();
+                return bl == (gameType2 != gameType);
 			});
 			if (bl) {
 				reader.setExcludesGameMode(true);
 			} else {
 				reader.setSelectsGameMode(true);
 			}
-        }, reader -> !reader.selectsGameMode(), Text.translatable("argument.entity.options.gamemode.description"));
+        }, reader -> !reader.selectsGameMode(), Component.translatable("argument.entity.options.gamemode.description"));
         putOption("team", reader -> {
             boolean bl = reader.readNegationCharacter();
             String string = reader.getReader().readUnquotedString();
@@ -191,8 +191,8 @@ public class CEntitySelectorOptions {
                 if (!(entity instanceof LivingEntity)) {
                     return false;
                 }
-				AbstractTeam abstractTeam = entity.getScoreboardTeam();
-				String string2 = abstractTeam == null ? "" : abstractTeam.getName();
+				Team team = entity.getTeam();
+				String string2 = team == null ? "" : team.getName();
 				return string2.equals(string) != bl;
             });
             if (bl) {
@@ -200,14 +200,14 @@ public class CEntitySelectorOptions {
             } else {
                 reader.setSelectsTeam(true);
             }
-        }, reader -> !reader.selectsTeam(), Text.translatable("argument.entity.options.team.description"));
+        }, reader -> !reader.selectsTeam(), Component.translatable("argument.entity.options.team.description"));
         putOption("type", reader -> {
             reader.setSuggestionProvider((builder, consumer) -> {
-                CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.getIds(), builder, String.valueOf('!'));
-                CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.streamTags().map(TagKey::id), builder, "!#");
+                SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), builder, String.valueOf('!'));
+                SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTagNames().map(TagKey::location), builder, "!#");
                 if (!reader.excludesEntityType()) {
-                    CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.getIds(), builder);
-                    CommandSource.suggestIdentifiers(Registries.ENTITY_TYPE.streamTags().map(TagKey::id), builder, String.valueOf('#'));
+                    SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), builder);
+                    SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTagNames().map(TagKey::location), builder, String.valueOf('#'));
                 }
 
                 return builder.buildFuture();
@@ -223,13 +223,13 @@ public class CEntitySelectorOptions {
 			}
 
 			if (reader.readTagCharacter()) {
-				TagKey<EntityType<?>> tagKey = TagKey.of(RegistryKeys.ENTITY_TYPE, Identifier.fromCommandInput(reader.getReader()));
-				reader.setPredicate(entity -> entity.getType().isIn(tagKey) != bl);
+				TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.read(reader.getReader()));
+				reader.setPredicate(entity -> entity.getType().is(tagKey) != bl);
 			} else {
-				Identifier identifier = Identifier.fromCommandInput(reader.getReader());
-				EntityType<?> entityType = Registries.ENTITY_TYPE.getOrEmpty(identifier).orElseThrow(() -> {
+				ResourceLocation resourceLocation = ResourceLocation.read(reader.getReader());
+				EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getOptional(resourceLocation).orElseThrow(() -> {
 					reader.getReader().setCursor(cursor);
-					return INVALID_TYPE_EXCEPTION.createWithContext(reader.getReader(), identifier.toString());
+					return INVALID_TYPE_EXCEPTION.createWithContext(reader.getReader(), resourceLocation.toString());
 				});
 				if (Objects.equals(EntityType.PLAYER, entityType) && !bl) {
 					reader.setIncludesNonPlayers(false);
@@ -240,36 +240,36 @@ public class CEntitySelectorOptions {
 					reader.setEntityType(entityType);
 				}
 			}
-        }, reader -> !reader.selectsEntityType(), Text.translatable("argument.entity.options.type.description"));
+        }, reader -> !reader.selectsEntityType(), Component.translatable("argument.entity.options.type.description"));
         putOption("tag", reader -> {
             boolean bl = reader.readNegationCharacter();
             String string = reader.getReader().readUnquotedString();
             reader.setPredicate(entity -> {
                 if ("".equals(string)) {
-                    return entity.getCommandTags().isEmpty() != bl;
+                    return entity.getTags().isEmpty() != bl;
                 } else {
-                    return entity.getCommandTags().contains(string) != bl;
+                    return entity.getTags().contains(string) != bl;
                 }
             });
-        }, reader -> true, Text.translatable("argument.entity.options.tag.description"));
+        }, reader -> true, Component.translatable("argument.entity.options.tag.description"));
         putOption("nbt", reader -> {
             boolean bl = reader.readNegationCharacter();
-            NbtCompound nbtCompound = new StringNbtReader(reader.getReader()).parseCompound();
+            CompoundTag compoundTag = new TagParser(reader.getReader()).readStruct();
             reader.setPredicate(entity -> {
-                NbtCompound nbtCompound2 = entity.writeNbt(new NbtCompound());
-                if (entity instanceof AbstractClientPlayerEntity abstractClientPlayerEntity) {
-                    ItemStack itemStack = abstractClientPlayerEntity.getInventory().getMainHandStack();
+                CompoundTag compoundTag2 = entity.saveWithoutId(new CompoundTag());
+                if (entity instanceof AbstractClientPlayer abstractClientPlayer) {
+                    ItemStack itemStack = abstractClientPlayer.getInventory().getSelected();
                     if (!itemStack.isEmpty()) {
-                        nbtCompound2.put("SelectedItem", itemStack.encode(abstractClientPlayerEntity.getRegistryManager()));
+                        compoundTag2.put("SelectedItem", itemStack.save(abstractClientPlayer.registryAccess()));
                     }
                 }
 
-                return NbtHelper.matches(nbtCompound, nbtCompound2, true) != bl;
+                return NbtUtils.compareNbt(compoundTag, compoundTag2, true) != bl;
             });
-        }, reader -> true, Text.translatable("argument.entity.options.nbt.description"));
+        }, reader -> true, Component.translatable("argument.entity.options.nbt.description"));
         putOption("scores", reader -> {
             StringReader stringReader = reader.getReader();
-            Map<String, NumberRange.IntRange> map = Maps.newHashMap();
+            Map<String, MinMaxBounds.Ints> map = Maps.newHashMap();
             stringReader.expect('{');
             stringReader.skipWhitespace();
 
@@ -279,7 +279,7 @@ public class CEntitySelectorOptions {
                 stringReader.skipWhitespace();
                 stringReader.expect('=');
                 stringReader.skipWhitespace();
-                NumberRange.IntRange intRange = NumberRange.IntRange.parse(stringReader);
+                MinMaxBounds.Ints intRange = MinMaxBounds.Ints.fromReader(stringReader);
                 map.put(string, intRange);
                 stringReader.skipWhitespace();
                 if (stringReader.canRead() && stringReader.peek() == ',') {
@@ -292,18 +292,18 @@ public class CEntitySelectorOptions {
                 reader.setPredicate(entity -> {
                     Scoreboard scoreboard = entity.getServer().getScoreboard();
 
-                    for (Map.Entry<String, NumberRange.IntRange> entry : map.entrySet()) {
-                        ScoreboardObjective scoreboardObjective = scoreboard.getNullableObjective(entry.getKey());
-                        if (scoreboardObjective == null) {
+                    for (Map.Entry<String, MinMaxBounds.Ints> entry : map.entrySet()) {
+                        Objective objective = scoreboard.getObjective(entry.getKey());
+                        if (objective == null) {
                             return false;
                         }
 
-                        ReadableScoreboardScore readableScoreboardScore = scoreboard.getScore(entity, scoreboardObjective);
-                        if (readableScoreboardScore == null) {
+                        ReadOnlyScoreInfo readOnlyScoreInfo = scoreboard.getPlayerScoreInfo(entity, objective);
+                        if (readOnlyScoreInfo == null) {
                             return false;
                         }
 
-                        if (!entry.getValue().test(readableScoreboardScore.getScore())) {
+                        if (!entry.getValue().matches(readOnlyScoreInfo.value())) {
                             return false;
                         }
                     }
@@ -313,16 +313,16 @@ public class CEntitySelectorOptions {
             }
 
             reader.setSelectsScores(true);
-        }, reader -> !reader.selectsScores(), Text.translatable("argument.entity.options.scores.description"));
+        }, reader -> !reader.selectsScores(), Component.translatable("argument.entity.options.scores.description"));
         putOption("advancements", reader -> {
             StringReader stringReader = reader.getReader();
-            Map<Identifier, Predicate<AdvancementProgress>> map = Maps.newHashMap();
+            Map<ResourceLocation, Predicate<AdvancementProgress>> map = Maps.newHashMap();
             stringReader.expect('{');
             stringReader.skipWhitespace();
 
             while (stringReader.canRead() && stringReader.peek() != '}') {
                 stringReader.skipWhitespace();
-                Identifier identifier = Identifier.fromCommandInput(stringReader);
+                ResourceLocation resourceLocation = ResourceLocation.read(stringReader);
                 stringReader.skipWhitespace();
                 stringReader.expect('=');
                 stringReader.skipWhitespace();
@@ -339,7 +339,7 @@ public class CEntitySelectorOptions {
                         stringReader.expect('=');
                         stringReader.skipWhitespace();
                         boolean bl = stringReader.readBoolean();
-                        map2.put(string, criterionProgress -> criterionProgress.isObtained() == bl);
+                        map2.put(string, criterionProgress -> criterionProgress.isDone() == bl);
                         stringReader.skipWhitespace();
                         if (stringReader.canRead() && stringReader.peek() == ',') {
                             stringReader.skip();
@@ -349,9 +349,9 @@ public class CEntitySelectorOptions {
                     stringReader.skipWhitespace();
                     stringReader.expect('}');
                     stringReader.skipWhitespace();
-                    map.put(identifier, advancementProgress -> {
+                    map.put(resourceLocation, advancementProgress -> {
                         for (Map.Entry<String, Predicate<CriterionProgress>> entry : map2.entrySet()) {
-                            CriterionProgress criterionProgress = advancementProgress.getCriterionProgress(entry.getKey());
+                            CriterionProgress criterionProgress = advancementProgress.getCriterion(entry.getKey());
                             if (criterionProgress == null || !entry.getValue().test(criterionProgress)) {
                                 return false;
                             }
@@ -361,7 +361,7 @@ public class CEntitySelectorOptions {
                     });
                 } else {
                     boolean bl2 = stringReader.readBoolean();
-                    map.put(identifier, advancementProgress -> advancementProgress.isDone() == bl2);
+                    map.put(resourceLocation, advancementProgress -> advancementProgress.isDone() == bl2);
                 }
 
                 stringReader.skipWhitespace();
@@ -377,8 +377,8 @@ public class CEntitySelectorOptions {
             }
 
             reader.setSelectsAdvancements(true);
-        }, reader -> !reader.selectsAdvancements(), Text.translatable("argument.entity.options.advancements.description"));
-        putOption("predicate", reader -> reader.setPredicate(entity -> false), reader -> true, Text.translatable("argument.entity.options.predicate.description"));
+        }, reader -> !reader.selectsAdvancements(), Component.translatable("argument.entity.options.advancements.description"));
+        putOption("predicate", reader -> reader.setPredicate(entity -> false), reader -> true, Component.translatable("argument.entity.options.predicate.description"));
     }
 
 	public static SelectorHandler getHandler(CEntitySelectorReader reader, String option, int restoreCursor) throws CommandSyntaxException {
@@ -407,6 +407,6 @@ public class CEntitySelectorOptions {
 		void handle(CEntitySelectorReader reader) throws CommandSyntaxException;
 	}
 
-	record SelectorOption(SelectorHandler handler, Predicate<CEntitySelectorReader> condition, Text description) {
+	record SelectorOption(SelectorHandler handler, Predicate<CEntitySelectorReader> condition, Component description) {
 	}
 }

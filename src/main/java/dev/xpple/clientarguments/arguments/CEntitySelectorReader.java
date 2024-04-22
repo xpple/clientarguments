@@ -8,40 +8,40 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.command.v2.FabricEntitySelectorReader;
-import net.minecraft.command.FloatRangeArgument;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.predicate.NumberRange;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.*;
+import java.util.function.BiConsumer; import java.util.function.BiFunction; import java.util.function.Consumer; import java.util.function.Predicate; import java.util.function.Function; import java.util.function.ToDoubleFunction; 
 
 public class CEntitySelectorReader implements FabricEntitySelectorReader {
-	public static final SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.invalid"));
-	public static final DynamicCommandExceptionType UNKNOWN_SELECTOR_EXCEPTION = new DynamicCommandExceptionType(selectorType -> Text.stringifiedTranslatable("argument.entity.selector.unknown", selectorType));
-	public static final SimpleCommandExceptionType NOT_ALLOWED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.selector.not_allowed"));
-	public static final SimpleCommandExceptionType MISSING_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.selector.missing"));
-	public static final SimpleCommandExceptionType UNTERMINATED_EXCEPTION = new SimpleCommandExceptionType(Text.translatable("argument.entity.options.unterminated"));
-	public static final DynamicCommandExceptionType VALUELESS_EXCEPTION = new DynamicCommandExceptionType(option -> Text.stringifiedTranslatable("argument.entity.options.valueless", option));
-	public static final BiConsumer<Vec3d, List<? extends Entity>> NEAREST = (pos, entities) -> entities.sort((entity1, entity2) -> Doubles.compare(entity1.squaredDistanceTo(pos), entity2.squaredDistanceTo(pos)));
-	public static final BiConsumer<Vec3d, List<? extends Entity>> FURTHEST = (pos, entities) -> entities.sort((entity1, entity2) -> Doubles.compare(entity2.squaredDistanceTo(pos), entity1.squaredDistanceTo(pos)));
-	public static final BiConsumer<Vec3d, List<? extends Entity>> RANDOM = (pos, entities) -> Collections.shuffle(entities);
+	public static final SimpleCommandExceptionType INVALID_ENTITY_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.entity.invalid"));
+	public static final DynamicCommandExceptionType UNKNOWN_SELECTOR_EXCEPTION = new DynamicCommandExceptionType(selectorType -> Component.translatableEscape("argument.entity.selector.unknown", selectorType));
+	public static final SimpleCommandExceptionType NOT_ALLOWED_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.entity.selector.not_allowed"));
+	public static final SimpleCommandExceptionType MISSING_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.entity.selector.missing"));
+	public static final SimpleCommandExceptionType UNTERMINATED_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.entity.options.unterminated"));
+	public static final DynamicCommandExceptionType VALUELESS_EXCEPTION = new DynamicCommandExceptionType(option -> Component.translatableEscape("argument.entity.options.valueless", option));
+	public static final BiConsumer<Vec3, List<? extends Entity>> NEAREST = (pos, entities) -> entities.sort((entity1, entity2) -> Doubles.compare(entity1.distanceToSqr(pos), entity2.distanceToSqr(pos)));
+	public static final BiConsumer<Vec3, List<? extends Entity>> FURTHEST = (pos, entities) -> entities.sort((entity1, entity2) -> Doubles.compare(entity2.distanceToSqr(pos), entity1.distanceToSqr(pos)));
+	public static final BiConsumer<Vec3, List<? extends Entity>> RANDOM = (pos, entities) -> Collections.shuffle(entities);
 	public static final BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> DEFAULT_SUGGESTION_PROVIDER = (builder, consumer) -> builder.buildFuture();
 	private final StringReader reader;
 	private final boolean atAllowed;
 	private int limit;
 	private boolean includesNonPlayers;
-	private NumberRange.DoubleRange distance = NumberRange.DoubleRange.ANY;
-	private NumberRange.IntRange levelRange = NumberRange.IntRange.ANY;
+	private MinMaxBounds.Doubles distance = MinMaxBounds.Doubles.ANY;
+	private MinMaxBounds.Ints levelRange = MinMaxBounds.Ints.ANY;
 	@Nullable
 	private Double x;
 	@Nullable
@@ -54,10 +54,10 @@ public class CEntitySelectorReader implements FabricEntitySelectorReader {
 	private Double dy;
 	@Nullable
 	private Double dz;
-	private FloatRangeArgument pitchRange = FloatRangeArgument.ANY;
-	private FloatRangeArgument yawRange = FloatRangeArgument.ANY;
+	private WrappedMinMaxBounds pitchRange = WrappedMinMaxBounds.ANY;
+	private WrappedMinMaxBounds yawRange = WrappedMinMaxBounds.ANY;
 	private Predicate<Entity> predicate = entity -> true;
-	private BiConsumer<Vec3d, List<? extends Entity>> sorter = CEntitySelector.ARBITRARY;
+	private BiConsumer<Vec3, List<? extends Entity>> sorter = CEntitySelector.ARBITRARY;
 	private boolean senderOnly;
 	@Nullable
 	private String playerName;
@@ -90,29 +90,29 @@ public class CEntitySelectorReader implements FabricEntitySelectorReader {
 	}
 
 	public CEntitySelector build() {
-		Box box;
+		AABB aabb;
 		if (this.dx == null && this.dy == null && this.dz == null) {
 			if (this.distance.max().isPresent()) {
 				double d = this.distance.max().get();
-				box = new Box(-d, -d, -d, d + 1.0, d + 1.0, d + 1.0);
+				aabb = new AABB(-d, -d, -d, d + 1.0, d + 1.0, d + 1.0);
 			} else {
-				box = null;
+				aabb = null;
 			}
 		} else {
-			box = this.createBox(this.dx == null ? 0.0 : this.dx, this.dy == null ? 0.0 : this.dy, this.dz == null ? 0.0 : this.dz);
+			aabb = this.createBox(this.dx == null ? 0.0 : this.dx, this.dy == null ? 0.0 : this.dy, this.dz == null ? 0.0 : this.dz);
 		}
 
-		Function<Vec3d, Vec3d> function;
+		Function<Vec3, Vec3> function;
 		if (this.x == null && this.y == null && this.z == null) {
 			function = pos -> pos;
 		} else {
-			function = pos -> new Vec3d(this.x == null ? pos.x : this.x, this.y == null ? pos.y : this.y, this.z == null ? pos.z : this.z);
+			function = pos -> new Vec3(this.x == null ? pos.x : this.x, this.y == null ? pos.y : this.y, this.z == null ? pos.z : this.z);
 		}
 
-		return new CEntitySelector(this.limit, this.includesNonPlayers, this.predicate, this.distance, function, box, this.sorter, this.senderOnly, this.playerName, this.uuid, this.entityType, this.usesAt);
+		return new CEntitySelector(this.limit, this.includesNonPlayers, this.predicate, this.distance, function, aabb, this.sorter, this.senderOnly, this.playerName, this.uuid, this.entityType, this.usesAt);
 	}
 
-	private Box createBox(double x, double y, double z) {
+	private AABB createBox(double x, double y, double z) {
 		boolean bl = x < 0.0;
 		boolean bl2 = y < 0.0;
 		boolean bl3 = z < 0.0;
@@ -122,28 +122,28 @@ public class CEntitySelectorReader implements FabricEntitySelectorReader {
 		double g = (bl ? 0.0 : x) + 1.0;
 		double h = (bl2 ? 0.0 : y) + 1.0;
 		double i = (bl3 ? 0.0 : z) + 1.0;
-		return new Box(d, e, f, g, h, i);
+		return new AABB(d, e, f, g, h, i);
 	}
 
 	private void buildPredicate() {
-		if (this.pitchRange != FloatRangeArgument.ANY) {
-			this.predicate = this.predicate.and(this.rotationPredicate(this.pitchRange, Entity::getPitch));
+		if (this.pitchRange != WrappedMinMaxBounds.ANY) {
+			this.predicate = this.predicate.and(this.rotationPredicate(this.pitchRange, Entity::getXRot));
 		}
 
-		if (this.yawRange != FloatRangeArgument.ANY) {
-			this.predicate = this.predicate.and(this.rotationPredicate(this.yawRange, Entity::getYaw));
+		if (this.yawRange != WrappedMinMaxBounds.ANY) {
+			this.predicate = this.predicate.and(this.rotationPredicate(this.yawRange, Entity::getYRot));
 		}
 
-		if (!this.levelRange.isDummy()) {
-			this.predicate = this.predicate.and(entity -> entity instanceof ServerPlayerEntity && this.levelRange.test(((ServerPlayerEntity) entity).experienceLevel));
+		if (!this.levelRange.isAny()) {
+			this.predicate = this.predicate.and(entity -> entity instanceof ServerPlayer && this.levelRange.matches(((ServerPlayer) entity).experienceLevel));
 		}
 	}
 
-	private Predicate<Entity> rotationPredicate(FloatRangeArgument angleRange, ToDoubleFunction<Entity> entityToAngle) {
-		double d = MathHelper.wrapDegrees(angleRange.min() == null ? 0.0F : angleRange.min());
-		double e = MathHelper.wrapDegrees(angleRange.max() == null ? 359.0F : angleRange.max());
+	private Predicate<Entity> rotationPredicate(WrappedMinMaxBounds angleRange, ToDoubleFunction<Entity> entityToAngle) {
+		double d = Mth.wrapDegrees(angleRange.min() == null ? 0.0F : angleRange.min());
+		double e = Mth.wrapDegrees(angleRange.max() == null ? 359.0F : angleRange.max());
 		return entity -> {
-			double f = MathHelper.wrapDegrees(entityToAngle.applyAsDouble(entity));
+			double f = Mth.wrapDegrees(entityToAngle.applyAsDouble(entity));
 			if (d > e) {
 				return f >= d || f <= e;
 			} else {
@@ -292,35 +292,35 @@ public class CEntitySelectorReader implements FabricEntitySelectorReader {
 		this.predicate = this.predicate.and(predicate);
 	}
 
-	public NumberRange.DoubleRange getDistance() {
+	public MinMaxBounds.Doubles getDistance() {
 		return this.distance;
 	}
 
-	public void setDistance(NumberRange.DoubleRange distance) {
+	public void setDistance(MinMaxBounds.Doubles distance) {
 		this.distance = distance;
 	}
 
-	public NumberRange.IntRange getLevelRange() {
+	public MinMaxBounds.Ints getLevelRange() {
 		return this.levelRange;
 	}
 
-	public void setLevelRange(NumberRange.IntRange levelRange) {
+	public void setLevelRange(MinMaxBounds.Ints levelRange) {
 		this.levelRange = levelRange;
 	}
 
-	public FloatRangeArgument getPitchRange() {
+	public WrappedMinMaxBounds getPitchRange() {
 		return this.pitchRange;
 	}
 
-	public void setPitchRange(FloatRangeArgument pitchRange) {
+	public void setPitchRange(WrappedMinMaxBounds pitchRange) {
 		this.pitchRange = pitchRange;
 	}
 
-	public FloatRangeArgument getYawRange() {
+	public WrappedMinMaxBounds getYawRange() {
 		return this.yawRange;
 	}
 
-	public void setYawRange(FloatRangeArgument yawRange) {
+	public void setYawRange(WrappedMinMaxBounds yawRange) {
 		this.yawRange = yawRange;
 	}
 
@@ -386,11 +386,11 @@ public class CEntitySelectorReader implements FabricEntitySelectorReader {
 		this.includesNonPlayers = includesNonPlayers;
 	}
 
-	public BiConsumer<Vec3d, List<? extends Entity>> getSorter() {
+	public BiConsumer<Vec3, List<? extends Entity>> getSorter() {
 		return this.sorter;
 	}
 
-	public void setSorter(BiConsumer<Vec3d, List<? extends Entity>> sorter) {
+	public void setSorter(BiConsumer<Vec3, List<? extends Entity>> sorter) {
 		this.sorter = sorter;
 	}
 
@@ -413,11 +413,11 @@ public class CEntitySelectorReader implements FabricEntitySelectorReader {
 	}
 
 	private static void suggestSelector(SuggestionsBuilder builder) {
-		builder.suggest("@p", Text.translatable("argument.entity.selector.nearestPlayer"));
-		builder.suggest("@a", Text.translatable("argument.entity.selector.allPlayers"));
-		builder.suggest("@r", Text.translatable("argument.entity.selector.randomPlayer"));
-		builder.suggest("@s", Text.translatable("argument.entity.selector.self"));
-		builder.suggest("@e", Text.translatable("argument.entity.selector.allEntities"));
+		builder.suggest("@p", Component.translatable("argument.entity.selector.nearestPlayer"));
+		builder.suggest("@a", Component.translatable("argument.entity.selector.allPlayers"));
+		builder.suggest("@r", Component.translatable("argument.entity.selector.randomPlayer"));
+		builder.suggest("@s", Component.translatable("argument.entity.selector.self"));
+		builder.suggest("@e", Component.translatable("argument.entity.selector.allEntities"));
 	}
 
 	private CompletableFuture<Suggestions> suggestSelector(SuggestionsBuilder builder, Consumer<SuggestionsBuilder> consumer) {
