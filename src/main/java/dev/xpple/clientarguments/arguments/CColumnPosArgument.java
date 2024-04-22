@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
-public class CColumnPosArgument implements ArgumentType<CCordinates> {
+public class CColumnPosArgument implements ArgumentType<CCoordinates> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("0 0", "~ ~", "~1 ~-2", "^ ^", "^-1 ^0");
 	public static final SimpleCommandExceptionType INCOMPLETE_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.pos2d.incomplete"));
 
@@ -29,12 +29,12 @@ public class CColumnPosArgument implements ArgumentType<CCordinates> {
 	}
 
 	public static ColumnPos getColumnPos(final CommandContext<FabricClientCommandSource> context, final String name) {
-		BlockPos blockPos = context.getArgument(name, CCordinates.class).getBlockPos(context.getSource());
+		BlockPos blockPos = context.getArgument(name, CCoordinates.class).getBlockPos(context.getSource());
 		return new ColumnPos(blockPos.getX(), blockPos.getZ());
 	}
 
 	@Override
-	public CCordinates parse(final StringReader stringReader) throws CommandSyntaxException {
+	public CCoordinates parse(final StringReader stringReader) throws CommandSyntaxException {
 		int cursor = stringReader.getCursor();
 		if (!stringReader.canRead()) {
 			throw INCOMPLETE_EXCEPTION.createWithContext(stringReader);

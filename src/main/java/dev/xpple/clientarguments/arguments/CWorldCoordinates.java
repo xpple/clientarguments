@@ -8,7 +8,7 @@ import net.minecraft.commands.arguments.coordinates.WorldCoordinate;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
-public class CWorldCoordinates implements CCordinates {
+public class CWorldCoordinates implements CCoordinates {
 	private final WorldCoordinate x;
 	private final WorldCoordinate y;
 	private final WorldCoordinate z;

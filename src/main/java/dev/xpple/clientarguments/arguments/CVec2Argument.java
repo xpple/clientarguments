@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
-public class CVec2Argument implements ArgumentType<CCordinates> {
+public class CVec2Argument implements ArgumentType<CCoordinates> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("0 0", "~ ~", "0.1 -0.5", "~1 ~-2");
 	public static final SimpleCommandExceptionType INCOMPLETE_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.pos2d.incomplete"));
 	private final boolean centerIntegers;
@@ -38,12 +38,12 @@ public class CVec2Argument implements ArgumentType<CCordinates> {
 	}
 
 	public static Vec2 getVec2(final CommandContext<FabricClientCommandSource> context, final String name) {
-		Vec3 vec3d = context.getArgument(name, CCordinates.class).getPosition(context.getSource());
+		Vec3 vec3d = context.getArgument(name, CCoordinates.class).getPosition(context.getSource());
 		return new Vec2((float) vec3d.x, (float) vec3d.z);
 	}
 
 	@Override
-	public CCordinates parse(final StringReader stringReader) throws CommandSyntaxException {
+	public CCoordinates parse(final StringReader stringReader) throws CommandSyntaxException {
 		int cursor = stringReader.getCursor();
 		if (!stringReader.canRead()) {
 			throw INCOMPLETE_EXCEPTION.createWithContext(stringReader);

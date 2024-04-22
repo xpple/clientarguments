@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
-public interface CCordinates {
+public interface CCoordinates {
 	Vec3 getPosition(FabricClientCommandSource source);
 
 	Vec2 getRotation(FabricClientCommandSource source);

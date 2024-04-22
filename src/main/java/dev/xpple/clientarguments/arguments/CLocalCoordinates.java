@@ -11,7 +11,7 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.Objects;
 
-public class CLocalCoordinates implements CCordinates {
+public class CLocalCoordinates implements CCoordinates {
 	private final double x;
 	private final double y;
 	private final double z;

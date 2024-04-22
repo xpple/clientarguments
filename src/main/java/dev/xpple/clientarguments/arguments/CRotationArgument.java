@@ -12,7 +12,7 @@ import net.minecraft.network.chat.Component;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class CRotationArgument implements ArgumentType<CCordinates> {
+public class CRotationArgument implements ArgumentType<CCoordinates> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("0 0", "~ ~", "~-5 ~5");
 	public static final SimpleCommandExceptionType INCOMPLETE_ROTATION_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.rotation.incomplete"));
 
@@ -20,12 +20,12 @@ public class CRotationArgument implements ArgumentType<CCordinates> {
 		return new CRotationArgument();
 	}
 
-	public static CCordinates getRotation(final CommandContext<FabricClientCommandSource> context, final String name) {
-		return context.getArgument(name, CCordinates.class);
+	public static CCoordinates getRotation(final CommandContext<FabricClientCommandSource> context, final String name) {
+		return context.getArgument(name, CCoordinates.class);
 	}
 
 	@Override
-	public CCordinates parse(final StringReader stringReader) throws CommandSyntaxException {
+	public CCoordinates parse(final StringReader stringReader) throws CommandSyntaxException {
 		int i = stringReader.getCursor();
 		if (!stringReader.canRead()) {
 			throw INCOMPLETE_ROTATION_EXCEPTION.createWithContext(stringReader);

@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
-public class CVec3Argument implements ArgumentType<CCordinates> {
+public class CVec3Argument implements ArgumentType<CCoordinates> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("0 0 0", "~ ~ ~", "^ ^ ^", "^1 ^ ^-5", "0.1 -0.5 .9", "~0.5 ~1 ~-5");
 	public static final SimpleCommandExceptionType INCOMPLETE_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.pos3d.incomplete"));
 	public static final SimpleCommandExceptionType MIXED_COORDINATE_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.pos.mixed"));
@@ -37,15 +37,15 @@ public class CVec3Argument implements ArgumentType<CCordinates> {
 	}
 
 	public static Vec3 getVec3(final CommandContext<FabricClientCommandSource> context, final String name) {
-		return context.getArgument(name, CCordinates.class).getPosition(context.getSource());
+		return context.getArgument(name, CCoordinates.class).getPosition(context.getSource());
 	}
 
-	public static CCordinates getPosArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
-		return context.getArgument(name, CCordinates.class);
+	public static CCoordinates getPosArgument(final CommandContext<FabricClientCommandSource> context, final String name) {
+		return context.getArgument(name, CCoordinates.class);
 	}
 
 	@Override
-	public CCordinates parse(final StringReader stringReader) throws CommandSyntaxException {
+	public CCoordinates parse(final StringReader stringReader) throws CommandSyntaxException {
 		return stringReader.canRead() && stringReader.peek() == '^' ? CLocalCoordinates.parse(stringReader) : CWorldCoordinates.parse(stringReader, this.centerIntegers);
 	}
 

@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 
-public class CBlockPosArgument implements ArgumentType<CCordinates> {
+public class CBlockPosArgument implements ArgumentType<CCoordinates> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("0 0 0", "~ ~ ~", "^ ^ ^", "^1 ^ ^-5", "~0.5 ~1 ~-5");
 	public static final SimpleCommandExceptionType UNLOADED_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.pos.unloaded"));
 	public static final SimpleCommandExceptionType OUT_OF_WORLD_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.pos.outofworld"));
@@ -49,7 +49,7 @@ public class CBlockPosArgument implements ArgumentType<CCordinates> {
 	}
 
 	public static BlockPos getBlockPos(final CommandContext<FabricClientCommandSource> context, final String name) {
-		return context.getArgument(name, CCordinates.class).getBlockPos(context.getSource());
+		return context.getArgument(name, CCoordinates.class).getBlockPos(context.getSource());
 	}
 
 	public static BlockPos getValidBlockPos(CommandContext<FabricClientCommandSource> context, String name) throws CommandSyntaxException {
@@ -61,7 +61,7 @@ public class CBlockPosArgument implements ArgumentType<CCordinates> {
 	}
 
 	@Override
-	public CCordinates parse(final StringReader stringReader) throws CommandSyntaxException {
+	public CCoordinates parse(final StringReader stringReader) throws CommandSyntaxException {
 		return stringReader.canRead() && stringReader.peek() == '^' ? CLocalCoordinates.parse(stringReader) : CWorldCoordinates.parse(stringReader);
 	}
 
