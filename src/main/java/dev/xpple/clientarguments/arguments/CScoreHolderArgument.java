@@ -15,7 +15,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.network.chat.Component;
 
-import java.util.Collection; import java.util.Arrays; import java.util.Collections; import java.util.List; import java.util.UUID; 
+import java.util.Collection;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 public class CScoreHolderArgument implements ArgumentType<CScoreHolderArgument.Result> {

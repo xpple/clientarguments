@@ -10,11 +10,16 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 
-import java.util.Collection; import java.util.Arrays; import java.util.List; 
+import java.util.Collection;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.GameProfileArgument> {
@@ -40,7 +45,16 @@ public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.G
 			return new CGameProfileArgument.SelectorBacked(entitySelector);
 		}
 
-		throw UNKNOWN_PLAYER_EXCEPTION.create();
+		int cursor = stringReader.getCursor();
+		while (stringReader.canRead() && stringReader.peek() != ' ') {
+			stringReader.skip();
+		}
+
+		String playerName = stringReader.getString().substring(cursor, stringReader.getCursor());
+		return source -> Collections.singleton(Minecraft.getInstance().getConnection().getOnlinePlayers().stream()
+			.map(PlayerInfo::getProfile)
+			.filter(profile -> profile.getName().equals(playerName))
+			.findFirst().orElseThrow(UNKNOWN_PLAYER_EXCEPTION::create));
 	}
 
 	@Override

@@ -32,7 +32,10 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.GameType;
 
-import java.util.Map; import java.util.Arrays; import java.util.Locale; import java.util.Objects; 
+import java.util.Map;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Objects; 
 import java.util.function.Predicate;
 
 public class CEntitySelectorOptions {
