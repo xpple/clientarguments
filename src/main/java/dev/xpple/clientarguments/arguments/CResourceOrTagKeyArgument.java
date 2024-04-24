@@ -43,14 +43,14 @@ public class CResourceOrTagKeyArgument<T> implements ArgumentType<CResourceOrTag
     @Override
     public Result<T> parse(final StringReader stringReader) throws CommandSyntaxException {
         if (stringReader.canRead() && stringReader.peek() == '#') {
-            int i = stringReader.getCursor();
+            int cursor = stringReader.getCursor();
 
             try {
                 stringReader.skip();
                 ResourceLocation id = ResourceLocation.read(stringReader);
                 return new TagResult<>(TagKey.create(this.registryRef, id));
             } catch (CommandSyntaxException var4) {
-                stringReader.setCursor(i);
+                stringReader.setCursor(cursor);
                 throw var4;
             }
         } else {

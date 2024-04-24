@@ -26,13 +26,13 @@ public class CRotationArgument implements ArgumentType<CCoordinates> {
 
 	@Override
 	public CCoordinates parse(final StringReader stringReader) throws CommandSyntaxException {
-		int i = stringReader.getCursor();
+		int cursor = stringReader.getCursor();
 		if (!stringReader.canRead()) {
 			throw INCOMPLETE_ROTATION_EXCEPTION.createWithContext(stringReader);
 		}
 		WorldCoordinate worldCoordinate = WorldCoordinate.parseDouble(stringReader, false);
         if (!stringReader.canRead() || stringReader.peek() != ' ') {
-            stringReader.setCursor(i);
+            stringReader.setCursor(cursor);
             throw INCOMPLETE_ROTATION_EXCEPTION.createWithContext(stringReader);
         }
 		stringReader.skip();

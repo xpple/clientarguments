@@ -73,7 +73,7 @@ public class CWorldCoordinates implements CCoordinates {
     }
 
 	public static CWorldCoordinates parse(StringReader reader, boolean centerIntegers) throws CommandSyntaxException {
-		int i = reader.getCursor();
+		int cursor = reader.getCursor();
 		WorldCoordinate worldCoordinate = WorldCoordinate.parseDouble(reader, centerIntegers);
 		if (reader.canRead() && reader.peek() == ' ') {
 			reader.skip();
@@ -84,7 +84,7 @@ public class CWorldCoordinates implements CCoordinates {
 				return new CWorldCoordinates(worldCoordinate, worldCoordinate2, worldCoordinate3);
 			}
         }
-        reader.setCursor(i);
+        reader.setCursor(cursor);
         throw CVec3Argument.INCOMPLETE_EXCEPTION.createWithContext(reader);
     }
 
