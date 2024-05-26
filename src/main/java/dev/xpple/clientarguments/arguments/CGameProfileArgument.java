@@ -26,12 +26,30 @@ public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.G
 	private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "dd12be42-52a9-4a91-a8a1-11c01849e498", "@e");
 	public static final SimpleCommandExceptionType UNKNOWN_PLAYER_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.player.unknown"));
 
+	private final boolean singleTarget;
+
+	private CGameProfileArgument(boolean singleTarget) {
+		this.singleTarget = singleTarget;
+	}
+
 	public static CGameProfileArgument gameProfile() {
-		return new CGameProfileArgument();
+		return new CGameProfileArgument(false);
+	}
+
+	public static CGameProfileArgument gameProfile(boolean singleTarget) {
+		return new CGameProfileArgument(singleTarget);
 	}
 
 	public static Collection<GameProfile> getProfileArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		return context.getArgument(name, GameProfileArgument.class).getNames(context.getSource());
+	}
+
+	public static GameProfile getSingleProfileArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+		Collection<GameProfile> profiles = context.getArgument(name, GameProfileArgument.class).getNames(context.getSource());
+		if (profiles.size() > 1) {
+			throw CEntityArgument.TOO_MANY_PLAYERS_EXCEPTION.create();
+		}
+		return profiles.iterator().next();
 	}
 
 	@Override
@@ -41,6 +59,9 @@ public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.G
 			CEntitySelector entitySelector = entitySelectorReader.read();
 			if (entitySelector.includesNonPlayers()) {
 				throw CEntityArgument.PLAYER_SELECTOR_HAS_ENTITIES_EXCEPTION.createWithContext(stringReader);
+			}
+			if (this.singleTarget && entitySelector.getLimit() > 1) {
+				throw CEntityArgument.TOO_MANY_PLAYERS_EXCEPTION.create();
 			}
 			return new CGameProfileArgument.SelectorBacked(entitySelector);
 		}
