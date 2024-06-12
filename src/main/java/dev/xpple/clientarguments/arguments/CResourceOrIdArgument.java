@@ -11,7 +11,6 @@ import com.mojang.serialization.Codec;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.nbt.Tag;
@@ -112,7 +111,7 @@ public class CResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
     public static class LootPredicateArgument extends CResourceOrIdArgument<LootItemCondition> {
         protected LootPredicateArgument(CommandBuildContext buildContext) {
-            super(buildContext, Registries.PREDICATE, LootItemConditions.CODEC);
+            super(buildContext, Registries.PREDICATE, LootItemCondition.CODEC);
         }
     }
 

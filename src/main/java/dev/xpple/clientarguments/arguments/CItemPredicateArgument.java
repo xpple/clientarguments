@@ -51,7 +51,7 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 	static final Dynamic2CommandExceptionType MALFORMED_ITEM_COMPONENT_EXCEPTION = new Dynamic2CommandExceptionType((object, object2) -> Component.translatableEscape("arguments.item.component.malformed", object, object2));
 	static final DynamicCommandExceptionType UNKNOWN_ITEM_PREDICATE_EXCEPTION = new DynamicCommandExceptionType(object -> Component.translatableEscape("arguments.item.predicate.unknown", object));
 	static final Dynamic2CommandExceptionType MALFORMED_ITEM_PREDICATE_EXCEPTION = new Dynamic2CommandExceptionType((object, object2) -> Component.translatableEscape("arguments.item.predicate.malformed", object, object2));
-	private static final ResourceLocation COUNT_ID = new ResourceLocation("count");
+	private static final ResourceLocation COUNT_ID = ResourceLocation.withDefaultNamespace("count");
 	static final Map<ResourceLocation, ComponentWrapper> SPECIAL_COMPONENT_CHECKS = Stream.of(new ComponentWrapper(COUNT_ID, stack -> true, MinMaxBounds.Ints.CODEC.map(range -> stack -> range.matches(stack.getCount())))).collect(Collectors.toUnmodifiableMap(ComponentWrapper::id, check -> check));
 	static final Map<ResourceLocation, PredicateWrapper> SPECIAL_SUB_PREDICATE_CHECKS = Stream.of(new PredicateWrapper(COUNT_ID, MinMaxBounds.Ints.CODEC.map(range -> stack -> range.matches(stack.getCount())))).collect(Collectors.toUnmodifiableMap(PredicateWrapper::id, check -> check));
 	private final Grammar<List<Predicate<ItemStack>>> parser;
