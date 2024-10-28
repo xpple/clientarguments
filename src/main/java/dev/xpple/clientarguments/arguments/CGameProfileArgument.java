@@ -52,8 +52,8 @@ public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.R
 		return profiles.iterator().next();
 	}
 
-	public <S> CGameProfileArgument.Result parse(final StringReader stringReader, final S object) throws CommandSyntaxException {
-		return parse(stringReader, CEntitySelectorParser.allowSelectors(object));
+	public <S> CGameProfileArgument.Result parse(final StringReader stringReader, final S source) throws CommandSyntaxException {
+		return parse(stringReader, CEntitySelectorParser.allowSelectors(source));
 	}
 
 	@Override

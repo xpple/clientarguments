@@ -106,8 +106,8 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 		this.allowSelectors = allowSelectors;
 	}
 
-	public static <S> boolean allowSelectors(S object) {
-        return object instanceof SharedSuggestionProvider;
+	public static <S> boolean allowSelectors(S source) {
+        return source instanceof SharedSuggestionProvider;
     }
 
 	public CEntitySelector getSelector() {

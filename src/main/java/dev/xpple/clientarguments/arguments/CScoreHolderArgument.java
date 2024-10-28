@@ -75,8 +75,8 @@ public class CScoreHolderArgument implements ArgumentType<CScoreHolderArgument.R
 		return this.parse(stringReader, true);
 	}
 
-	public <S> CScoreHolderArgument.Result parse(final StringReader stringReader, final S object) throws CommandSyntaxException {
-		return this.parse(stringReader, CEntitySelectorParser.allowSelectors(object));
+	public <S> CScoreHolderArgument.Result parse(final StringReader stringReader, final S source) throws CommandSyntaxException {
+		return this.parse(stringReader, CEntitySelectorParser.allowSelectors(source));
 	}
 
 	private CScoreHolderArgument.Result parse(final StringReader stringReader, final boolean selectorsAllowed) throws CommandSyntaxException {

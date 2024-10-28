@@ -89,8 +89,8 @@ public class CEntityArgument implements ArgumentType<CEntitySelector> {
 		return this.parse(stringReader, true);
 	}
 
-	public <S> CEntitySelector parse(final StringReader stringReader, final S object) throws CommandSyntaxException {
-		return this.parse(stringReader, CEntitySelectorParser.allowSelectors(object));
+	public <S> CEntitySelector parse(final StringReader stringReader, final S source) throws CommandSyntaxException {
+		return this.parse(stringReader, CEntitySelectorParser.allowSelectors(source));
 	}
 
 	private CEntitySelector parse(StringReader stringReader, boolean allowSelectors) throws CommandSyntaxException {

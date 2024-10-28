@@ -32,8 +32,8 @@ public class CMessageArgument implements SignedArgument<CMessageArgument.Message
 		return CMessageArgument.Message.parseText(stringReader, true);
 	}
 
-	public <S> CMessageArgument.Message parse(StringReader stringReader, @Nullable S object) throws CommandSyntaxException {
-		return CMessageArgument.Message.parseText(stringReader, CEntitySelectorParser.allowSelectors(object));
+	public <S> CMessageArgument.Message parse(final StringReader stringReader, final @Nullable S source) throws CommandSyntaxException {
+		return CMessageArgument.Message.parseText(stringReader, CEntitySelectorParser.allowSelectors(source));
 	}
 
 	public Collection<String> getExamples() {
