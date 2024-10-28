@@ -2,9 +2,8 @@ package dev.xpple.clientarguments.arguments;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.commands.arguments.coordinates.WorldCoordinate;
-import net.minecraft.commands.arguments.coordinates.Vec3Argument;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.commands.arguments.coordinates.WorldCoordinate;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -66,13 +65,13 @@ public class CLocalCoordinates implements CCoordinates {
 		double d = readCoordinate(reader, cursor);
         if (!reader.canRead() || reader.peek() != ' ') {
             reader.setCursor(cursor);
-            throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
+            throw CVec3Argument.INCOMPLETE_EXCEPTION.createWithContext(reader);
         }
 		reader.skip();
 		double e = readCoordinate(reader, cursor);
         if (!reader.canRead() || reader.peek() != ' ') {
             reader.setCursor(cursor);
-            throw Vec3Argument.ERROR_NOT_COMPLETE.createWithContext(reader);
+            throw CVec3Argument.INCOMPLETE_EXCEPTION.createWithContext(reader);
         }
 		reader.skip();
 		double f = readCoordinate(reader, cursor);
@@ -85,7 +84,7 @@ public class CLocalCoordinates implements CCoordinates {
 		}
 		if (reader.peek() != '^') {
 			reader.setCursor(startingCursorPos);
-			throw Vec3Argument.ERROR_MIXED_TYPE.createWithContext(reader);
+			throw CVec3Argument.MIXED_COORDINATE_EXCEPTION.createWithContext(reader);
 		}
 		reader.skip();
 		return reader.canRead() && reader.peek() != ' ' ? reader.readDouble() : 0.0;

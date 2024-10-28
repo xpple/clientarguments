@@ -10,7 +10,6 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.network.chat.Component;
@@ -26,14 +25,14 @@ public class CScoreHolderArgument implements ArgumentType<CScoreHolderArgument.R
 	public static final SuggestionProvider<FabricClientCommandSource> SUGGESTION_PROVIDER = (context, builder) -> {
 		StringReader stringReader = new StringReader(builder.getInput());
 		stringReader.setCursor(builder.getStart());
-		CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(stringReader);
+		CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, CEntitySelectorParser.allowSelectors(context.getSource()));
 
 		try {
-			entitySelectorReader.read();
+			entitySelectorParser.parse();
 		} catch (CommandSyntaxException ignored) {
 		}
 
-		return entitySelectorReader.listSuggestions(builder, builderx -> SharedSuggestionProvider.suggest(context.getSource().getOnlinePlayerNames(), builderx));
+		return entitySelectorParser.fillSuggestions(builder, builderx -> SharedSuggestionProvider.suggest(context.getSource().getOnlinePlayerNames(), builderx));
 	};
 	private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "*", "@e");
 	private static final SimpleCommandExceptionType EMPTY_SCORE_HOLDER_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.scoreHolder.empty"));
@@ -58,7 +57,7 @@ public class CScoreHolderArgument implements ArgumentType<CScoreHolderArgument.R
 	public static Collection<ScoreHolder> getScoreHolders(final CommandContext<FabricClientCommandSource> context, final String name, final Supplier<Collection<ScoreHolder>> players) throws CommandSyntaxException {
 		Collection<ScoreHolder> collection = context.getArgument(name, Result.class).getNames(context.getSource(), players);
 		if (collection.isEmpty()) {
-			throw EntityArgument.NO_ENTITIES_FOUND.create();
+			throw CEntityArgument.ENTITY_NOT_FOUND_EXCEPTION.create();
 		}
 		return collection;
 	}
@@ -73,11 +72,19 @@ public class CScoreHolderArgument implements ArgumentType<CScoreHolderArgument.R
 
 	@Override
 	public Result parse(final StringReader stringReader) throws CommandSyntaxException {
+		return this.parse(stringReader, true);
+	}
+
+	public <S> CScoreHolderArgument.Result parse(final StringReader stringReader, final S object) throws CommandSyntaxException {
+		return this.parse(stringReader, CEntitySelectorParser.allowSelectors(object));
+	}
+
+	private CScoreHolderArgument.Result parse(final StringReader stringReader, final boolean selectorsAllowed) throws CommandSyntaxException {
 		if (stringReader.canRead() && stringReader.peek() == '@') {
-			CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(stringReader);
-			CEntitySelector entitySelector = entitySelectorReader.read();
-			if (!this.multiple && entitySelector.getLimit() > 1) {
-				throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.createWithContext(stringReader);
+			CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, selectorsAllowed);
+			CEntitySelector entitySelector = entitySelectorParser.parse();
+			if (!this.multiple && entitySelector.getMaxResults() > 1) {
+				throw CEntityArgument.TOO_MANY_ENTITIES_EXCEPTION.createWithContext(stringReader);
 			}
 			return new SelectorResult(entitySelector);
 		}
@@ -141,9 +148,9 @@ public class CScoreHolderArgument implements ArgumentType<CScoreHolderArgument.R
 
 		@Override
 		public Collection<ScoreHolder> getNames(FabricClientCommandSource fabricClientCommandSource, Supplier<Collection<ScoreHolder>> supplier) throws CommandSyntaxException {
-			List<? extends Entity> list = this.selector.getEntities(fabricClientCommandSource);
+			List<? extends Entity> list = this.selector.findEntities(fabricClientCommandSource);
 			if (list.isEmpty()) {
-				throw EntityArgument.NO_ENTITIES_FOUND.create();
+				throw CEntityArgument.ENTITY_NOT_FOUND_EXCEPTION.create();
 			}
 			return List.copyOf(list);
 		}

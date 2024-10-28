@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.GameProfileArgument> {
+public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.Result> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("Player", "0123", "dd12be42-52a9-4a91-a8a1-11c01849e498", "@e");
 	public static final SimpleCommandExceptionType UNKNOWN_PLAYER_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.player.unknown"));
 
@@ -41,29 +41,37 @@ public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.G
 	}
 
 	public static Collection<GameProfile> getProfileArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		return context.getArgument(name, GameProfileArgument.class).getNames(context.getSource());
+		return context.getArgument(name, Result.class).getNames(context.getSource());
 	}
 
 	public static GameProfile getSingleProfileArgument(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		Collection<GameProfile> profiles = context.getArgument(name, GameProfileArgument.class).getNames(context.getSource());
+		Collection<GameProfile> profiles = context.getArgument(name, Result.class).getNames(context.getSource());
 		if (profiles.size() > 1) {
 			throw CEntityArgument.TOO_MANY_PLAYERS_EXCEPTION.create();
 		}
 		return profiles.iterator().next();
 	}
 
+	public <S> CGameProfileArgument.Result parse(final StringReader stringReader, final S object) throws CommandSyntaxException {
+		return parse(stringReader, CEntitySelectorParser.allowSelectors(object));
+	}
+
 	@Override
-	public GameProfileArgument parse(final StringReader stringReader) throws CommandSyntaxException {
+	public Result parse(final StringReader stringReader) throws CommandSyntaxException {
+		return parse(stringReader, true);
+	}
+
+	private CGameProfileArgument.Result parse(StringReader stringReader, boolean allowSelectors) throws CommandSyntaxException {
 		if (stringReader.canRead() && stringReader.peek() == '@') {
-			CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(stringReader);
-			CEntitySelector entitySelector = entitySelectorReader.read();
-			if (entitySelector.includesNonPlayers()) {
+			CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, allowSelectors);
+			CEntitySelector entitySelector = entitySelectorParser.parse();
+			if (entitySelector.includesEntities()) {
 				throw CEntityArgument.PLAYER_SELECTOR_HAS_ENTITIES_EXCEPTION.createWithContext(stringReader);
 			}
-			if (this.singleTarget && entitySelector.getLimit() > 1) {
+			if (this.singleTarget && entitySelector.getMaxResults() > 1) {
 				throw CEntityArgument.TOO_MANY_PLAYERS_EXCEPTION.create();
 			}
-			return new CGameProfileArgument.SelectorBacked(entitySelector);
+			return new SelectorResult(entitySelector);
 		}
 
 		int cursor = stringReader.getCursor();
@@ -80,17 +88,17 @@ public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.G
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-		if (context.getSource() instanceof SharedSuggestionProvider) {
+		if (context.getSource() instanceof SharedSuggestionProvider sharedSuggestionProvider) {
 			StringReader stringReader = new StringReader(builder.getInput());
 			stringReader.setCursor(builder.getStart());
-			CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(stringReader);
+			CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, CEntitySelectorParser.allowSelectors(sharedSuggestionProvider));
 
 			try {
-				entitySelectorReader.read();
+				entitySelectorParser.parse();
 			} catch (CommandSyntaxException ignored) {
 			}
 
-			return entitySelectorReader.listSuggestions(builder, builderx -> SharedSuggestionProvider.suggest(((SharedSuggestionProvider) context.getSource()).getOnlinePlayerNames(), builderx));
+			return entitySelectorParser.fillSuggestions(builder, builderx -> SharedSuggestionProvider.suggest(((SharedSuggestionProvider) context.getSource()).getOnlinePlayerNames(), builderx));
 		}
 		return Suggestions.empty();
 	}
@@ -101,20 +109,20 @@ public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.G
 	}
 
 	@FunctionalInterface
-	public interface GameProfileArgument {
+	public interface Result {
 		Collection<GameProfile> getNames(FabricClientCommandSource source) throws CommandSyntaxException;
 	}
 
-	public static class SelectorBacked implements GameProfileArgument {
+	public static class SelectorResult implements Result {
 		private final CEntitySelector selector;
 
-		public SelectorBacked(CEntitySelector selector) {
+		public SelectorResult(CEntitySelector selector) {
 			this.selector = selector;
 		}
 
 		@Override
 		public Collection<GameProfile> getNames(FabricClientCommandSource fabricClientCommandSource) throws CommandSyntaxException {
-			List<AbstractClientPlayer> list = this.selector.getPlayers(fabricClientCommandSource);
+			List<AbstractClientPlayer> list = this.selector.findPlayers(fabricClientCommandSource);
 			if (list.isEmpty()) {
 				throw CEntityArgument.PLAYER_NOT_FOUND_EXCEPTION.create();
 			}

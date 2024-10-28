@@ -8,6 +8,8 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -29,6 +31,8 @@ public class CResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
     private static final DynamicCommandExceptionType INVALID_FEATURE_EXCEPTION = new DynamicCommandExceptionType(id -> Component.translatableEscape("commands.place.feature.invalid", id));
     private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION = new DynamicCommandExceptionType(id -> Component.translatableEscape("commands.place.structure.invalid", id));
     private static final DynamicCommandExceptionType INVALID_JIGSAW_EXCEPTION = new DynamicCommandExceptionType(id -> Component.translatableEscape("commands.place.jigsaw.invalid", id));
+    private static final DynamicCommandExceptionType ERROR_INVALID_RECIPE = new DynamicCommandExceptionType(object -> Component.translatableEscape("recipe.notFound", object));
+    private static final DynamicCommandExceptionType ERROR_INVALID_ADVANCEMENT = new DynamicCommandExceptionType(object -> Component.translatableEscape("advancement.advancementNotFound", object));
     final ResourceKey<? extends Registry<T>> registryRef;
 
     public CResourceKeyArgument(ResourceKey<? extends Registry<T>> registryRef) {
@@ -42,17 +46,17 @@ public class CResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
     public static <T> ResourceKey<T> getKey(final CommandContext<FabricClientCommandSource> context, final String name, final ResourceKey<Registry<T>> registryRef, final DynamicCommandExceptionType invalidException) throws CommandSyntaxException {
         ResourceKey<?> registryKey = context.getArgument(name, ResourceKey.class);
         Optional<ResourceKey<T>> optional = registryKey.cast(registryRef);
-        return optional.orElseThrow(() -> invalidException.create(registryKey));
+        return optional.orElseThrow(() -> invalidException.create(registryKey.location()));
     }
 
     public static <T> Registry<T> getRegistry(final CommandContext<FabricClientCommandSource> context, ResourceKey<? extends Registry<T>> registryRef) {
-        return context.getSource().registryAccess().registryOrThrow(registryRef);
+        return context.getSource().registryAccess().lookupOrThrow(registryRef);
     }
 
     public static <T> Holder.Reference<T> getRegistryEntry(final CommandContext<FabricClientCommandSource> context, final String name, ResourceKey<Registry<T>> registryRef, DynamicCommandExceptionType invalidException) throws CommandSyntaxException {
         ResourceKey<T> registryKey = getKey(context, name, registryRef, invalidException);
         return getRegistry(context, registryRef)
-            .getHolder(registryKey)
+            .get(registryKey)
             .orElseThrow(() -> invalidException.create(registryKey.location()));
     }
 
@@ -66,6 +70,15 @@ public class CResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
 
     public static Holder.Reference<StructureTemplatePool> getStructurePool(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
         return getRegistryEntry(context, name, Registries.TEMPLATE_POOL, INVALID_JIGSAW_EXCEPTION);
+    }
+
+    public static AdvancementHolder getAdvancement(final CommandContext<FabricClientCommandSource> context, final String string) throws CommandSyntaxException {
+        ResourceKey<Advancement> resourceKey = getKey(context, string, Registries.ADVANCEMENT, ERROR_INVALID_ADVANCEMENT);
+        AdvancementHolder advancementHolder = context.getSource().getPlayer().connection.getAdvancements().get(resourceKey.location());
+        if (advancementHolder == null) {
+            throw ERROR_INVALID_ADVANCEMENT.create(resourceKey.location());
+        }
+        return advancementHolder;
     }
 
     @Override
