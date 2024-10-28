@@ -11,6 +11,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.network.chat.Component;
 
@@ -40,7 +41,7 @@ public class CEntityArgument implements ArgumentType<CEntitySelector> {
 	}
 
 	public static Entity getEntity(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		return context.getArgument(name, CEntitySelector.class).getEntity(context.getSource());
+		return context.getArgument(name, CEntitySelector.class).findSingleEntity(context.getSource());
 	}
 
 	public static CEntityArgument entities() {
@@ -56,11 +57,11 @@ public class CEntityArgument implements ArgumentType<CEntitySelector> {
 	}
 
 	public static Collection<? extends Entity> getOptionalEntities(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		return context.getArgument(name, CEntitySelector.class).getEntities(context.getSource());
+		return context.getArgument(name, CEntitySelector.class).findEntities(context.getSource());
 	}
 
 	public static Collection<AbstractClientPlayer> getOptionalPlayers(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		return context.getArgument(name, CEntitySelector.class).getPlayers(context.getSource());
+		return context.getArgument(name, CEntitySelector.class).findPlayers(context.getSource());
 	}
 
 	public static CEntityArgument player() {
@@ -68,7 +69,7 @@ public class CEntityArgument implements ArgumentType<CEntitySelector> {
 	}
 
 	public static AbstractClientPlayer getPlayer(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		return context.getArgument(name, CEntitySelector.class).getPlayer(context.getSource());
+		return context.getArgument(name, CEntitySelector.class).findSinglePlayer(context.getSource());
 	}
 
 	public static CEntityArgument players() {
@@ -76,7 +77,7 @@ public class CEntityArgument implements ArgumentType<CEntitySelector> {
 	}
 
 	public static Collection<AbstractClientPlayer> getPlayers(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		List<AbstractClientPlayer> list = context.getArgument(name, CEntitySelector.class).getPlayers(context.getSource());
+		List<AbstractClientPlayer> list = context.getArgument(name, CEntitySelector.class).findPlayers(context.getSource());
 		if (list.isEmpty()) {
 			throw PLAYER_NOT_FOUND_EXCEPTION.create();
 		}
@@ -85,9 +86,17 @@ public class CEntityArgument implements ArgumentType<CEntitySelector> {
 
 	@Override
 	public CEntitySelector parse(final StringReader stringReader) throws CommandSyntaxException {
-		CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(stringReader);
-		CEntitySelector entitySelector = entitySelectorReader.read();
-		if (entitySelector.getLimit() > 1 && this.singleTarget) {
+		return this.parse(stringReader, true);
+	}
+
+	public <S> CEntitySelector parse(final StringReader stringReader, final S source) throws CommandSyntaxException {
+		return this.parse(stringReader, CEntitySelectorParser.allowSelectors(source));
+	}
+
+	private CEntitySelector parse(StringReader stringReader, boolean allowSelectors) throws CommandSyntaxException {
+		CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, allowSelectors);
+		CEntitySelector entitySelector = entitySelectorParser.parse();
+		if (entitySelector.getMaxResults() > 1 && this.singleTarget) {
 			if (this.playersOnly) {
 				stringReader.setCursor(0);
 				throw TOO_MANY_PLAYERS_EXCEPTION.createWithContext(stringReader);
@@ -96,7 +105,7 @@ public class CEntityArgument implements ArgumentType<CEntitySelector> {
 				throw TOO_MANY_ENTITIES_EXCEPTION.createWithContext(stringReader);
 			}
 		}
-		if (entitySelector.includesNonPlayers() && this.playersOnly && !entitySelector.isSenderOnly()) {
+		if (entitySelector.includesEntities() && this.playersOnly && !entitySelector.isSelfSelector()) {
 			stringReader.setCursor(0);
 			throw PLAYER_SELECTOR_HAS_ENTITIES_EXCEPTION.createWithContext(stringReader);
 		}
@@ -108,14 +117,14 @@ public class CEntityArgument implements ArgumentType<CEntitySelector> {
 		if (context.getSource() instanceof SharedSuggestionProvider commandSource) {
 			StringReader stringReader = new StringReader(builder.getInput());
 			stringReader.setCursor(builder.getStart());
-			CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(stringReader, true);
+			CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, CEntitySelectorParser.allowSelectors(commandSource));
 
 			try {
-				entitySelectorReader.read();
+				entitySelectorParser.parse();
 			} catch (CommandSyntaxException ignored) {
 			}
 
-			return entitySelectorReader.listSuggestions(builder, builderx -> {
+			return entitySelectorParser.fillSuggestions(builder, builderx -> {
 				Collection<String> collection = commandSource.getOnlinePlayerNames();
 				Iterable<String> iterable = this.playersOnly ? collection : Iterables.concat(collection, commandSource.getSelectedEntities());
 				SharedSuggestionProvider.suggest(iterable, builderx);

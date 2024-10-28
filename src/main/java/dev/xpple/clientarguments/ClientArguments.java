@@ -9,8 +9,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
-import dev.xpple.clientarguments.arguments.CRangeArgument.Ints;
-import dev.xpple.clientarguments.arguments.CRangeArgument.Floats;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;

@@ -3,7 +3,6 @@ package dev.xpple.clientarguments.arguments;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-
 import net.minecraft.commands.arguments.coordinates.WorldCoordinate;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;

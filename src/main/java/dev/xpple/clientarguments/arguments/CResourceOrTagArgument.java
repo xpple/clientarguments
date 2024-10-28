@@ -12,7 +12,6 @@ import com.mojang.datafixers.util.Either;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.HolderLookup;
@@ -49,7 +48,7 @@ public class CResourceOrTagArgument<T> implements ArgumentType<CResourceOrTagArg
         Optional<Result<T>> optional = result.tryCast(registryRef);
         return optional.orElseThrow(() -> result.getEntry().map(entry -> {
             ResourceKey<?> resourceKey2 = entry.key();
-            return ResourceArgument.ERROR_INVALID_RESOURCE_TYPE.create(resourceKey2.location(), resourceKey2.registry(), registryRef.location());
+            return CResourceArgument.INVALID_TYPE_EXCEPTION.create(resourceKey2.location(), resourceKey2.registry(), registryRef.location());
         }, entryList -> {
             TagKey<?> tagKey = entryList.key();
             return WRONG_TYPE_EXCEPTION.create(tagKey.location(), tagKey.registry(), registryRef.location());
@@ -58,7 +57,7 @@ public class CResourceOrTagArgument<T> implements ArgumentType<CResourceOrTagArg
 
     @Override
     public Result<T> parse(final StringReader stringReader) throws CommandSyntaxException {
-        if (stringReader.canRead() && stringReader.peek() == '#') {
+        if (stringReader.canRead() && stringReader.peek() == CEntitySelectorParser.SYNTAX_TAG) {
             int i = stringReader.getCursor();
 
             try {
@@ -78,7 +77,7 @@ public class CResourceOrTagArgument<T> implements ArgumentType<CResourceOrTagArg
             ResourceKey<T> resourceKey = ResourceKey.create(this.registryRef, id);
             Holder.Reference<T> reference = this.holderLookup
                 .get(resourceKey)
-                .orElseThrow(() -> ResourceArgument.ERROR_UNKNOWN_RESOURCE.createWithContext(stringReader, id, this.registryRef.location()));
+                .orElseThrow(() -> CResourceArgument.NOT_FOUND_EXCEPTION.createWithContext(stringReader, id, this.registryRef.location()));
             return new EntryBased<>(reference);
         }
     }

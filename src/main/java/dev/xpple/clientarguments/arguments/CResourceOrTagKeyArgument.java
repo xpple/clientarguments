@@ -42,7 +42,7 @@ public class CResourceOrTagKeyArgument<T> implements ArgumentType<CResourceOrTag
 
     @Override
     public Result<T> parse(final StringReader stringReader) throws CommandSyntaxException {
-        if (stringReader.canRead() && stringReader.peek() == '#') {
+        if (stringReader.canRead() && stringReader.peek() == CEntitySelectorParser.SYNTAX_TAG) {
             int cursor = stringReader.getCursor();
 
             try {

@@ -9,110 +9,110 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.arguments.SignedArgument;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-public class CMessageArgument implements SignedArgument<CMessageArgument.MessageFormat> {
+public class CMessageArgument implements SignedArgument<CMessageArgument.Message> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("Hello world!", "foo", "@e", "Hello @p :)");
-	static final Dynamic2CommandExceptionType MESSAGE_TOO_LONG_EXCEPTION = new Dynamic2CommandExceptionType((length, maxLength) -> Component.translatableEscape("argument.message.too_long", length, maxLength));
+	static final Dynamic2CommandExceptionType TOO_LONG = new Dynamic2CommandExceptionType((length, maxLength) -> Component.translatableEscape("argument.message.too_long", length, maxLength));
 
 	public static CMessageArgument message() {
 		return new CMessageArgument();
 	}
 
 	public static Component getMessage(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		MessageFormat messageFormat = context.getArgument(name, MessageFormat.class);
-		return messageFormat.format(context.getSource());
+		CMessageArgument.Message message = context.getArgument(name, Message.class);
+		return message.resolveComponent(context.getSource());
 	}
 
-	@Override
-	public MessageFormat parse(StringReader stringReader) throws CommandSyntaxException {
-		return MessageFormat.parse(stringReader, true);
+	public CMessageArgument.Message parse(final StringReader stringReader) throws CommandSyntaxException {
+		return CMessageArgument.Message.parseText(stringReader, true);
 	}
 
-	@Override
+	public <S> CMessageArgument.Message parse(final StringReader stringReader, final @Nullable S source) throws CommandSyntaxException {
+		return CMessageArgument.Message.parseText(stringReader, CEntitySelectorParser.allowSelectors(source));
+	}
+
 	public Collection<String> getExamples() {
 		return EXAMPLES;
 	}
 
-	public record MessageFormat(String contents, MessageSelector[] selectors) {
-		Component format(FabricClientCommandSource source) throws CommandSyntaxException {
-			return this.format(source, source.hasPermission(2));
+	public record Message(String text, CMessageArgument.Part[] parts) {
+
+		Component resolveComponent(FabricClientCommandSource fabricClientCommandSource) throws CommandSyntaxException {
+			return this.toComponent(fabricClientCommandSource, CEntitySelectorParser.allowSelectors(fabricClientCommandSource));
 		}
 
-		public Component format(FabricClientCommandSource source, boolean canUseSelectors) throws CommandSyntaxException {
-            if (this.selectors.length == 0 || !canUseSelectors) {
-                return Component.literal(this.contents);
-            }
-            MutableComponent mutableComponent = Component.literal(this.contents.substring(0, this.selectors[0].start()));
-            int i = this.selectors[0].start();
-
-            for (MessageSelector messageSelector : this.selectors) {
-                Component text = messageSelector.format(source);
-                if (i < messageSelector.start()) {
-                    mutableComponent.append(this.contents.substring(i, messageSelector.start()));
-                }
-
-                mutableComponent.append(text);
-                i = messageSelector.end();
+		public Component toComponent(FabricClientCommandSource fabricClientCommandSource, boolean allowSelectors) throws CommandSyntaxException {
+            if (this.parts.length == 0 || !allowSelectors) {
+                return Component.literal(this.text);
             }
 
-            if (i < this.contents.length()) {
-                mutableComponent.append(this.contents.substring(i));
-            }
+			MutableComponent mutableComponent = Component.literal(this.text.substring(0, this.parts[0].start()));
+			int i = this.parts[0].start();
+			for (Part part : this.parts) {
+				Component component = part.toComponent(fabricClientCommandSource);
+				if (i < part.start()) {
+					mutableComponent.append(this.text.substring(i, part.start()));
+				}
+				mutableComponent.append(component);
+				i = part.end();
+			}
 
-            return mutableComponent;
+			if (i < this.text.length()) {
+				mutableComponent.append(this.text.substring(i));
+			}
+
+			return mutableComponent;
         }
 
-		public static MessageFormat parse(StringReader reader, boolean canUseSelectors) throws CommandSyntaxException {
-			if (reader.getRemainingLength() > 256) {
-				throw CMessageArgument.MESSAGE_TOO_LONG_EXCEPTION.create(reader.getRemainingLength(), 256);
+		public static CMessageArgument.Message parseText(StringReader stringReader, boolean allowSelectors) throws CommandSyntaxException {
+			if (stringReader.getRemainingLength() > 256) {
+				throw CMessageArgument.TOO_LONG.create(stringReader.getRemainingLength(), 256);
 			}
-			String string = reader.getRemaining();
-			if (!canUseSelectors) {
-				reader.setCursor(reader.getTotalLength());
-				return new MessageFormat(string, new MessageSelector[0]);
+			String string = stringReader.getRemaining();
+			if (!allowSelectors) {
+				stringReader.setCursor(stringReader.getTotalLength());
+				return new CMessageArgument.Message(string, new CMessageArgument.Part[0]);
 			}
-			List<MessageSelector> list = Lists.newArrayList();
-			int i = reader.getCursor();
-
+			List<CMessageArgument.Part> list = Lists.newArrayList();
+			int cursor = stringReader.getCursor();
 			while (true) {
 				int j;
 				CEntitySelector entitySelector;
 				while (true) {
-					if (!reader.canRead()) {
-						return new MessageFormat(string, list.toArray(new MessageSelector[0]));
+					if (!stringReader.canRead()) {
+						return new CMessageArgument.Message(string, list.toArray(new CMessageArgument.Part[0]));
 					}
-
-					if (reader.peek() == '@') {
-						j = reader.getCursor();
+					if (stringReader.peek() == CEntitySelectorParser.SYNTAX_SELECTOR_START) {
+						j = stringReader.getCursor();
 
 						try {
-							CEntitySelectorReader entitySelectorReader = new CEntitySelectorReader(reader);
-							entitySelector = entitySelectorReader.read();
+							CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, true);
+							entitySelector = entitySelectorParser.parse();
 							break;
 						} catch (CommandSyntaxException var8) {
-							if (var8.getType() != CEntitySelectorReader.MISSING_EXCEPTION && var8.getType() != CEntitySelectorReader.UNKNOWN_SELECTOR_EXCEPTION) {
+							if (var8.getType() != CEntitySelectorParser.ERROR_MISSING_SELECTOR_TYPE
+								&& var8.getType() != CEntitySelectorParser.ERROR_UNKNOWN_SELECTOR_TYPE) {
 								throw var8;
 							}
-
-							reader.setCursor(j + 1);
+							stringReader.setCursor(j + 1);
 						}
 					} else {
-						reader.skip();
+						stringReader.skip();
 					}
 				}
-
-				list.add(new MessageSelector(j - i, reader.getCursor() - i, entitySelector));
+				list.add(new CMessageArgument.Part(j - cursor, stringReader.getCursor() - cursor, entitySelector));
 			}
 		}
 	}
 
-	public record MessageSelector(int start, int end, CEntitySelector selector) {
-		public Component format(FabricClientCommandSource source) throws CommandSyntaxException {
-			return CEntitySelector.getNames(this.selector.getEntities(source));
+	public record Part(int start, int end, CEntitySelector selector) {
+		public Component toComponent(FabricClientCommandSource fabricClientCommandSource) throws CommandSyntaxException {
+			return CEntitySelector.joinNames(this.selector.findEntities(fabricClientCommandSource));
 		}
 	}
 }
