@@ -519,7 +519,7 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 	}
 
 	public CompletableFuture<Suggestions> fillSuggestions(SuggestionsBuilder builder, Consumer<SuggestionsBuilder> consumer) {
-		return (CompletableFuture<Suggestions>)this.suggestions.apply(builder.createOffset(this.reader.getCursor()), consumer);
+		return this.suggestions.apply(builder.createOffset(this.reader.getCursor()), consumer);
 	}
 
 	public boolean hasNameEquals() {
