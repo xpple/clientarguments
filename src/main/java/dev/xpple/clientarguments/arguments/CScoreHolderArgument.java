@@ -80,7 +80,7 @@ public class CScoreHolderArgument implements ArgumentType<CScoreHolderArgument.R
 	}
 
 	private CScoreHolderArgument.Result parse(final StringReader stringReader, final boolean selectorsAllowed) throws CommandSyntaxException {
-		if (stringReader.canRead() && stringReader.peek() == '@') {
+		if (stringReader.canRead() && stringReader.peek() == CEntitySelectorParser.SYNTAX_SELECTOR_START) {
 			CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, selectorsAllowed);
 			CEntitySelector entitySelector = entitySelectorParser.parse();
 			if (!this.multiple && entitySelector.getMaxResults() > 1) {

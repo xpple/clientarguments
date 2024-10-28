@@ -62,7 +62,7 @@ public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.R
 	}
 
 	private CGameProfileArgument.Result parse(StringReader stringReader, boolean allowSelectors) throws CommandSyntaxException {
-		if (stringReader.canRead() && stringReader.peek() == '@') {
+		if (stringReader.canRead() && stringReader.peek() == CEntitySelectorParser.SYNTAX_SELECTOR_START) {
 			CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, allowSelectors);
 			CEntitySelector entitySelector = entitySelectorParser.parse();
 			if (entitySelector.includesEntities()) {

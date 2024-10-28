@@ -137,7 +137,7 @@ public class CEntitySelectorOptions {
                 boolean blxx = !reader.hasGamemodeNotEquals();
                 boolean bl2 = true;
                 if (!stringxx.isEmpty()) {
-                    if (stringxx.charAt(0) == '!') {
+                    if (stringxx.charAt(0) == CEntitySelectorParser.SYNTAX_NOT) {
                         blxx = false;
                         stringxx = stringxx.substring(1);
                     } else {
@@ -208,11 +208,11 @@ public class CEntitySelectorOptions {
         }, reader -> !reader.hasTeamEquals(), Component.translatable("argument.entity.options.team.description"));
         putOption("type", reader -> {
             reader.setSuggestions((builder, consumer) -> {
-                SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), builder, String.valueOf('!'));
+                SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), builder, String.valueOf(CEntitySelectorParser.SYNTAX_NOT));
                 SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map(named -> named.key().location()), builder, "!#");
                 if (!reader.isTypeLimitedInversely()) {
                     SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.keySet(), builder);
-                    SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map(named -> named.key().location()), builder, String.valueOf('#'));
+                    SharedSuggestionProvider.suggestResource(BuiltInRegistries.ENTITY_TYPE.getTags().map(named -> named.key().location()), builder, String.valueOf(CEntitySelectorParser.SYNTAX_TAG));
                 }
 
                 return builder.buildFuture();
@@ -282,7 +282,7 @@ public class CEntitySelectorOptions {
                 stringReader.skipWhitespace();
                 String string = stringReader.readUnquotedString();
                 stringReader.skipWhitespace();
-                stringReader.expect('=');
+                stringReader.expect(CEntitySelectorParser.SYNTAX_OPTIONS_KEY_VALUE_SEPARATOR);
                 stringReader.skipWhitespace();
                 MinMaxBounds.Ints intRange = MinMaxBounds.Ints.fromReader(stringReader);
                 map.put(string, intRange);
@@ -333,7 +333,7 @@ public class CEntitySelectorOptions {
                 stringReader.skipWhitespace();
                 ResourceLocation resourceLocation = ResourceLocation.read(stringReader);
                 stringReader.skipWhitespace();
-                stringReader.expect('=');
+                stringReader.expect(CEntitySelectorParser.SYNTAX_OPTIONS_KEY_VALUE_SEPARATOR);
                 stringReader.skipWhitespace();
                 if (stringReader.canRead() && stringReader.peek() == '{') {
                     Map<String, Predicate<CriterionProgress>> map2 = Maps.newHashMap();
@@ -345,7 +345,7 @@ public class CEntitySelectorOptions {
                         stringReader.skipWhitespace();
                         String string = stringReader.readUnquotedString();
                         stringReader.skipWhitespace();
-                        stringReader.expect('=');
+                        stringReader.expect(CEntitySelectorParser.SYNTAX_OPTIONS_KEY_VALUE_SEPARATOR);
                         stringReader.skipWhitespace();
                         boolean bl = stringReader.readBoolean();
                         map2.put(string, criterionProgress -> criterionProgress.isDone() == bl);

@@ -87,7 +87,7 @@ public class CMessageArgument implements SignedArgument<CMessageArgument.Message
 					if (!stringReader.canRead()) {
 						return new CMessageArgument.Message(string, list.toArray(new CMessageArgument.Part[0]));
 					}
-					if (stringReader.peek() == '@') {
+					if (stringReader.peek() == CEntitySelectorParser.SYNTAX_SELECTOR_START) {
 						j = stringReader.getCursor();
 
 						try {

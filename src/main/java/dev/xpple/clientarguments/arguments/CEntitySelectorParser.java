@@ -179,40 +179,40 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 		char c = this.reader.read();
 
 		if (switch (c) {
-			case 'a' -> {
+			case SELECTOR_ALL_PLAYERS -> {
 				this.maxResults = Integer.MAX_VALUE;
 				this.includesEntities = false;
 				this.order = CEntitySelector.ORDER_ARBITRARY;
 				this.limitToType(EntityType.PLAYER);
 				yield false;
 			}
-			case 'e' -> {
+			case SELECTOR_ALL_ENTITIES -> {
 				this.maxResults = Integer.MAX_VALUE;
 				this.includesEntities = true;
 				this.order = CEntitySelector.ORDER_ARBITRARY;
 				yield true;
 			}
-			case 'n' -> {
+			case SELECTOR_NEAREST_ENTITY -> {
 				this.maxResults = 1;
 				this.includesEntities = true;
 				this.order = ORDER_NEAREST;
 				yield true;
 			}
-			case 'p' -> {
+			case SELECTOR_NEAREST_PLAYER -> {
 				this.maxResults = 1;
 				this.includesEntities = false;
 				this.order = ORDER_NEAREST;
 				this.limitToType(EntityType.PLAYER);
 				yield false;
 			}
-			case 'r' -> {
+			case SELECTOR_RANDOM_PLAYERS -> {
 				this.maxResults = 1;
 				this.includesEntities = false;
 				this.order = ORDER_RANDOM;
 				this.limitToType(EntityType.PLAYER);
 				yield false;
 			}
-			case 's' -> {
+			case SELECTOR_CURRENT_ENTITY -> {
 				this.maxResults = 1;
 				this.includesEntities = true;
 				this.currentEntity = true;
@@ -227,7 +227,7 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 		}
 
 		this.suggestions = this::suggestOpenOptions;
-		if (this.reader.canRead() && this.reader.peek() == '[') {
+		if (this.reader.canRead() && this.reader.peek() == SYNTAX_OPTIONS_START) {
 			this.reader.skip();
 			this.suggestions = this::suggestOptionsKeyOrClose;
 			this.parseOptions();
@@ -263,13 +263,13 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 		this.suggestions = this::suggestOptionsKey;
 		this.reader.skipWhitespace();
 
-		while (this.reader.canRead() && this.reader.peek() != ']') {
+		while (this.reader.canRead() && this.reader.peek() != SYNTAX_OPTIONS_END) {
 			this.reader.skipWhitespace();
 			int i = this.reader.getCursor();
 			String string = this.reader.readString();
 			CEntitySelectorOptions.SelectorHandler handler = CEntitySelectorOptions.getHandler(this, string, i);
 			this.reader.skipWhitespace();
-			if (!this.reader.canRead() || this.reader.peek() != '=') {
+			if (!this.reader.canRead() || this.reader.peek() != SYNTAX_OPTIONS_KEY_VALUE_SEPARATOR) {
 				this.reader.setCursor(i);
 				throw ERROR_EXPECTED_OPTION_VALUE.createWithContext(this.reader, string);
 			}
@@ -281,8 +281,8 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 			this.reader.skipWhitespace();
 			this.suggestions = this::suggestOptionsNextOrClose;
 			if (this.reader.canRead()) {
-				if (this.reader.peek() != ',') {
-					if (this.reader.peek() != ']') {
+				if (this.reader.peek() != SYNTAX_OPTIONS_SEPARATOR) {
+					if (this.reader.peek() != SYNTAX_OPTIONS_END) {
 						throw ERROR_EXPECTED_END_OF_OPTIONS.createWithContext(this.reader);
 					}
 					break;
@@ -302,7 +302,7 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 
 	public boolean shouldInvertValue() {
 		this.reader.skipWhitespace();
-		if (this.reader.canRead() && this.reader.peek() == '!') {
+		if (this.reader.canRead() && this.reader.peek() == SYNTAX_NOT) {
 			this.reader.skip();
 			this.reader.skipWhitespace();
 			return true;
@@ -312,7 +312,7 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 
 	public boolean isTag() {
 		this.reader.skipWhitespace();
-		if (this.reader.canRead() && this.reader.peek() == '#') {
+		if (this.reader.canRead() && this.reader.peek() == SYNTAX_TAG) {
 			this.reader.skip();
 			this.reader.skipWhitespace();
 			return true;
@@ -437,7 +437,7 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 	public CEntitySelector parse() throws CommandSyntaxException {
 		this.startPosition = this.reader.getCursor();
 		this.suggestions = this::suggestNameOrSelector;
-		if (this.reader.canRead() && this.reader.peek() == '@') {
+		if (this.reader.canRead() && this.reader.peek() == SYNTAX_SELECTOR_START) {
 			if (!this.allowSelectors) {
 				throw ERROR_SELECTORS_NOT_ALLOWED.createWithContext(this.reader);
 			}
@@ -484,12 +484,12 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 	}
 
 	private CompletableFuture<Suggestions> suggestOpenOptions(SuggestionsBuilder builder, Consumer<SuggestionsBuilder> consumer) {
-		builder.suggest(String.valueOf('['));
+		builder.suggest(String.valueOf(SYNTAX_OPTIONS_START));
 		return builder.buildFuture();
 	}
 
 	private CompletableFuture<Suggestions> suggestOptionsKeyOrClose(SuggestionsBuilder builder, Consumer<SuggestionsBuilder> consumer) {
-		builder.suggest(String.valueOf(']'));
+		builder.suggest(String.valueOf(SYNTAX_OPTIONS_END));
 		CEntitySelectorOptions.suggestOptions(this, builder);
 		return builder.buildFuture();
 	}
@@ -500,13 +500,13 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 	}
 
 	private CompletableFuture<Suggestions> suggestOptionsNextOrClose(SuggestionsBuilder builder, Consumer<SuggestionsBuilder> consumer) {
-		builder.suggest(String.valueOf(','));
-		builder.suggest(String.valueOf(']'));
+		builder.suggest(String.valueOf(SYNTAX_OPTIONS_SEPARATOR));
+		builder.suggest(String.valueOf(SYNTAX_OPTIONS_END));
 		return builder.buildFuture();
 	}
 
 	private CompletableFuture<Suggestions> suggestEquals(SuggestionsBuilder builder, Consumer<SuggestionsBuilder> consumer) {
-		builder.suggest(String.valueOf('='));
+		builder.suggest(String.valueOf(SYNTAX_OPTIONS_KEY_VALUE_SEPARATOR));
 		return builder.buildFuture();
 	}
 
