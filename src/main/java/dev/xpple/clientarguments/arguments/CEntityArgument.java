@@ -11,6 +11,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.network.chat.Component;
 
@@ -116,7 +117,7 @@ public class CEntityArgument implements ArgumentType<CEntitySelector> {
 		if (context.getSource() instanceof SharedSuggestionProvider commandSource) {
 			StringReader stringReader = new StringReader(builder.getInput());
 			stringReader.setCursor(builder.getStart());
-			CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, CEntitySelectorParser.allowSelectors(builder));
+			CEntitySelectorParser entitySelectorParser = new CEntitySelectorParser(stringReader, CEntitySelectorParser.allowSelectors(commandSource));
 
 			try {
 				entitySelectorParser.parse();
