@@ -9,12 +9,12 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.HolderLookup;
@@ -30,6 +30,7 @@ public class CParticleArgument implements ArgumentType<ParticleOptions> {
 	public static final DynamicCommandExceptionType UNKNOWN_PARTICLE_EXCEPTION = new DynamicCommandExceptionType(id -> Component.translatableEscape("particle.notFound", id));
 	public static final DynamicCommandExceptionType INVALID_OPTIONS_EXCEPTION = new DynamicCommandExceptionType(error -> Component.translatableEscape("particle.invalidOptions", error));
 	private final HolderLookup.Provider holderLookupProvider;
+	private static final TagParser<?> VALUE_PARSER = TagParser.create(NbtOps.INSTANCE);
 
 	public CParticleArgument(CommandBuildContext buildContext) {
 		this.holderLookupProvider = buildContext;
@@ -55,7 +56,7 @@ public class CParticleArgument implements ArgumentType<ParticleOptions> {
 
 	public static ParticleOptions readParameters(StringReader reader, HolderLookup.Provider holderLookupProvider) throws CommandSyntaxException {
 		ParticleType<?> particleType = getType(reader, holderLookupProvider.lookupOrThrow(Registries.PARTICLE_TYPE));
-		return readParameters(reader, particleType, holderLookupProvider);
+		return readParameters(VALUE_PARSER, reader, particleType, holderLookupProvider);
 	}
 
 	private static ParticleType<?> getType(StringReader reader, HolderLookup<ParticleType<?>> holderLookup) throws CommandSyntaxException {
@@ -66,15 +67,16 @@ public class CParticleArgument implements ArgumentType<ParticleOptions> {
 			.value();
 	}
 
-	private static <T extends ParticleOptions> T readParameters(StringReader reader, ParticleType<T> type, HolderLookup.Provider holderLookupProvider) throws CommandSyntaxException {
-		CompoundTag compoundTag;
+	private static <T extends ParticleOptions, O> T readParameters(TagParser<O> tagParser, StringReader reader, ParticleType<T> type, HolderLookup.Provider provider) throws CommandSyntaxException {
+		RegistryOps<O> ops = provider.createSerializationContext(tagParser.getOps());
+		O nbt;
 		if (reader.canRead() && reader.peek() == '{') {
-			compoundTag = new TagParser(reader).readStruct();
+			nbt = tagParser.parseAsArgument(reader);
 		} else {
-			compoundTag = new CompoundTag();
+			nbt = ops.emptyMap();
 		}
 
-		return type.codec().codec().parse(holderLookupProvider.createSerializationContext(NbtOps.INSTANCE), compoundTag).getOrThrow(INVALID_OPTIONS_EXCEPTION::create);
+		return type.codec().codec().parse(ops, nbt).getOrThrow(INVALID_OPTIONS_EXCEPTION::create);
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package dev.xpple.clientarguments.arguments;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -77,7 +78,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
                 reader.skip();
                 int i = reader.peek();
                 if (i == 123) {
-                    CompoundTag compoundTag2 = new TagParser(reader).readStruct();
+                    CompoundTag compoundTag2 = TagParser.parseCompoundAsArgument(reader);
                     reader.expect(']');
                     yield new MatchElementNode(compoundTag2);
                 }
@@ -94,7 +95,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
                     throw INVALID_PATH_NODE_EXCEPTION.createWithContext(reader);
                 }
 
-                CompoundTag compoundTag = new TagParser(reader).readStruct();
+                CompoundTag compoundTag = TagParser.parseCompoundAsArgument(reader);
                 yield new MatchRootObjectNode(compoundTag);
             }
             default -> readCompoundChildNode(reader, readName(reader));
@@ -103,7 +104,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 
 	private static Node readCompoundChildNode(StringReader reader, String name) throws CommandSyntaxException {
 		if (reader.canRead() && reader.peek() == '{') {
-			CompoundTag compoundTag = new TagParser(reader).readStruct();
+			CompoundTag compoundTag = TagParser.parseCompoundAsArgument(reader);
 			return new MatchObjectNode(name, compoundTag);
 		}
 		return new CompoundChildNode(name);
@@ -143,21 +144,21 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 
 		@Override
 		public void get(Tag current, List<Tag> results) {
-			if (current instanceof CollectionTag<?> collectionTag) {
-				results.addAll(collectionTag);
+			if (current instanceof CollectionTag collectionTag) {
+				Iterables.addAll(results, collectionTag);
 			}
 		}
 
 		@Override
 		public void getOrInit(Tag current, Supplier<Tag> source, List<Tag> results) {
-			if (current instanceof CollectionTag<?> collectionTag) {
+			if (current instanceof CollectionTag collectionTag) {
 				if (collectionTag.isEmpty()) {
 					Tag nbtElement = source.get();
 					if (collectionTag.addTag(0, nbtElement)) {
 						results.add(nbtElement);
 					}
 				} else {
-					results.addAll(collectionTag);
+					Iterables.addAll(results, collectionTag);
 				}
 			}
 		}
@@ -169,7 +170,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 
 		@Override
 		public int set(Tag current, Supplier<Tag> source) {
-			if (!(current instanceof CollectionTag<?> collectionTag)) {
+			if (!(current instanceof CollectionTag collectionTag)) {
 				return 0;
 			}
             int i = collectionTag.size();
@@ -195,7 +196,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 
 		@Override
 		public int clear(Tag current) {
-			if (current instanceof CollectionTag<?> collectionTag) {
+			if (current instanceof CollectionTag collectionTag) {
 				int i = collectionTag.size();
 				if (i > 0) {
 					collectionTag.clear();
@@ -398,7 +399,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 
 		@Override
 		public void get(Tag current, List<Tag> results) {
-			if (current instanceof CollectionTag<?> collectionTag) {
+			if (current instanceof CollectionTag collectionTag) {
 				int i = collectionTag.size();
 				int j = this.index < 0 ? i + this.index : this.index;
 				if (0 <= j && j < i) {
@@ -419,7 +420,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 
 		@Override
 		public int set(Tag current, Supplier<Tag> source) {
-			if (current instanceof CollectionTag<?> collectionTag) {
+			if (current instanceof CollectionTag collectionTag) {
 				int i = collectionTag.size();
 				int j = this.index < 0 ? i + this.index : this.index;
 				if (0 <= j && j < i) {
@@ -436,7 +437,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 
 		@Override
 		public int clear(Tag current) {
-			if (current instanceof CollectionTag<?> collectionTag) {
+			if (current instanceof CollectionTag collectionTag) {
 				int i = collectionTag.size();
 				int j = this.index < 0 ? i + this.index : this.index;
 				if (0 <= j && j < i) {
@@ -589,8 +590,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 				return true;
 			}
 			if (tag instanceof CompoundTag compoundTag) {
-				for (String string : compoundTag.getAllKeys()) {
-					Tag nbtElement = compoundTag.get(string);
+				for (Tag nbtElement : compoundTag.values()) {
 					if (nbtElement != null && isTooDeep(nbtElement, depth + 1)) {
 						return true;
 					}
@@ -646,7 +646,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 			boolean bl = false;
 
 			for (Tag tag3 : collection) {
-				if (!(tag3 instanceof CollectionTag<?> collectionTag)) {
+				if (!(tag3 instanceof CollectionTag collectionTag)) {
 					throw CNbtPathArgument.EXPECTED_LIST_EXCEPTION.create(tag3);
 				}
 

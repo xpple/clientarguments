@@ -13,9 +13,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
-import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -35,6 +33,7 @@ public class CResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
     private static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
     public static final DynamicCommandExceptionType FAILED_TO_PARSE_EXCEPTION = new DynamicCommandExceptionType(argument -> Component.translatableEscape("argument.resource_or_id.failed_to_parse", argument));
     private static final SimpleCommandExceptionType INVALID_EXCEPTION = new SimpleCommandExceptionType(Component.translatable("argument.resource_or_id.invalid"));
+    private static final TagParser<?> VALUE_PARSER = TagParser.create(NbtOps.INSTANCE);
     private final HolderLookup.Provider holderLookupProvider;
     private final boolean canLookupRegistry;
     private final Codec<Holder<T>> entryCodec;
@@ -76,18 +75,22 @@ public class CResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
     @Nullable
     public Holder<T> parse(final StringReader stringReader) throws CommandSyntaxException {
-        Tag nbtElement = parseAsNbt(stringReader);
+        return parse(stringReader, VALUE_PARSER);
+    }
+
+    private <O> Holder<T> parse(StringReader reader, TagParser<O> tagParser) throws CommandSyntaxException {
+        O nbtElement = parseAsNbt(reader, tagParser);
         if (!this.canLookupRegistry) {
             return null;
         }
-        RegistryOps<Tag> registryOps = this.holderLookupProvider.createSerializationContext(NbtOps.INSTANCE);
-        return this.entryCodec.parse(registryOps, nbtElement).getOrThrow(argument -> FAILED_TO_PARSE_EXCEPTION.createWithContext(stringReader, argument));
+        RegistryOps<O> registryOps = this.holderLookupProvider.createSerializationContext(tagParser.getOps());
+        return this.entryCodec.parse(registryOps, nbtElement).getOrThrow(argument -> FAILED_TO_PARSE_EXCEPTION.createWithContext(reader, argument));
     }
 
     @VisibleForTesting
-    static Tag parseAsNbt(StringReader stringReader) throws CommandSyntaxException {
+    static <O> O parseAsNbt(StringReader stringReader, TagParser<O> tagParser) throws CommandSyntaxException {
         int i = stringReader.getCursor();
-        Tag nbtElement = new TagParser(stringReader).readValue();
+        O nbtElement = tagParser.parseAsArgument(stringReader);
         if (hasFinishedReading(stringReader)) {
             return nbtElement;
         }
@@ -97,7 +100,7 @@ public class CResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
             stringReader.setCursor(i);
             throw INVALID_EXCEPTION.createWithContext(stringReader);
         }
-        return StringTag.valueOf(id.toString());
+        return tagParser.getOps().createString(id.toString());
     }
 
     private static boolean hasFinishedReading(StringReader stringReader) {

@@ -26,7 +26,7 @@ public class CCompoundTagArgument implements ArgumentType<CompoundTag> {
 
 	@Override
 	public CompoundTag parse(final StringReader stringReader) throws CommandSyntaxException {
-		return new TagParser(stringReader).readStruct();
+		return TagParser.parseCompoundAsArgument(stringReader);
 	}
 
 	@Override

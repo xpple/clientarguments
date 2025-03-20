@@ -259,11 +259,11 @@ public class CEntitySelectorOptions {
         }, reader -> true, Component.translatable("argument.entity.options.tag.description"));
         putOption("nbt", reader -> {
             boolean bl = reader.shouldInvertValue();
-            CompoundTag compoundTag = new TagParser(reader.getReader()).readStruct();
+            CompoundTag compoundTag = TagParser.parseCompoundAsArgument(reader.getReader());
             reader.addPredicate(entity -> {
                 CompoundTag compoundTag2 = entity.saveWithoutId(new CompoundTag());
                 if (entity instanceof AbstractClientPlayer abstractClientPlayer) {
-                    ItemStack itemStack = abstractClientPlayer.getInventory().getSelected();
+                    ItemStack itemStack = abstractClientPlayer.getInventory().getSelectedItem();
                     if (!itemStack.isEmpty()) {
                         compoundTag2.put("SelectedItem", itemStack.save(abstractClientPlayer.registryAccess()));
                     }

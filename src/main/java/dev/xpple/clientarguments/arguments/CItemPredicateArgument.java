@@ -21,16 +21,16 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.mojang.serialization.Dynamic;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
 import net.minecraft.commands.arguments.item.ComponentPredicateParser;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.Tag;
-import net.minecraft.nbt.NbtOps;
 import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.ItemSubPredicate;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryOps;
@@ -96,8 +96,8 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 			}));
 		}
 
-		public Predicate<ItemStack> createPredicate(ImmutableStringReader reader, RegistryOps<Tag> ops, Tag nbt) throws CommandSyntaxException {
-			DataResult<? extends Predicate<ItemStack>> dataResult = this.valueChecker.parse(ops, nbt);
+		public Predicate<ItemStack> createPredicate(ImmutableStringReader reader, Dynamic<?> nbt) throws CommandSyntaxException {
+			DataResult<? extends Predicate<ItemStack>> dataResult = this.valueChecker.parse(nbt);
 			return dataResult.getOrThrow(error -> MALFORMED_ITEM_COMPONENT_EXCEPTION.createWithContext(reader, this.id.toString(), error));
 		}
 	}
@@ -106,29 +106,30 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 	}
 
 	record PredicateWrapper(ResourceLocation id, Decoder<? extends Predicate<ItemStack>> type) {
-		public PredicateWrapper(Holder.Reference<ItemSubPredicate.Type<?>> type) {
+		public PredicateWrapper(Holder.Reference<DataComponentPredicate.Type<?>> type) {
 			this(type.key().location(), type.value().codec().map(predicate -> predicate::matches));
 		}
 
-		public Predicate<ItemStack> createPredicate(ImmutableStringReader reader, RegistryOps<Tag> ops, Tag nbt) throws CommandSyntaxException {
-			DataResult<? extends Predicate<ItemStack>> dataResult = this.type.parse(ops, nbt);
+		public Predicate<ItemStack> createPredicate(ImmutableStringReader reader, Dynamic<?> nbt) throws CommandSyntaxException {
+			DataResult<? extends Predicate<ItemStack>> dataResult = this.type.parse(nbt);
 			return dataResult.getOrThrow(error -> MALFORMED_ITEM_PREDICATE_EXCEPTION.createWithContext(reader, this.id.toString(), error));
 		}
 	}
 
 	static class Context implements ComponentPredicateParser.Context<Predicate<ItemStack>, ComponentWrapper, PredicateWrapper> {
+		private final HolderLookup.Provider registries;
 		private final HolderLookup.RegistryLookup<Item> itemHolderLookup;
 		private final HolderLookup.RegistryLookup<DataComponentType<?>> dataComponentTypeHolderLookup;
-		private final HolderLookup.RegistryLookup<ItemSubPredicate.Type<?>> itemSubPredicateTypeHolderLookup;
-		private final RegistryOps<Tag> nbtOps;
+		private final HolderLookup.RegistryLookup<DataComponentPredicate.Type<?>> itemSubPredicateTypeHolderLookup;
 
-		Context(HolderLookup.Provider holderLookupProvider) {
-			this.itemHolderLookup = holderLookupProvider.lookupOrThrow(Registries.ITEM);
-			this.dataComponentTypeHolderLookup = holderLookupProvider.lookupOrThrow(Registries.DATA_COMPONENT_TYPE);
-			this.itemSubPredicateTypeHolderLookup = holderLookupProvider.lookupOrThrow(Registries.ITEM_SUB_PREDICATE_TYPE);
-			this.nbtOps = holderLookupProvider.createSerializationContext(NbtOps.INSTANCE);
+		Context(HolderLookup.Provider registries) {
+			this.registries = registries;
+			this.itemHolderLookup = registries.lookupOrThrow(Registries.ITEM);
+			this.dataComponentTypeHolderLookup = registries.lookupOrThrow(Registries.DATA_COMPONENT_TYPE);
+			this.itemSubPredicateTypeHolderLookup = registries.lookupOrThrow(Registries.DATA_COMPONENT_PREDICATE_TYPE);
 		}
 
+		@Override
 		public Predicate<ItemStack> forElementType(ImmutableStringReader immutableStringReader, ResourceLocation id) throws CommandSyntaxException {
 			Holder.Reference<Item> reference = this.itemHolderLookup
 				.get(ResourceKey.create(Registries.ITEM, id))
@@ -136,6 +137,7 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 			return stack -> stack.is(reference);
 		}
 
+		@Override
 		public Predicate<ItemStack> forTagType(ImmutableStringReader immutableStringReader, ResourceLocation id) throws CommandSyntaxException {
 			HolderSet<Item> registryEntryList = this.itemHolderLookup
 				.get(TagKey.create(Registries.ITEM, id))
@@ -143,6 +145,7 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 			return stack -> stack.is(registryEntryList);
 		}
 
+		@Override
 		public ComponentWrapper lookupComponentType(ImmutableStringReader immutableStringReader, ResourceLocation id) throws CommandSyntaxException {
 			ComponentWrapper componentWrapper = SPECIAL_COMPONENT_CHECKS.get(id);
 			if (componentWrapper != null) {
@@ -155,24 +158,28 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 			return ComponentWrapper.read(immutableStringReader, id, dataComponentType);
 		}
 
-		public Predicate<ItemStack> createComponentTest(ImmutableStringReader immutableStringReader, ComponentWrapper componentWrapper, Tag nbtElement) throws CommandSyntaxException {
-			return componentWrapper.createPredicate(immutableStringReader, this.nbtOps, nbtElement);
+		@Override
+		public Predicate<ItemStack> createComponentTest(ImmutableStringReader immutableStringReader, ComponentWrapper componentWrapper, Dynamic<?> nbtElement) throws CommandSyntaxException {
+			return componentWrapper.createPredicate(immutableStringReader, RegistryOps.injectRegistryContext(nbtElement, registries));
 		}
 
+		@Override
 		public Predicate<ItemStack> createComponentTest(ImmutableStringReader immutableStringReader, ComponentWrapper componentWrapper) {
 			return componentWrapper.presenceChecker;
 		}
 
+		@Override
 		public PredicateWrapper lookupPredicateType(ImmutableStringReader immutableStringReader, ResourceLocation id) throws CommandSyntaxException {
 			PredicateWrapper predicateWrapper = SPECIAL_SUB_PREDICATE_CHECKS.get(id);
 			return predicateWrapper != null ? predicateWrapper : this.itemSubPredicateTypeHolderLookup
-				.get(ResourceKey.create(Registries.ITEM_SUB_PREDICATE_TYPE, id))
+				.get(ResourceKey.create(Registries.DATA_COMPONENT_PREDICATE_TYPE, id))
 				.map(PredicateWrapper::new)
 				.orElseThrow(() -> UNKNOWN_ITEM_PREDICATE_EXCEPTION.createWithContext(immutableStringReader, id));
 		}
 
-		public Predicate<ItemStack> createPredicateTest(ImmutableStringReader immutableStringReader, PredicateWrapper predicateWrapper, Tag nbtElement) throws CommandSyntaxException {
-			return predicateWrapper.createPredicate(immutableStringReader, this.nbtOps, nbtElement);
+		@Override
+		public Predicate<ItemStack> createPredicateTest(ImmutableStringReader immutableStringReader, PredicateWrapper predicateWrapper, Dynamic<?> nbtElement) throws CommandSyntaxException {
+			return predicateWrapper.createPredicate(immutableStringReader, RegistryOps.injectRegistryContext(nbtElement, registries));
 		}
 
 		@Override
@@ -201,10 +208,12 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 			return Stream.concat(SPECIAL_SUB_PREDICATE_CHECKS.keySet().stream(), this.itemSubPredicateTypeHolderLookup.listElementIds().map(ResourceKey::location));
 		}
 
+		@Override
 		public Predicate<ItemStack> negate(Predicate<ItemStack> predicate) {
 			return predicate.negate();
 		}
 
+		@Override
 		public Predicate<ItemStack> anyOf(List<Predicate<ItemStack>> list) {
 			return Util.anyOf(list);
 		}
