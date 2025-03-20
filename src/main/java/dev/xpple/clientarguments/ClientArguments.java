@@ -27,6 +27,7 @@ import static dev.xpple.clientarguments.arguments.CEnumArgument.*;
 import static dev.xpple.clientarguments.arguments.CGameProfileArgument.*;
 import static dev.xpple.clientarguments.arguments.CResourceLocationArgument.*;
 import static dev.xpple.clientarguments.arguments.CItemPredicateArgument.*;
+import static dev.xpple.clientarguments.arguments.CResourceSelectorArgument.*;
 import static dev.xpple.clientarguments.arguments.CSlotArgument.*;
 import static dev.xpple.clientarguments.arguments.CItemArgument.*;
 import static dev.xpple.clientarguments.arguments.CMessageArgument.*;
@@ -132,6 +133,8 @@ public class ClientArguments implements ClientModInitializer {
                 .executes(ctx -> consume(getKey(ctx, "registrykey", Registries.STRUCTURE, STRUCTURE_INVALID_EXCEPTION)))))
             .then(literal("registrypredicate").then(argument("registrypredicate", registryPredicate(Registries.STRUCTURE))
                 .executes(ctx -> consume(getPredicate(ctx, "registrypredicate", Registries.STRUCTURE, STRUCTURE_INVALID_EXCEPTION)))))
+            .then(literal("resourceselector").then(argument("resourceselector", resourceSelector(registryAccess, Registries.ITEM))
+                .executes(ctx -> consume(getSelectedResources(ctx, "resourceselector", Registries.ITEM)))))
             .then(literal("rotation").then(argument("rotation", rotation())
                 .executes(ctx -> consume(getRotation(ctx, "rotation")))))
             .then(literal("scoreboardcriterion").then(argument("scoreboardcriterion", criteria())
