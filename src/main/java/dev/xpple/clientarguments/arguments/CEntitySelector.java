@@ -134,7 +134,7 @@ public class CEntitySelector {
 		}
 		List<Entity> list = Lists.newArrayList();
 		this.addEntities(list, source.getWorld(), aabb, predicate);
-		return list;
+		return this.sortAndLimit(vec3, list);
 	}
 
 	private void addEntities(List<Entity> entities, ClientLevel level, @Nullable AABB box, Predicate<Entity> predicate) {
@@ -146,7 +146,7 @@ public class CEntitySelector {
 				level.getEntities().get(this.type, entity -> {
 					if (predicate.test(entity)) {
 						entities.add(entity);
-						if (entities.size() >= maxResults) {
+						if (entities.size() >= resultLimit) {
 							return AbortableIterationConsumer.Continuation.ABORT;
 						}
 					}
