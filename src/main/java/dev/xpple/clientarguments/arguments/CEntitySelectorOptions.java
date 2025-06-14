@@ -6,6 +6,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.logging.LogUtils;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.client.Minecraft;
@@ -13,8 +14,11 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -24,6 +28,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
@@ -32,6 +37,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.GameType;
+import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.Map;
@@ -41,6 +47,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 public class CEntitySelectorOptions {
+    private static final Logger LOGGER = LogUtils.getLogger();
 	private static final Map<String, SelectorOption> OPTIONS = Maps.newHashMap();
 	public static final DynamicCommandExceptionType UNKNOWN_OPTION_EXCEPTION = new DynamicCommandExceptionType(option -> Component.translatableEscape("argument.entity.options.unknown", option));
 	public static final DynamicCommandExceptionType INAPPLICABLE_OPTION_EXCEPTION = new DynamicCommandExceptionType(option -> Component.translatableEscape("argument.entity.options.inapplicable", option));
@@ -261,15 +268,18 @@ public class CEntitySelectorOptions {
             boolean bl = reader.shouldInvertValue();
             CompoundTag compoundTag = TagParser.parseCompoundAsArgument(reader.getReader());
             reader.addPredicate(entity -> {
-                CompoundTag compoundTag2 = entity.saveWithoutId(new CompoundTag());
-                if (entity instanceof AbstractClientPlayer abstractClientPlayer) {
-                    ItemStack itemStack = abstractClientPlayer.getInventory().getSelectedItem();
-                    if (!itemStack.isEmpty()) {
-                        compoundTag2.put("SelectedItem", itemStack.save(abstractClientPlayer.registryAccess()));
+                try (ProblemReporter.ScopedCollector scopedCollector = new ProblemReporter.ScopedCollector(entity.problemPath(), LOGGER)) {
+                    TagValueOutput tagValueOutput = TagValueOutput.createWithContext(scopedCollector, entity.registryAccess());
+                    entity.saveWithoutId(tagValueOutput);
+                    if (entity instanceof AbstractClientPlayer abstractClientPlayer) {
+                        ItemStack itemStack = abstractClientPlayer.getInventory().getSelectedItem();
+                        if (!itemStack.isEmpty()) {
+                            tagValueOutput.store("SelectedItem", ItemStack.CODEC, itemStack);
+                        }
                     }
-                }
 
-                return NbtUtils.compareNbt(compoundTag, compoundTag2, true) != bl;
+                    return NbtUtils.compareNbt(compoundTag, tagValueOutput.buildResult(), true) != bl;
+                }
             });
         }, reader -> true, Component.translatable("argument.entity.options.nbt.description"));
         putOption("scores", reader -> {
