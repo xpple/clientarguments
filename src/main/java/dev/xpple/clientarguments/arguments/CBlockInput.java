@@ -1,17 +1,17 @@
 package dev.xpple.clientarguments.arguments;
 
-import java.util.Set;
-import java.util.function.Predicate;
-
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Set;
+import java.util.function.Predicate;
 
 public class CBlockInput implements Predicate<BlockInWorld> {
     private final BlockState state;

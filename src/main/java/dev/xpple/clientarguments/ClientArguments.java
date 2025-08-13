@@ -25,6 +25,7 @@ import static dev.xpple.clientarguments.arguments.CEntityAnchorArgument.*;
 import static dev.xpple.clientarguments.arguments.CEntityArgument.*;
 import static dev.xpple.clientarguments.arguments.CEnumArgument.*;
 import static dev.xpple.clientarguments.arguments.CGameProfileArgument.*;
+import static dev.xpple.clientarguments.arguments.CHexColorArgument.*;
 import static dev.xpple.clientarguments.arguments.CResourceLocationArgument.*;
 import static dev.xpple.clientarguments.arguments.CItemPredicateArgument.*;
 import static dev.xpple.clientarguments.arguments.CResourceSelectorArgument.*;
@@ -99,6 +100,8 @@ public class ClientArguments implements ClientModInitializer {
                 .executes(ctx -> consume(getEnum(ctx, "enum")))))
             .then(literal("gameprofile").then(argument("gameprofile", gameProfile())
                 .executes(ctx -> consume(getProfileArgument(ctx, "gameprofile")))))
+            .then(literal("hexcolor").then(argument("hexcolor", hexColor())
+                .executes(ctx -> consume(getHexColor(ctx, "hexcolor")))))
             .then(literal("identifier").then(argument("identifier", id())
                 .executes(ctx -> consume(getId(ctx, "identifier")))))
             .then(literal("itempredicate").then(argument("itempredicate", itemPredicate(registryAccess))

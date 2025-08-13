@@ -4,12 +4,11 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.Arrays;
 import java.util.Collection;
-
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.resources.ResourceLocation;
 
 public class CResourceLocationArgument implements ArgumentType<ResourceLocation> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");

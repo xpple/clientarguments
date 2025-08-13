@@ -11,10 +11,10 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.world.scores.criteria.ObjectiveCriteria;
+import net.minecraft.network.chat.Component;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.StatType;
-import net.minecraft.network.chat.Component;
+import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 import java.util.Arrays;
 import java.util.Collection;
