@@ -10,7 +10,6 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -23,7 +22,6 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.Mth;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -107,8 +105,8 @@ public class CEntitySelectorOptions {
         putOption("dx", reader -> reader.setDeltaX(reader.getReader().readDouble()), reader -> reader.getDeltaX() == null, Component.translatable("argument.entity.options.dx.description"));
         putOption("dy", reader -> reader.setDeltaY(reader.getReader().readDouble()), reader -> reader.getDeltaY() == null, Component.translatable("argument.entity.options.dy.description"));
         putOption("dz", reader -> reader.setDeltaZ(reader.getReader().readDouble()), reader -> reader.getDeltaZ() == null, Component.translatable("argument.entity.options.dz.description"));
-        putOption("x_rotation", reader -> reader.setRotX(WrappedMinMaxBounds.fromReader(reader.getReader(), true, Mth::wrapDegrees)), reader -> reader.getRotX() == WrappedMinMaxBounds.ANY, Component.translatable("argument.entity.options.x_rotation.description"));
-        putOption("y_rotation", reader -> reader.setRotY(WrappedMinMaxBounds.fromReader(reader.getReader(), true, Mth::wrapDegrees)), reader -> reader.getRotY() == WrappedMinMaxBounds.ANY, Component.translatable("argument.entity.options.y_rotation.description"));
+        putOption("x_rotation", reader -> reader.setRotX(MinMaxBounds.FloatDegrees.fromReader(reader.getReader())), reader -> reader.getRotX() == MinMaxBounds.FloatDegrees.ANY, Component.translatable("argument.entity.options.x_rotation.description"));
+        putOption("y_rotation", reader -> reader.setRotY(MinMaxBounds.FloatDegrees.fromReader(reader.getReader())), reader -> reader.getRotY() == MinMaxBounds.FloatDegrees.ANY, Component.translatable("argument.entity.options.y_rotation.description"));
         putOption("limit", reader -> {
             int cursor = reader.getReader().getCursor();
             int j = reader.getReader().readInt();

@@ -82,7 +82,7 @@ public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.R
 		String playerName = stringReader.getString().substring(cursor, stringReader.getCursor());
 		return source -> Collections.singleton(Minecraft.getInstance().getConnection().getOnlinePlayers().stream()
 			.map(PlayerInfo::getProfile)
-			.filter(profile -> profile.getName().equals(playerName))
+			.filter(profile -> profile.name().equals(playerName))
 			.findFirst().orElseThrow(UNKNOWN_PLAYER_EXCEPTION::create));
 	}
 

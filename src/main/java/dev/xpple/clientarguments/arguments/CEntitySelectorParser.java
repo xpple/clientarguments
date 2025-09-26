@@ -9,7 +9,6 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.command.v2.FabricEntitySelectorReader;
 import net.minecraft.advancements.critereon.MinMaxBounds;
-import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
@@ -75,8 +74,8 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 	private Double deltaY;
 	@Nullable
 	private Double deltaZ;
-	private WrappedMinMaxBounds rotX = WrappedMinMaxBounds.ANY;
-	private WrappedMinMaxBounds rotY = WrappedMinMaxBounds.ANY;
+	private MinMaxBounds.FloatDegrees rotX = MinMaxBounds.FloatDegrees.ANY;
+	private MinMaxBounds.FloatDegrees rotY = MinMaxBounds.FloatDegrees.ANY;
 	private final List<Predicate<Entity>> predicates = new ArrayList<>();
 	private BiConsumer<Vec3, List<? extends Entity>> order = CEntitySelector.ORDER_ARBITRARY;
 	private boolean currentEntity;
@@ -147,11 +146,11 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 	}
 
 	private void finalizePredicates() {
-		if (this.rotX != WrappedMinMaxBounds.ANY) {
+		if (this.rotX != MinMaxBounds.FloatDegrees.ANY) {
 			this.predicates.add(this.createRotationPredicate(this.rotX, Entity::getXRot));
 		}
 
-		if (this.rotY != WrappedMinMaxBounds.ANY) {
+		if (this.rotY != MinMaxBounds.FloatDegrees.ANY) {
 			this.predicates.add(this.createRotationPredicate(this.rotY, Entity::getYRot));
 		}
 
@@ -160,9 +159,9 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 		}
 	}
 
-	private Predicate<Entity> createRotationPredicate(WrappedMinMaxBounds angleBounds, ToDoubleFunction<Entity> angleFunction) {
-		double d = Mth.wrapDegrees(angleBounds.min() == null ? 0.0F : angleBounds.min());
-		double e = Mth.wrapDegrees(angleBounds.max() == null ? 359.0F : angleBounds.max());
+	private Predicate<Entity> createRotationPredicate(MinMaxBounds.FloatDegrees angleBounds, ToDoubleFunction<Entity> angleFunction) {
+		double d = Mth.wrapDegrees(angleBounds.min().orElse(0f));
+		double e = Mth.wrapDegrees(angleBounds.max().orElse(359f));
 		return entity -> {
 			double f = Mth.wrapDegrees(angleFunction.applyAsDouble(entity));
 			return d > e ? f >= d || f <= e : f >= d && f <= e;
@@ -348,19 +347,19 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 		this.level = level;
 	}
 
-	public WrappedMinMaxBounds getRotX() {
+	public MinMaxBounds.FloatDegrees getRotX() {
 		return this.rotX;
 	}
 
-	public void setRotX(WrappedMinMaxBounds rotX) {
+	public void setRotX(MinMaxBounds.FloatDegrees rotX) {
 		this.rotX = rotX;
 	}
 
-	public WrappedMinMaxBounds getRotY() {
+	public MinMaxBounds.FloatDegrees getRotY() {
 		return this.rotY;
 	}
 
-	public void setRotY(WrappedMinMaxBounds rotY) {
+	public void setRotY(MinMaxBounds.FloatDegrees rotY) {
 		this.rotY = rotY;
 	}
 
