@@ -17,8 +17,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -52,7 +52,7 @@ public class CResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
         Holder.Reference<T> reference = (Holder.Reference<T>) context.getArgument(name, Holder.Reference.class);
         ResourceKey<?> resourceKey = reference.key();
         if (!resourceKey.isFor(registryRef)) {
-            throw INVALID_TYPE_EXCEPTION.create(resourceKey.location(), resourceKey.registry(), registryRef.location());
+            throw INVALID_TYPE_EXCEPTION.create(resourceKey.identifier(), resourceKey.registry(), registryRef.identifier());
         }
         return reference;
     }
@@ -76,7 +76,7 @@ public class CResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
     public static Holder.Reference<EntityType<?>> getSummonableEntityType(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
         Holder.Reference<EntityType<?>> reference = getRegistryEntry(context, name, Registries.ENTITY_TYPE);
         if (!reference.value().canSummon()) {
-            throw NOT_SUMMONABLE_EXCEPTION.create(reference.key().location().toString());
+            throw NOT_SUMMONABLE_EXCEPTION.create(reference.key().identifier().toString());
         }
         return reference;
     }
@@ -90,16 +90,16 @@ public class CResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
     }
 
     public Holder.Reference<T> parse(StringReader stringReader) throws CommandSyntaxException {
-        ResourceLocation id = ResourceLocation.read(stringReader);
+        Identifier id = Identifier.read(stringReader);
         ResourceKey<T> resourceKey = ResourceKey.create(this.registryRef, id);
         return this.holderLookup
             .get(resourceKey)
-            .orElseThrow(() -> NOT_FOUND_EXCEPTION.createWithContext(stringReader, id, this.registryRef.location()));
+            .orElseThrow(() -> NOT_FOUND_EXCEPTION.createWithContext(stringReader, id, this.registryRef.identifier()));
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-        return SharedSuggestionProvider.suggestResource(this.holderLookup.listElementIds().map(ResourceKey::location), builder);
+        return SharedSuggestionProvider.suggestResource(this.holderLookup.listElementIds().map(ResourceKey::identifier), builder);
     }
 
     @Override

@@ -5,20 +5,20 @@ import com.google.common.collect.Streams;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.Util;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.util.AbortableIterationConsumer;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -128,9 +128,10 @@ public class CEntitySelector {
 		AABB aabb = this.getAbsoluteAabb(vec3);
 		Predicate<Entity> predicate = this.getPredicate(vec3, aabb, null);
 		if (this.currentEntity) {
-			return source.getEntity() != null && predicate.test(source.getEntity())
-				? Lists.newArrayList(source.getEntity())
-				: Collections.emptyList();
+            source.getEntity();
+            return predicate.test(source.getEntity())
+                ? Lists.newArrayList(source.getEntity())
+                : Collections.emptyList();
 		}
 		List<Entity> list = Lists.newArrayList();
 		this.addEntities(list, source.getWorld(), aabb, predicate);

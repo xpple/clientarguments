@@ -11,6 +11,7 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -80,10 +81,16 @@ public class CGameProfileArgument implements ArgumentType<CGameProfileArgument.R
 		}
 
 		String playerName = stringReader.getString().substring(cursor, stringReader.getCursor());
-		return source -> Collections.singleton(Minecraft.getInstance().getConnection().getOnlinePlayers().stream()
-			.map(PlayerInfo::getProfile)
-			.filter(profile -> profile.name().equals(playerName))
-			.findFirst().orElseThrow(UNKNOWN_PLAYER_EXCEPTION::create));
+		return source -> {
+            ClientPacketListener connection = Minecraft.getInstance().getConnection();
+            if (connection == null) {
+                return Collections.emptySet();
+            }
+            return Collections.singleton(connection.getOnlinePlayers().stream()
+                .map(PlayerInfo::getProfile)
+                .filter(profile -> profile.name().equals(playerName))
+                .findFirst().orElseThrow(UNKNOWN_PLAYER_EXCEPTION::create));
+        };
 	}
 
 	@Override

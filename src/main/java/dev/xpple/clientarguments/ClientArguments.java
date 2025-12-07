@@ -26,7 +26,7 @@ import static dev.xpple.clientarguments.arguments.CEntityArgument.*;
 import static dev.xpple.clientarguments.arguments.CEnumArgument.*;
 import static dev.xpple.clientarguments.arguments.CGameProfileArgument.*;
 import static dev.xpple.clientarguments.arguments.CHexColorArgument.*;
-import static dev.xpple.clientarguments.arguments.CResourceLocationArgument.*;
+import static dev.xpple.clientarguments.arguments.CIdentifierArgument.*;
 import static dev.xpple.clientarguments.arguments.CItemPredicateArgument.*;
 import static dev.xpple.clientarguments.arguments.CResourceSelectorArgument.*;
 import static dev.xpple.clientarguments.arguments.CSlotArgument.*;

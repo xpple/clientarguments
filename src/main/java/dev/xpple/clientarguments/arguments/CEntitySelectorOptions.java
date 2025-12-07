@@ -9,10 +9,11 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.logging.LogUtils;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -20,7 +21,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
@@ -179,7 +180,11 @@ public class CEntitySelectorOptions {
 				if (!(entity instanceof AbstractClientPlayer abstractClientPlayerEntity)) {
 					return false;
 				}
-                PlayerInfo playerListEntry = Minecraft.getInstance().player.connection.getPlayerInfo(abstractClientPlayerEntity.getUUID());
+                LocalPlayer thePlayer = Minecraft.getInstance().player;
+                if (thePlayer == null) {
+                    return false;
+                }
+                PlayerInfo playerListEntry = thePlayer.connection.getPlayerInfo(abstractClientPlayerEntity.getUUID());
                 if (playerListEntry == null) {
                     return false;
                 }
@@ -231,10 +236,10 @@ public class CEntitySelectorOptions {
 			}
 
 			if (reader.isTag()) {
-				TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.read(reader.getReader()));
+				TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, Identifier.read(reader.getReader()));
 				reader.addPredicate(entity -> entity.getType().is(tagKey) != bl);
 			} else {
-				ResourceLocation resourceLocation = ResourceLocation.read(reader.getReader());
+				Identifier resourceLocation = Identifier.read(reader.getReader());
 				EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getOptional(resourceLocation).orElseThrow(() -> {
 					reader.getReader().setCursor(cursor);
 					return INVALID_TYPE_EXCEPTION.createWithContext(reader.getReader(), resourceLocation.toString());
@@ -331,13 +336,13 @@ public class CEntitySelectorOptions {
         }, reader -> !reader.hasScores(), Component.translatable("argument.entity.options.scores.description"));
         putOption("advancements", reader -> {
             StringReader stringReader = reader.getReader();
-            Map<ResourceLocation, Predicate<AdvancementProgress>> map = Maps.newHashMap();
+            Map<Identifier, Predicate<AdvancementProgress>> map = Maps.newHashMap();
             stringReader.expect('{');
             stringReader.skipWhitespace();
 
             while (stringReader.canRead() && stringReader.peek() != '}') {
                 stringReader.skipWhitespace();
-                ResourceLocation resourceLocation = ResourceLocation.read(stringReader);
+                Identifier resourceLocation = Identifier.read(stringReader);
                 stringReader.skipWhitespace();
                 stringReader.expect(CEntitySelectorParser.SYNTAX_OPTIONS_KEY_VALUE_SEPARATOR);
                 stringReader.skipWhitespace();

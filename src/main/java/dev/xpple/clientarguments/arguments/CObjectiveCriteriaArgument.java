@@ -65,7 +65,8 @@ public class CObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteri
 		return SharedSuggestionProvider.suggest(list, builder);
 	}
 
-	public <T> String getStatName(StatType<T> stat, Object value) {
+	@SuppressWarnings("unchecked")
+    public <T> String getStatName(StatType<T> stat, Object value) {
 		return Stat.buildName(stat, (T) value);
 	}
 

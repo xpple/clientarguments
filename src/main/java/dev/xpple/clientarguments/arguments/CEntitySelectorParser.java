@@ -8,7 +8,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.command.v2.FabricEntitySelectorReader;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
@@ -17,7 +17,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,7 +60,7 @@ public class CEntitySelectorParser implements FabricEntitySelectorReader {
 	private int maxResults;
 	private boolean includesEntities;
 	private boolean worldLimited;
-	private net.minecraft.advancements.critereon.MinMaxBounds.Doubles distance = net.minecraft.advancements.critereon.MinMaxBounds.Doubles.ANY;
+	private MinMaxBounds.Doubles distance = MinMaxBounds.Doubles.ANY;
 	private MinMaxBounds.Ints level = MinMaxBounds.Ints.ANY;
 	@Nullable
 	private Double x;

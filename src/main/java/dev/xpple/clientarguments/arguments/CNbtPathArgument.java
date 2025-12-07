@@ -21,6 +21,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -132,7 +133,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 		return c != ' ' && c != '"' && c != '\'' && c != '[' && c != ']' && c != '.' && c != '{' && c != '}';
 	}
 
-	static Predicate<Tag> getPredicate(CompoundTag filter) {
+	static Predicate<@Nullable Tag> getPredicate(CompoundTag filter) {
 		return nbt -> NbtUtils.compareNbt(filter, nbt, true);
 	}
 
@@ -210,7 +211,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 
 	static class MatchElementNode implements Node {
 		private final CompoundTag filter;
-		private final Predicate<Tag> predicate;
+		private final Predicate<@Nullable Tag> predicate;
 
 		public MatchElementNode(CompoundTag filter) {
 			this.filter = filter;
@@ -258,7 +259,8 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 						Tag tag = listTag.get(k);
 						if (this.predicate.test(tag)) {
 							Tag tag2 = source.get();
-							if (!tag2.equals(tag) && listTag.setTag(k, tag2)) {
+							if (!tag2.equals(tag)) {
+                                listTag.setTag(k, tag2);
 								++i;
 							}
 						}
@@ -288,7 +290,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 	static class MatchObjectNode implements Node {
 		private final String name;
 		private final CompoundTag filter;
-		private final Predicate<Tag> predicate;
+		private final Predicate<@Nullable Tag> predicate;
 
 		public MatchObjectNode(String name, CompoundTag filter) {
 			this.name = name;
@@ -300,7 +302,7 @@ public class CNbtPathArgument implements ArgumentType<CNbtPathArgument.NbtPath> 
 		public void get(Tag current, List<Tag> results) {
 			if (current instanceof CompoundTag) {
 				Tag tag = ((CompoundTag)current).get(this.name);
-				if (this.predicate.test(tag)) {
+				if (tag != null && this.predicate.test(tag)) {
 					results.add(tag);
 				}
 			}

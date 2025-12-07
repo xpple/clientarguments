@@ -9,12 +9,12 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.Util;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -73,8 +73,7 @@ public class CEntityAnchorArgument implements ArgumentType<CEntityAnchorArgument
 			this.offset = offset;
 		}
 
-		@Nullable
-		public static CEntityAnchorArgument.EntityAnchor fromId(String id) {
+		public static CEntityAnchorArgument.@Nullable EntityAnchor fromId(String id) {
 			return ANCHORS.get(id);
 		}
 
@@ -84,7 +83,7 @@ public class CEntityAnchorArgument implements ArgumentType<CEntityAnchorArgument
 
 		public Vec3 positionAt(FabricClientCommandSource source) {
 			Entity entity = source.getEntity();
-			return entity == null ? source.getPosition() : this.offset.apply(source.getPosition(), entity);
+			return this.offset.apply(source.getPosition(), entity);
 		}
 	}
 }

@@ -12,8 +12,8 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 
 import java.util.Arrays;
@@ -47,14 +47,14 @@ public class CResourceOrTagKeyArgument<T> implements ArgumentType<CResourceOrTag
 
             try {
                 stringReader.skip();
-                ResourceLocation id = ResourceLocation.read(stringReader);
+                Identifier id = Identifier.read(stringReader);
                 return new TagResult<>(TagKey.create(this.registryRef, id));
             } catch (CommandSyntaxException var4) {
                 stringReader.setCursor(cursor);
                 throw var4;
             }
         } else {
-            ResourceLocation id = ResourceLocation.read(stringReader);
+            Identifier id = Identifier.read(stringReader);
             return new ResourceResult<>(ResourceKey.create(this.registryRef, id));
         }
     }
@@ -88,7 +88,7 @@ public class CResourceOrTagKeyArgument<T> implements ArgumentType<CResourceOrTag
 
         @Override
         public String asString() {
-            return this.key.location().toString();
+            return this.key.identifier().toString();
         }
     }
 

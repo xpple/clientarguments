@@ -17,9 +17,9 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -60,7 +60,7 @@ public class CParticleArgument implements ArgumentType<ParticleOptions> {
 	}
 
 	private static ParticleType<?> getType(StringReader reader, HolderLookup<ParticleType<?>> holderLookup) throws CommandSyntaxException {
-		ResourceLocation id = ResourceLocation.read(reader);
+		Identifier id = Identifier.read(reader);
 		ResourceKey<ParticleType<?>> resourceKey = ResourceKey.create(Registries.PARTICLE_TYPE, id);
 		return holderLookup.get(resourceKey)
 			.orElseThrow(() -> UNKNOWN_PARTICLE_EXCEPTION.createWithContext(reader, id))
@@ -82,6 +82,6 @@ public class CParticleArgument implements ArgumentType<ParticleOptions> {
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
 		HolderLookup.RegistryLookup<ParticleType<?>> registryLookup = this.holderLookupProvider.lookupOrThrow(Registries.PARTICLE_TYPE);
-		return SharedSuggestionProvider.suggestResource(registryLookup.listElementIds().map(ResourceKey::location), builder);
+		return SharedSuggestionProvider.suggestResource(registryLookup.listElementIds().map(ResourceKey::identifier), builder);
 	}
 }

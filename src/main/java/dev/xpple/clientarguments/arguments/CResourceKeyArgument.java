@@ -15,8 +15,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
@@ -46,7 +46,7 @@ public class CResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
     public static <T> ResourceKey<T> getKey(final CommandContext<FabricClientCommandSource> context, final String name, final ResourceKey<Registry<T>> registryRef, final DynamicCommandExceptionType invalidException) throws CommandSyntaxException {
         ResourceKey<?> registryKey = context.getArgument(name, ResourceKey.class);
         Optional<ResourceKey<T>> optional = registryKey.cast(registryRef);
-        return optional.orElseThrow(() -> invalidException.create(registryKey.location()));
+        return optional.orElseThrow(() -> invalidException.create(registryKey.identifier()));
     }
 
     public static <T> Registry<T> getRegistry(final CommandContext<FabricClientCommandSource> context, ResourceKey<? extends Registry<T>> registryRef) {
@@ -57,7 +57,7 @@ public class CResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
         ResourceKey<T> registryKey = getKey(context, name, registryRef, invalidException);
         return getRegistry(context, registryRef)
             .get(registryKey)
-            .orElseThrow(() -> invalidException.create(registryKey.location()));
+            .orElseThrow(() -> invalidException.create(registryKey.identifier()));
     }
 
     public static Holder.Reference<ConfiguredFeature<?, ?>> getConfiguredFeature(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
@@ -74,16 +74,16 @@ public class CResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
 
     public static AdvancementHolder getAdvancement(final CommandContext<FabricClientCommandSource> context, final String string) throws CommandSyntaxException {
         ResourceKey<Advancement> resourceKey = getKey(context, string, Registries.ADVANCEMENT, ERROR_INVALID_ADVANCEMENT);
-        AdvancementHolder advancementHolder = context.getSource().getPlayer().connection.getAdvancements().get(resourceKey.location());
+        AdvancementHolder advancementHolder = context.getSource().getPlayer().connection.getAdvancements().get(resourceKey.identifier());
         if (advancementHolder == null) {
-            throw ERROR_INVALID_ADVANCEMENT.create(resourceKey.location());
+            throw ERROR_INVALID_ADVANCEMENT.create(resourceKey.identifier());
         }
         return advancementHolder;
     }
 
     @Override
     public ResourceKey<T> parse(final StringReader stringReader) throws CommandSyntaxException {
-        ResourceLocation identifier = ResourceLocation.read(stringReader);
+        Identifier identifier = Identifier.read(stringReader);
         return ResourceKey.create(this.registryRef, identifier);
     }
 

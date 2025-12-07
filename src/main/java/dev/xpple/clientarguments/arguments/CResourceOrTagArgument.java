@@ -17,8 +17,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 
 import java.util.Arrays;
@@ -48,10 +48,10 @@ public class CResourceOrTagArgument<T> implements ArgumentType<CResourceOrTagArg
         Optional<Result<T>> optional = result.tryCast(registryRef);
         return optional.orElseThrow(() -> result.getEntry().map(entry -> {
             ResourceKey<?> resourceKey2 = entry.key();
-            return CResourceArgument.INVALID_TYPE_EXCEPTION.create(resourceKey2.location(), resourceKey2.registry(), registryRef.location());
+            return CResourceArgument.INVALID_TYPE_EXCEPTION.create(resourceKey2.identifier(), resourceKey2.registry(), registryRef.identifier());
         }, entryList -> {
             TagKey<?> tagKey = entryList.key();
-            return WRONG_TYPE_EXCEPTION.create(tagKey.location(), tagKey.registry(), registryRef.location());
+            return WRONG_TYPE_EXCEPTION.create(tagKey.location(), tagKey.registry(), registryRef.identifier());
         }));
     }
 
@@ -62,22 +62,22 @@ public class CResourceOrTagArgument<T> implements ArgumentType<CResourceOrTagArg
 
             try {
                 stringReader.skip();
-                ResourceLocation id = ResourceLocation.read(stringReader);
+                Identifier id = Identifier.read(stringReader);
                 TagKey<T> tagKey = TagKey.create(this.registryRef, id);
                 HolderSet.Named<T> named = this.holderLookup
                     .get(tagKey)
-                    .orElseThrow(() -> NOT_FOUND_EXCEPTION.createWithContext(stringReader, id, this.registryRef.location()));
+                    .orElseThrow(() -> NOT_FOUND_EXCEPTION.createWithContext(stringReader, id, this.registryRef.identifier()));
                 return new TagBased<>(named);
             } catch (CommandSyntaxException var6) {
                 stringReader.setCursor(i);
                 throw var6;
             }
         } else {
-            ResourceLocation id = ResourceLocation.read(stringReader);
+            Identifier id = Identifier.read(stringReader);
             ResourceKey<T> resourceKey = ResourceKey.create(this.registryRef, id);
             Holder.Reference<T> reference = this.holderLookup
                 .get(resourceKey)
-                .orElseThrow(() -> CResourceArgument.NOT_FOUND_EXCEPTION.createWithContext(stringReader, id, this.registryRef.location()));
+                .orElseThrow(() -> CResourceArgument.NOT_FOUND_EXCEPTION.createWithContext(stringReader, id, this.registryRef.identifier()));
             return new EntryBased<>(reference);
         }
     }
@@ -85,7 +85,7 @@ public class CResourceOrTagArgument<T> implements ArgumentType<CResourceOrTagArg
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
         SharedSuggestionProvider.suggestResource(this.holderLookup.listTagIds().map(TagKey::location), builder, "#");
-        return SharedSuggestionProvider.suggestResource(this.holderLookup.listElementIds().map(ResourceKey::location), builder);
+        return SharedSuggestionProvider.suggestResource(this.holderLookup.listElementIds().map(ResourceKey::identifier), builder);
     }
 
     @Override
@@ -99,6 +99,7 @@ public class CResourceOrTagArgument<T> implements ArgumentType<CResourceOrTagArg
             return Either.left(this.value);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public <E> Optional<Result<E>> tryCast(ResourceKey<? extends Registry<E>> registryRef) {
             return this.value.key().isFor(registryRef) ? Optional.of((Result<E>) this) : Optional.empty();
@@ -110,7 +111,7 @@ public class CResourceOrTagArgument<T> implements ArgumentType<CResourceOrTagArg
 
         @Override
         public String asString() {
-            return this.value.key().location().toString();
+            return this.value.key().identifier().toString();
         }
     }
 
@@ -128,6 +129,7 @@ public class CResourceOrTagArgument<T> implements ArgumentType<CResourceOrTagArg
             return Either.right(this.tag);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public <E> Optional<Result<E>> tryCast(ResourceKey<? extends Registry<E>> registryRef) {
             return this.tag.key().isFor(registryRef) ? Optional.of((Result<E>) this) : Optional.empty();

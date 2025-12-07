@@ -14,8 +14,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.Dynamic;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.Util;
-import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.arguments.item.ComponentPredicateParser;
 import net.minecraft.core.Holder;
@@ -25,10 +24,11 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.predicates.DataComponentPredicate;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.Util;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -51,9 +51,9 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 	static final Dynamic2CommandExceptionType MALFORMED_ITEM_COMPONENT_EXCEPTION = new Dynamic2CommandExceptionType((object, object2) -> Component.translatableEscape("arguments.item.component.malformed", object, object2));
 	static final DynamicCommandExceptionType UNKNOWN_ITEM_PREDICATE_EXCEPTION = new DynamicCommandExceptionType(object -> Component.translatableEscape("arguments.item.predicate.unknown", object));
 	static final Dynamic2CommandExceptionType MALFORMED_ITEM_PREDICATE_EXCEPTION = new Dynamic2CommandExceptionType((object, object2) -> Component.translatableEscape("arguments.item.predicate.malformed", object, object2));
-	private static final ResourceLocation COUNT_ID = ResourceLocation.withDefaultNamespace("count");
-	static final Map<ResourceLocation, ComponentWrapper> SPECIAL_COMPONENT_CHECKS = Stream.of(new ComponentWrapper(COUNT_ID, stack -> true, MinMaxBounds.Ints.CODEC.map(range -> stack -> range.matches(stack.getCount())))).collect(Collectors.toUnmodifiableMap(ComponentWrapper::id, check -> check));
-	static final Map<ResourceLocation, PredicateWrapper> SPECIAL_SUB_PREDICATE_CHECKS = Stream.of(new PredicateWrapper(COUNT_ID, MinMaxBounds.Ints.CODEC.map(range -> stack -> range.matches(stack.getCount())))).collect(Collectors.toUnmodifiableMap(PredicateWrapper::id, check -> check));
+	private static final Identifier COUNT_ID = Identifier.withDefaultNamespace("count");
+	static final Map<Identifier, ComponentWrapper> SPECIAL_COMPONENT_CHECKS = Stream.of(new ComponentWrapper(COUNT_ID, stack -> true, MinMaxBounds.Ints.CODEC.map(range -> stack -> range.matches(stack.getCount())))).collect(Collectors.toUnmodifiableMap(ComponentWrapper::id, check -> check));
+	static final Map<Identifier, PredicateWrapper> SPECIAL_SUB_PREDICATE_CHECKS = Stream.of(new PredicateWrapper(COUNT_ID, MinMaxBounds.Ints.CODEC.map(range -> stack -> range.matches(stack.getCount())))).collect(Collectors.toUnmodifiableMap(PredicateWrapper::id, check -> check));
 	private final Grammar<List<Predicate<ItemStack>>> parser;
 
 	public CItemPredicateArgument(CommandBuildContext commandBuildContext) {
@@ -84,8 +84,8 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 		return EXAMPLES;
 	}
 
-	record ComponentWrapper(ResourceLocation id, Predicate<ItemStack> presenceChecker, Decoder<? extends Predicate<ItemStack>> valueChecker) {
-		public static <T> ComponentWrapper read(ImmutableStringReader reader, ResourceLocation id, DataComponentType<T> type) throws CommandSyntaxException {
+	record ComponentWrapper(Identifier id, Predicate<ItemStack> presenceChecker, Decoder<? extends Predicate<ItemStack>> valueChecker) {
+		public static <T> ComponentWrapper read(ImmutableStringReader reader, Identifier id, DataComponentType<T> type) throws CommandSyntaxException {
 			Codec<T> codec = type.codec();
 			if (codec == null) {
 				throw UNKNOWN_ITEM_COMPONENT_EXCEPTION.createWithContext(reader, id);
@@ -105,9 +105,9 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 	public interface CItemStackPredicateArgument extends Predicate<ItemStack> {
 	}
 
-	record PredicateWrapper(ResourceLocation id, Decoder<? extends Predicate<ItemStack>> type) {
+	record PredicateWrapper(Identifier id, Decoder<? extends Predicate<ItemStack>> type) {
 		public PredicateWrapper(Holder.Reference<DataComponentPredicate.Type<?>> type) {
-			this(type.key().location(), type.value().codec().map(predicate -> predicate::matches));
+			this(type.key().identifier(), type.value().codec().map(predicate -> predicate::matches));
 		}
 
 		public Predicate<ItemStack> createPredicate(ImmutableStringReader reader, Dynamic<?> nbt) throws CommandSyntaxException {
@@ -130,7 +130,7 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 		}
 
 		@Override
-		public Predicate<ItemStack> forElementType(ImmutableStringReader immutableStringReader, ResourceLocation id) throws CommandSyntaxException {
+		public Predicate<ItemStack> forElementType(ImmutableStringReader immutableStringReader, Identifier id) throws CommandSyntaxException {
 			Holder.Reference<Item> reference = this.itemHolderLookup
 				.get(ResourceKey.create(Registries.ITEM, id))
 				.orElseThrow(() -> INVALID_ITEM_ID_EXCEPTION.createWithContext(immutableStringReader, id));
@@ -138,7 +138,7 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 		}
 
 		@Override
-		public Predicate<ItemStack> forTagType(ImmutableStringReader immutableStringReader, ResourceLocation id) throws CommandSyntaxException {
+		public Predicate<ItemStack> forTagType(ImmutableStringReader immutableStringReader, Identifier id) throws CommandSyntaxException {
 			HolderSet<Item> registryEntryList = this.itemHolderLookup
 				.get(TagKey.create(Registries.ITEM, id))
 				.orElseThrow(() -> UNKNOWN_ITEM_TAG_EXCEPTION.createWithContext(immutableStringReader, id));
@@ -146,7 +146,7 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 		}
 
 		@Override
-		public ComponentWrapper lookupComponentType(ImmutableStringReader immutableStringReader, ResourceLocation id) throws CommandSyntaxException {
+		public ComponentWrapper lookupComponentType(ImmutableStringReader immutableStringReader, Identifier id) throws CommandSyntaxException {
 			ComponentWrapper componentWrapper = SPECIAL_COMPONENT_CHECKS.get(id);
 			if (componentWrapper != null) {
 				return componentWrapper;
@@ -169,7 +169,7 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 		}
 
 		@Override
-		public PredicateWrapper lookupPredicateType(ImmutableStringReader immutableStringReader, ResourceLocation id) throws CommandSyntaxException {
+		public PredicateWrapper lookupPredicateType(ImmutableStringReader immutableStringReader, Identifier id) throws CommandSyntaxException {
 			PredicateWrapper predicateWrapper = SPECIAL_SUB_PREDICATE_CHECKS.get(id);
 			return predicateWrapper != null ? predicateWrapper : this.itemSubPredicateTypeHolderLookup
 				.get(ResourceKey.create(Registries.DATA_COMPONENT_PREDICATE_TYPE, id))
@@ -183,29 +183,29 @@ public class CItemPredicateArgument implements ArgumentType<CItemPredicateArgume
 		}
 
 		@Override
-		public Stream<ResourceLocation> listElementTypes() {
-			return this.itemHolderLookup.listElementIds().map(ResourceKey::location);
+		public Stream<Identifier> listElementTypes() {
+			return this.itemHolderLookup.listElementIds().map(ResourceKey::identifier);
 		}
 
 		@Override
-		public Stream<ResourceLocation> listTagTypes() {
+		public Stream<Identifier> listTagTypes() {
 			return this.itemHolderLookup.listTagIds().map(TagKey::location);
 		}
 
 		@Override
-		public Stream<ResourceLocation> listComponentTypes() {
+		public Stream<Identifier> listComponentTypes() {
 			return Stream.concat(
 				SPECIAL_COMPONENT_CHECKS.keySet().stream(),
 				this.dataComponentTypeHolderLookup
 					.listElements()
 					.filter(entry -> !entry.value().isTransient())
-					.map(entry -> entry.key().location())
+					.map(entry -> entry.key().identifier())
 			);
 		}
 
 		@Override
-		public Stream<ResourceLocation> listPredicateTypes() {
-			return Stream.concat(SPECIAL_SUB_PREDICATE_CHECKS.keySet().stream(), this.itemSubPredicateTypeHolderLookup.listElementIds().map(ResourceKey::location));
+		public Stream<Identifier> listPredicateTypes() {
+			return Stream.concat(SPECIAL_SUB_PREDICATE_CHECKS.keySet().stream(), this.itemSubPredicateTypeHolderLookup.listElementIds().map(ResourceKey::identifier));
 		}
 
 		@Override

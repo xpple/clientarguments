@@ -17,8 +17,8 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.io.FilenameUtils;
 
 import java.util.Collection;
@@ -40,9 +40,9 @@ public class CResourceSelectorArgument<T> implements ArgumentType<Collection<Hol
 
     public Collection<Holder.Reference<T>> parse(StringReader stringReader) throws CommandSyntaxException {
         String string = ensureNamespaced(readPattern(stringReader));
-        List<Holder.Reference<T>> list = this.registryLookup.listElements().filter(reference -> matches(string, reference.key().location())).toList();
+        List<Holder.Reference<T>> list = this.registryLookup.listElements().filter(reference -> matches(string, reference.key().identifier())).toList();
         if (list.isEmpty()) {
-            throw ERROR_NO_MATCHES.createWithContext(stringReader, string, this.registryKey.location());
+            throw ERROR_NO_MATCHES.createWithContext(stringReader, string, this.registryKey.identifier());
         } else {
             return list;
         }
@@ -50,7 +50,7 @@ public class CResourceSelectorArgument<T> implements ArgumentType<Collection<Hol
 
     public static <T> Collection<Holder.Reference<T>> parse(StringReader stringReader, HolderLookup<T> holderLookup) {
         String string = ensureNamespaced(readPattern(stringReader));
-        return holderLookup.listElements().filter(reference -> matches(string, reference.key().location())).toList();
+        return holderLookup.listElements().filter(reference -> matches(string, reference.key().identifier())).toList();
     }
 
     private static String readPattern(StringReader stringReader) {
@@ -64,14 +64,14 @@ public class CResourceSelectorArgument<T> implements ArgumentType<Collection<Hol
     }
 
     private static boolean isAllowedPatternCharacter(char c) {
-        return ResourceLocation.isAllowedInResourceLocation(c) || c == '*' || c == '?';
+        return Identifier.isAllowedInIdentifier(c) || c == '*' || c == '?';
     }
 
     private static String ensureNamespaced(String string) {
         return !string.contains(":") ? "minecraft:" + string : string;
     }
 
-    private static boolean matches(String string, ResourceLocation resourceLocation) {
+    private static boolean matches(String string, Identifier resourceLocation) {
         return FilenameUtils.wildcardMatch(resourceLocation.toString(), string);
     }
 
@@ -92,7 +92,7 @@ public class CResourceSelectorArgument<T> implements ArgumentType<Collection<Hol
             ? sharedSuggestionProvider.suggestRegistryElements(
             this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, suggestionsBuilder, commandContext
         )
-            : SharedSuggestionProvider.suggest(this.registryLookup.listElementIds().map(ResourceKey::location).map(ResourceLocation::toString), suggestionsBuilder);
+            : SharedSuggestionProvider.suggest(this.registryLookup.listElementIds().map(ResourceKey::identifier).map(Identifier::toString), suggestionsBuilder);
     }
 
     @Override
@@ -110,7 +110,7 @@ public class CResourceSelectorArgument<T> implements ArgumentType<Collection<Hol
         }
 
         public void serializeToJson(CResourceSelectorArgument.Info<T>.Template template, JsonObject jsonObject) {
-            jsonObject.addProperty("registry", template.registryKey.location().toString());
+            jsonObject.addProperty("registry", template.registryKey.identifier().toString());
         }
 
         public CResourceSelectorArgument.Info<T>.Template unpack(CResourceSelectorArgument<T> resourceSelectorArgument) {
