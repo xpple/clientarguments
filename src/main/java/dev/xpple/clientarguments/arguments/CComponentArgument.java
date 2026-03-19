@@ -25,7 +25,7 @@ public class CComponentArgument extends ParserBasedArgument<Component> {
 		super(TAG_PARSER.withCodec(registries.createSerializationContext(NbtOps.INSTANCE), TAG_PARSER, ComponentSerialization.CODEC, INVALID_COMPONENT_EXCEPTION));
 	}
 
-	public static CComponentArgument textComponent(CommandBuildContext buildContext) {
+	public static CComponentArgument component(CommandBuildContext buildContext) {
 		return new CComponentArgument(buildContext);
 	}
 

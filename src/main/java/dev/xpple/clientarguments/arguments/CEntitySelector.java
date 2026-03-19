@@ -110,7 +110,7 @@ public class CEntitySelector {
 			return this.findPlayers(source);
 		}
 		if (this.playerName != null) {
-			AbstractClientPlayer abstractClientPlayer = Streams.stream(source.getWorld().entitiesForRendering())
+			AbstractClientPlayer abstractClientPlayer = Streams.stream(source.getLevel().entitiesForRendering())
 				.filter(entity -> entity instanceof AbstractClientPlayer)
 				.map(entity -> (AbstractClientPlayer) entity)
 				.filter(abstractPlayer -> abstractPlayer.getName().getString().equals(this.playerName))
@@ -118,7 +118,7 @@ public class CEntitySelector {
 			return abstractClientPlayer == null ? Collections.emptyList() : Lists.newArrayList(abstractClientPlayer);
 		}
 		if (this.entityUUID != null) {
-			Entity foundEntity = Streams.stream(source.getWorld().entitiesForRendering())
+			Entity foundEntity = Streams.stream(source.getLevel().entitiesForRendering())
 				.filter(entity -> entity.getUUID().equals(this.entityUUID))
 				.findAny().orElse(null);
 			return foundEntity == null ? Collections.emptyList() : Lists.newArrayList(foundEntity);
@@ -134,7 +134,7 @@ public class CEntitySelector {
                 : Collections.emptyList();
 		}
 		List<Entity> list = Lists.newArrayList();
-		this.addEntities(list, source.getWorld(), aabb, predicate);
+		this.addEntities(list, source.getLevel(), aabb, predicate);
 		return this.sortAndLimit(vec3, list);
 	}
 
@@ -173,7 +173,7 @@ public class CEntitySelector {
 	public List<AbstractClientPlayer> findPlayers(FabricClientCommandSource source) throws CommandSyntaxException {
 		AbstractClientPlayer abstractClientPlayer;
 		if (this.playerName != null) {
-			abstractClientPlayer = Streams.stream(source.getWorld().entitiesForRendering())
+			abstractClientPlayer = Streams.stream(source.getLevel().entitiesForRendering())
 				.filter(entity -> entity instanceof AbstractClientPlayer)
 				.map(entity -> (AbstractClientPlayer) entity)
 				.filter(abstractPlayer -> abstractPlayer.getName().getString().equals(this.playerName))
@@ -181,7 +181,7 @@ public class CEntitySelector {
 			return abstractClientPlayer == null ? Collections.emptyList() : Lists.newArrayList(abstractClientPlayer);
 		}
 		if (this.entityUUID != null) {
-			abstractClientPlayer = Streams.stream(source.getWorld().entitiesForRendering())
+			abstractClientPlayer = Streams.stream(source.getLevel().entitiesForRendering())
 				.filter(entity -> entity instanceof AbstractClientPlayer)
 				.map(entity -> (AbstractClientPlayer) entity)
 				.filter(entity -> entity.getUUID().equals(this.entityUUID))
@@ -197,7 +197,7 @@ public class CEntitySelector {
 
 			return Collections.emptyList();
 		}
-		List<AbstractClientPlayer> entities = source.getWorld().players().stream()
+		List<AbstractClientPlayer> entities = source.getLevel().players().stream()
 			.filter(predicate)
 			.limit(this.getResultLimit())
 			.collect(Collectors.toList());

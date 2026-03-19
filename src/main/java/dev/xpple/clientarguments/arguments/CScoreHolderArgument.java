@@ -51,7 +51,7 @@ public class CScoreHolderArgument implements ArgumentType<CScoreHolderArgument.R
 	}
 
 	public static Collection<ScoreHolder> getScoreboardScoreHolders(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		return getScoreHolders(context, name, context.getSource().getWorld().getScoreboard()::getTrackedPlayers);
+		return getScoreHolders(context, name, context.getSource().getLevel().getScoreboard()::getTrackedPlayers);
 	}
 
 	public static Collection<ScoreHolder> getScoreHolders(final CommandContext<FabricClientCommandSource> context, final String name, final Supplier<Collection<ScoreHolder>> players) throws CommandSyntaxException {
@@ -111,7 +111,7 @@ public class CScoreHolderArgument implements ArgumentType<CScoreHolderArgument.R
 		try {
 			UUID uuid = UUID.fromString(string);
 			return (source, holders) -> {
-				ScoreHolder scoreHolder = Streams.stream(source.getWorld().entitiesForRendering())
+				ScoreHolder scoreHolder = Streams.stream(source.getLevel().entitiesForRendering())
 					.filter(e -> e.getUUID().equals(uuid))
 					.findAny().orElse(null);
 
@@ -119,7 +119,7 @@ public class CScoreHolderArgument implements ArgumentType<CScoreHolderArgument.R
 			};
 		} catch (IllegalArgumentException var6) {
 			return (source, holders) -> {
-				AbstractClientPlayer abstractClientPlayer = Streams.stream(source.getWorld().entitiesForRendering())
+				AbstractClientPlayer abstractClientPlayer = Streams.stream(source.getLevel().entitiesForRendering())
 					.filter(entity -> entity instanceof AbstractClientPlayer)
 					.map(entity -> (AbstractClientPlayer) entity)
 					.filter(abstractPlayer -> abstractPlayer.getName().getString().equals(string))

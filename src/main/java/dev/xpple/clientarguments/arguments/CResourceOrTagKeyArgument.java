@@ -30,11 +30,11 @@ public class CResourceOrTagKeyArgument<T> implements ArgumentType<CResourceOrTag
         this.registryRef = registryRef;
     }
 
-    public static <T> CResourceOrTagKeyArgument<T> registryPredicate(ResourceKey<? extends Registry<T>> registryRef) {
+    public static <T> CResourceOrTagKeyArgument<T> resourceOrTag(ResourceKey<? extends Registry<T>> registryRef) {
         return new CResourceOrTagKeyArgument<>(registryRef);
     }
 
-    public static <T> Result<T> getPredicate(final CommandContext<FabricClientCommandSource> context, final String name, final ResourceKey<Registry<T>> registryRef, final DynamicCommandExceptionType invalidException) throws CommandSyntaxException {
+    public static <T> Result<T> getResourceOrTag(final CommandContext<FabricClientCommandSource> context, final String name, final ResourceKey<Registry<T>> registryRef, final DynamicCommandExceptionType invalidException) throws CommandSyntaxException {
         Result<?> result = context.getArgument(name, Result.class);
         Optional<Result<T>> optional = result.tryCast(registryRef);
         return optional.orElseThrow(() -> invalidException.create(result));
