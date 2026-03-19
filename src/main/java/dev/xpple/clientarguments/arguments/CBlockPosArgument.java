@@ -32,14 +32,14 @@ public class CBlockPosArgument implements ArgumentType<CCoordinates> {
 	}
 
 	public static BlockPos getLoadedBlockPos(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-		ClientLevel clientLevel = context.getSource().getWorld();
+		ClientLevel clientLevel = context.getSource().getLevel();
 		return getLoadedBlockPos(context, clientLevel, name);
 	}
 
 	public static BlockPos getLoadedBlockPos(final CommandContext<FabricClientCommandSource> context, final ClientLevel level, final String name) throws CommandSyntaxException {
 		BlockPos blockPos = getBlockPos(context, name);
-		ChunkPos chunkPos = new ChunkPos(blockPos);
-		if (!level.getChunkSource().hasChunk(chunkPos.x, chunkPos.z)) {
+		ChunkPos chunkPos = ChunkPos.containing(blockPos);
+		if (!level.getChunkSource().hasChunk(chunkPos.x(), chunkPos.z())) {
 			throw UNLOADED_EXCEPTION.create();
 		}
 		if (!level.isInWorldBounds(blockPos)) {

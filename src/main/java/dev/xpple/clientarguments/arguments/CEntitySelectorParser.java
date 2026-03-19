@@ -7,7 +7,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.fabricmc.fabric.api.command.v2.FabricEntitySelectorReader;
+import net.fabricmc.fabric.api.command.v2.FabricEntitySelectorParser;
 import net.minecraft.advancements.criterion.MinMaxBounds;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -31,7 +31,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
 
-public class CEntitySelectorParser implements FabricEntitySelectorReader {
+public class CEntitySelectorParser implements FabricEntitySelectorParser {
 	public static final char SYNTAX_SELECTOR_START = '@';
 	private static final char SYNTAX_OPTIONS_START = '[';
 	private static final char SYNTAX_OPTIONS_END = ']';

@@ -28,7 +28,7 @@ repositories {
 Import it:
 ```gradle
 dependencies {
-    include modImplementation('dev.xpple:clientarguments:${version}')
+    include implementation('dev.xpple:clientarguments:${version}')
 }
 ```
 Note: if you choose to use GitHub packages and get `Received status code 400 from server: Bad Request`, you need to 

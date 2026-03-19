@@ -19,12 +19,14 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.clock.WorldClock;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.structure.Structure;
+import net.minecraft.world.timeline.Timeline;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,12 +45,12 @@ public class CResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
         this.holderLookup = buildContext.lookupOrThrow(registryRef);
     }
 
-    public static <T> CResourceArgument<T> registryEntry(CommandBuildContext buildContext, ResourceKey<? extends Registry<T>> registryRef) {
+    public static <T> CResourceArgument<T> resource(CommandBuildContext buildContext, ResourceKey<? extends Registry<T>> registryRef) {
         return new CResourceArgument<>(buildContext, registryRef);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Holder.Reference<T> getRegistryEntry(final CommandContext<FabricClientCommandSource> context, final String name, ResourceKey<Registry<T>> registryRef) throws CommandSyntaxException {
+    public static <T> Holder.Reference<T> getResource(final CommandContext<FabricClientCommandSource> context, final String name, ResourceKey<Registry<T>> registryRef) throws CommandSyntaxException {
         Holder.Reference<T> reference = (Holder.Reference<T>) context.getArgument(name, Holder.Reference.class);
         ResourceKey<?> resourceKey = reference.key();
         if (!resourceKey.isFor(registryRef)) {
@@ -58,23 +60,23 @@ public class CResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
     }
 
     public static Holder.Reference<Attribute> getEntityAttribute(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        return getRegistryEntry(context, name, Registries.ATTRIBUTE);
+        return getResource(context, name, Registries.ATTRIBUTE);
     }
 
     public static Holder.Reference<ConfiguredFeature<?, ?>> getConfiguredFeature(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        return getRegistryEntry(context, name, Registries.CONFIGURED_FEATURE);
+        return getResource(context, name, Registries.CONFIGURED_FEATURE);
     }
 
     public static Holder.Reference<Structure> getStructure(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        return getRegistryEntry(context, name, Registries.STRUCTURE);
+        return getResource(context, name, Registries.STRUCTURE);
     }
 
     public static Holder.Reference<EntityType<?>> getEntityType(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        return getRegistryEntry(context, name, Registries.ENTITY_TYPE);
+        return getResource(context, name, Registries.ENTITY_TYPE);
     }
 
     public static Holder.Reference<EntityType<?>> getSummonableEntityType(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        Holder.Reference<EntityType<?>> reference = getRegistryEntry(context, name, Registries.ENTITY_TYPE);
+        Holder.Reference<EntityType<?>> reference = getResource(context, name, Registries.ENTITY_TYPE);
         if (!reference.value().canSummon()) {
             throw NOT_SUMMONABLE_EXCEPTION.create(reference.key().identifier().toString());
         }
@@ -82,11 +84,19 @@ public class CResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
     }
 
     public static Holder.Reference<MobEffect> getStatusEffect(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        return getRegistryEntry(context, name, Registries.MOB_EFFECT);
+        return getResource(context, name, Registries.MOB_EFFECT);
     }
 
     public static Holder.Reference<Enchantment> getEnchantment(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        return getRegistryEntry(context, name, Registries.ENCHANTMENT);
+        return getResource(context, name, Registries.ENCHANTMENT);
+    }
+
+    public static Holder.Reference<WorldClock> getClock(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+        return getResource(context, name, Registries.WORLD_CLOCK);
+    }
+
+    public static Holder.Reference<Timeline> getTimeline(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+        return getResource(context, name, Registries.TIMELINE);
     }
 
     public Holder.Reference<T> parse(StringReader stringReader) throws CommandSyntaxException {

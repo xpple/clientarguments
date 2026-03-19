@@ -27,7 +27,7 @@ public class CTeamArgument implements ArgumentType<String> {
 
 	public static PlayerTeam getTeam(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
 		String string = context.getArgument(name, String.class);
-		Scoreboard scoreboard = context.getSource().getWorld().getScoreboard();
+		Scoreboard scoreboard = context.getSource().getLevel().getScoreboard();
 		PlayerTeam team = scoreboard.getPlayerTeam(string);
 		if (team == null) {
 			throw UNKNOWN_TEAM_EXCEPTION.create(string);

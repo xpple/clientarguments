@@ -16,10 +16,10 @@ import java.util.concurrent.CompletableFuture;
 
 public class CItemArgument implements ArgumentType<ItemInput> {
 	private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "stick{foo=bar}");
-	private final ItemParser reader;
+	private final ItemParser parser;
 
 	public CItemArgument(CommandBuildContext commandBuildContext) {
-		this.reader = new ItemParser(commandBuildContext);
+		this.parser = new ItemParser(commandBuildContext);
 	}
 
 	public static CItemArgument itemStack(CommandBuildContext commandBuildContext) {
@@ -32,13 +32,12 @@ public class CItemArgument implements ArgumentType<ItemInput> {
 
 	@Override
 	public ItemInput parse(final StringReader stringReader) throws CommandSyntaxException {
-		ItemParser.ItemResult itemResult = this.reader.parse(stringReader);
-		return new ItemInput(itemResult.item(), itemResult.components());
+		return this.parser.parse(stringReader);
 	}
 
 	@Override
 	public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-		return this.reader.fillSuggestions(builder);
+		return this.parser.fillSuggestions(builder);
 	}
 
 	@Override

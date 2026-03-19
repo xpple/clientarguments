@@ -5,7 +5,8 @@
   "name": "clientarguments",
   "description": "Quality of life library for client-sided Minecraft Fabric command building.",
   "authors": [
-    "xpple"
+    "xpple",
+    "Earthcomputer"
   ],
   "contact": {
     "website": "https://xpple.dev/",

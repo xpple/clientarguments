@@ -237,7 +237,7 @@ public class CEntitySelectorOptions {
 
 			if (reader.isTag()) {
 				TagKey<EntityType<?>> tagKey = TagKey.create(Registries.ENTITY_TYPE, Identifier.read(reader.getReader()));
-				reader.addPredicate(entity -> entity.getType().is(tagKey) != bl);
+				reader.addPredicate(entity -> entity.is(tagKey) != bl);
 			} else {
 				Identifier resourceLocation = Identifier.read(reader.getReader());
 				EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.getOptional(resourceLocation).orElseThrow(() -> {
@@ -259,9 +259,9 @@ public class CEntitySelectorOptions {
             String string = reader.getReader().readUnquotedString();
             reader.addPredicate(entity -> {
                 if ("".equals(string)) {
-                    return entity.getTags().isEmpty() != bl;
+                    return entity.entityTags().isEmpty() != bl;
                 } else {
-                    return entity.getTags().contains(string) != bl;
+                    return entity.entityTags().contains(string) != bl;
                 }
             });
         }, reader -> true, Component.translatable("argument.entity.options.tag.description"));
