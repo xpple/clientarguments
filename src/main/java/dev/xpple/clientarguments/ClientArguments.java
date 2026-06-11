@@ -18,7 +18,6 @@ import static dev.xpple.clientarguments.arguments.CAngleArgument.*;
 import static dev.xpple.clientarguments.arguments.CBlockPosArgument.*;
 import static dev.xpple.clientarguments.arguments.CBlockPredicateArgument.*;
 import static dev.xpple.clientarguments.arguments.CBlockStateArgument.*;
-import static dev.xpple.clientarguments.arguments.CColorArgument.*;
 import static dev.xpple.clientarguments.arguments.CColumnPosArgument.*;
 import static dev.xpple.clientarguments.arguments.CComponentArgument.*;
 import static dev.xpple.clientarguments.arguments.CCompoundTagArgument.*;
@@ -89,8 +88,6 @@ public class ClientArguments implements ClientModInitializer {
                 .executes(ctx -> consume(getBlockPredicate(ctx, "blockpredicate")))))
             .then(literal("blockstate").then(argument("blockstate", blockState(registryAccess))
                 .executes(ctx -> consume(getBlockState(ctx, "blockstate")))))
-            .then(literal("color").then(argument("color", color())
-                .executes(ctx -> consume(getColor(ctx, "color")))))
             .then(literal("columnpos").then(argument("columnpos", columnPos())
                 .executes(ctx -> consume(getColumnPos(ctx, "columnpos")))))
             .then(literal("dimension").then(argument("dimension", dimension())
