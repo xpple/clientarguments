@@ -9,7 +9,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.logging.LogUtils;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
-import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -25,6 +25,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
@@ -244,7 +245,7 @@ public class CEntitySelectorOptions {
 					reader.getReader().setCursor(cursor);
 					return INVALID_TYPE_EXCEPTION.createWithContext(reader.getReader(), resourceLocation.toString());
 				});
-				if (Objects.equals(EntityType.PLAYER, entityType) && !bl) {
+				if (Objects.equals(EntityTypes.PLAYER, entityType) && !bl) {
 					reader.setIncludesEntities(false);
 				}
 

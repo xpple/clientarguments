@@ -8,13 +8,14 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.fabricmc.fabric.api.command.v2.FabricEntitySelectorParser;
-import net.minecraft.advancements.criterion.MinMaxBounds;
+import net.minecraft.advancements.predicates.MinMaxBounds;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
@@ -182,7 +183,7 @@ public class CEntitySelectorParser implements FabricEntitySelectorParser {
 				this.maxResults = Integer.MAX_VALUE;
 				this.includesEntities = false;
 				this.order = CEntitySelector.ORDER_ARBITRARY;
-				this.limitToType(EntityType.PLAYER);
+				this.limitToType(EntityTypes.PLAYER);
 				yield false;
 			}
 			case SELECTOR_ALL_ENTITIES -> {
@@ -201,14 +202,14 @@ public class CEntitySelectorParser implements FabricEntitySelectorParser {
 				this.maxResults = 1;
 				this.includesEntities = false;
 				this.order = ORDER_NEAREST;
-				this.limitToType(EntityType.PLAYER);
+				this.limitToType(EntityTypes.PLAYER);
 				yield false;
 			}
 			case SELECTOR_RANDOM_PLAYERS -> {
 				this.maxResults = 1;
 				this.includesEntities = false;
 				this.order = ORDER_RANDOM;
-				this.limitToType(EntityType.PLAYER);
+				this.limitToType(EntityTypes.PLAYER);
 				yield false;
 			}
 			case SELECTOR_CURRENT_ENTITY -> {

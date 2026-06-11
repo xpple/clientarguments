@@ -55,6 +55,7 @@ import static dev.xpple.clientarguments.arguments.CSlotsArgument.*;
 import static dev.xpple.clientarguments.arguments.CStyleArgument.*;
 import static dev.xpple.clientarguments.arguments.CSwizzleArgument.*;
 import static dev.xpple.clientarguments.arguments.CTeamArgument.*;
+import static dev.xpple.clientarguments.arguments.CTeamColorArgument.*;
 import static dev.xpple.clientarguments.arguments.CTimeArgument.*;
 import static dev.xpple.clientarguments.arguments.CUuidArgument.*;
 import static dev.xpple.clientarguments.arguments.CVec2Argument.*;
@@ -158,6 +159,8 @@ public class ClientArguments implements ClientModInitializer {
                 .executes(ctx -> consume(getSwizzle(ctx, "swizzle")))))
             .then(literal("team").then(argument("team", team())
                 .executes(ctx -> consume(getTeam(ctx, "team")))))
+            .then(literal("teamcolor").then(argument("teamcolor", teamColor())
+                .executes(ctx -> consume(getTeamColor(ctx, "teamcolor")))))
             .then(literal("component").then(argument("component", component(registryAccess))
                 .executes(ctx -> consume(getComponent(ctx, "component")))))
             .then(literal("time").then(argument("time", time())
