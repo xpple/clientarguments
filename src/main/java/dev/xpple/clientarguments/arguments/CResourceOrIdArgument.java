@@ -20,10 +20,15 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.util.parsing.packrat.commands.Grammar;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProvider;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProvider;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
@@ -32,7 +37,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class CResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
-    private static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
+    static final Collection<String> EXAMPLES = List.of("foo", "foo:bar", "012", "{}", "true");
     private final HolderLookup.Provider registryLookup;
     private final Optional<? extends HolderLookup.RegistryLookup<T>> elementLookup;
     private final Codec<T> codec;
@@ -71,6 +76,30 @@ public class CResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
         return getArgument(context, argument);
     }
 
+    public static ContextFloatProviderArgument floatProvider(final CommandBuildContext context) {
+        return new ContextFloatProviderArgument(context);
+    }
+
+    public static Holder<ContextFloatProvider> getFloatProvider(final CommandContext<FabricClientCommandSource> context, final String name) {
+        return getArgument(context, name);
+    }
+
+    public static ContextIntProviderArgument intProvider(final CommandBuildContext context) {
+        return new ContextIntProviderArgument(context);
+    }
+
+    public static Holder<ContextIntProvider> getIntProvider(final CommandContext<FabricClientCommandSource> context, final String name) {
+        return getArgument(context, name);
+    }
+
+    public static FeatureArgument feature(final CommandBuildContext context) {
+        return new FeatureArgument(context);
+    }
+
+    public static Holder<Feature> getFeature(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
+        return getArgument(context, name);
+    }
+
     public static DialogArgument dialog(CommandBuildContext buildContext) {
         return new DialogArgument(buildContext);
     }
@@ -107,9 +136,27 @@ public class CResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
         return EXAMPLES;
     }
 
+    public static class ContextFloatProviderArgument extends ResourceOrIdArgument<ContextFloatProvider> {
+        protected ContextFloatProviderArgument(final CommandBuildContext context) {
+            super(context, Registries.CONTEXT_FLOAT_PROVIDER, ContextFloatProviders.DIRECT_CODEC);
+        }
+    }
+
+    public static class ContextIntProviderArgument extends ResourceOrIdArgument<ContextIntProvider> {
+        protected ContextIntProviderArgument(final CommandBuildContext context) {
+            super(context, Registries.CONTEXT_INT_PROVIDER, ContextIntProviders.DIRECT_CODEC);
+        }
+    }
+
     public static class DialogArgument extends CResourceOrIdArgument<Dialog> {
         protected DialogArgument(CommandBuildContext context) {
             super(context, Registries.DIALOG, Dialog.DIRECT_CODEC);
+        }
+    }
+
+    public static class FeatureArgument extends ResourceOrIdArgument<Feature> {
+        protected FeatureArgument(final CommandBuildContext context) {
+            super(context, Registries.FEATURE, Feature.DIRECT_CODEC);
         }
     }
 
@@ -121,7 +168,7 @@ public class CResourceOrIdArgument<T> implements ArgumentType<Holder<T>> {
 
     public static class LootModifierArgument extends CResourceOrIdArgument<LootItemFunction> {
         protected LootModifierArgument(CommandBuildContext buildContext) {
-            super(buildContext, Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC);
+            super(buildContext, Registries.ITEM_MODIFIER, LootItemFunctions.DIRECT_CODEC);
         }
     }
 

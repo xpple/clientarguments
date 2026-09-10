@@ -90,7 +90,7 @@ public class CResourceSelectorArgument<T> implements ArgumentType<Collection<Hol
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> commandContext, SuggestionsBuilder suggestionsBuilder) {
         return commandContext.getSource() instanceof SharedSuggestionProvider sharedSuggestionProvider
             ? sharedSuggestionProvider.suggestRegistryElements(
-            this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, suggestionsBuilder, commandContext
+            this.registryKey, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, suggestionsBuilder, commandContext, _ -> true
         )
             : SharedSuggestionProvider.suggest(this.registryLookup.listElementIds().map(ResourceKey::identifier).map(Identifier::toString), suggestionsBuilder);
     }

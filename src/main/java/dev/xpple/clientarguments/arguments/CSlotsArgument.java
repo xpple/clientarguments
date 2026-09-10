@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class CSlotsArgument implements ArgumentType<SlotRange> {
-    private static final Collection<String> EXAMPLES = List.of("container.*", "container.5", "weapon");
+    static final Collection<String> EXAMPLES = List.of("container.*", "container.5", "weapon");
     private static final DynamicCommandExceptionType UNKNOWN_SLOT_EXCEPTION = new DynamicCommandExceptionType(slotRange -> Component.translatableEscape("slot.unknown", slotRange));
 
     public static CSlotsArgument slots() {

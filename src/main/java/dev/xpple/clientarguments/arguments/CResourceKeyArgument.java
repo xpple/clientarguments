@@ -17,7 +17,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
@@ -25,22 +24,33 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 public class CResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
     private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
-    private static final DynamicCommandExceptionType INVALID_FEATURE_EXCEPTION = new DynamicCommandExceptionType(id -> Component.translatableEscape("commands.place.feature.invalid", id));
     private static final DynamicCommandExceptionType INVALID_STRUCTURE_EXCEPTION = new DynamicCommandExceptionType(id -> Component.translatableEscape("commands.place.structure.invalid", id));
     private static final DynamicCommandExceptionType INVALID_JIGSAW_EXCEPTION = new DynamicCommandExceptionType(id -> Component.translatableEscape("commands.place.jigsaw.invalid", id));
     private static final DynamicCommandExceptionType ERROR_INVALID_RECIPE = new DynamicCommandExceptionType(object -> Component.translatableEscape("recipe.notFound", object));
     private static final DynamicCommandExceptionType ERROR_INVALID_ADVANCEMENT = new DynamicCommandExceptionType(object -> Component.translatableEscape("advancement.advancementNotFound", object));
-    final ResourceKey<? extends Registry<T>> registryRef;
+
+    private final ResourceKey<? extends Registry<T>> registryRef;
+    private final Predicate<T> filter;
 
     public CResourceKeyArgument(ResourceKey<? extends Registry<T>> registryRef) {
+        this(registryRef, _ -> true);
+    }
+
+    public CResourceKeyArgument(ResourceKey<? extends Registry<T>> registryRef, Predicate<T> filter) {
         this.registryRef = registryRef;
+        this.filter = filter;
     }
 
     public static <T> CResourceKeyArgument<T> key(ResourceKey<? extends Registry<T>> registryRef) {
         return new CResourceKeyArgument<>(registryRef);
+    }
+
+    public static <T> CResourceKeyArgument<T> key(ResourceKey<? extends Registry<T>> registryRef, Predicate<T> filter) {
+        return new CResourceKeyArgument<>(registryRef, filter);
     }
 
     public static <T> ResourceKey<T> getKey(final CommandContext<FabricClientCommandSource> context, final String name, final ResourceKey<Registry<T>> registryRef, final DynamicCommandExceptionType invalidException) throws CommandSyntaxException {
@@ -58,10 +68,6 @@ public class CResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
         return getRegistry(context, registryRef)
             .get(registryKey)
             .orElseThrow(() -> invalidException.create(registryKey.identifier()));
-    }
-
-    public static Holder.Reference<ConfiguredFeature<?, ?>> getConfiguredFeature(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        return getRegistryEntry(context, name, Registries.CONFIGURED_FEATURE, INVALID_FEATURE_EXCEPTION);
     }
 
     public static Holder.Reference<Structure> getStructure(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
@@ -90,7 +96,7 @@ public class CResourceKeyArgument<T> implements ArgumentType<ResourceKey<T>> {
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
         return context.getSource() instanceof SharedSuggestionProvider commandSource
-            ? commandSource.suggestRegistryElements(this.registryRef, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, builder, context)
+            ? commandSource.suggestRegistryElements(this.registryRef, SharedSuggestionProvider.ElementSuggestionType.ELEMENTS, builder, context, filter)
             : builder.buildFuture();
     }
 

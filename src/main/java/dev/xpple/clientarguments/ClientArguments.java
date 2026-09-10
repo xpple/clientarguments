@@ -50,8 +50,10 @@ import static dev.xpple.clientarguments.arguments.CRotationArgument.*;
 import static dev.xpple.clientarguments.arguments.CScoreHolderArgument.*;
 import static dev.xpple.clientarguments.arguments.CScoreboardSlotArgument.*;
 import static dev.xpple.clientarguments.arguments.CSlotArgument.*;
+import static dev.xpple.clientarguments.arguments.CSlotSourceArgument.*;
 import static dev.xpple.clientarguments.arguments.CSlotsArgument.*;
 import static dev.xpple.clientarguments.arguments.CStyleArgument.*;
+import static dev.xpple.clientarguments.arguments.CSwingAnimationArgument.*;
 import static dev.xpple.clientarguments.arguments.CSwizzleArgument.*;
 import static dev.xpple.clientarguments.arguments.CTeamArgument.*;
 import static dev.xpple.clientarguments.arguments.CTeamColorArgument.*;
@@ -150,8 +152,12 @@ public class ClientArguments implements ClientModInitializer {
                 .executes(ctx -> consume(getScoreHolder(ctx, "scoreholder")))))
             .then(literal("slotrange").then(argument("slotrange", slots())
                 .executes(ctx -> consume(getSlots(ctx, "slotrange")))))
+            .then(literal("slotsource").then(argument("slotsource", slotSource(registryAccess))
+                .executes(ctx -> consume(getSlotSource(ctx, "slotsource")))))
             .then(literal("style").then(argument("style", style(registryAccess))
                 .executes(ctx -> consume(getStyle(ctx, "style")))))
+            .then(literal("swinganimation").then(argument("swinganimation", swingAnimationType())
+                .executes(ctx -> consume(getSwingAnimationType(ctx, "swinganimation")))))
             .then(literal("swizzle").then(argument("swizzle", swizzle())
                 .executes(ctx -> consume(getSwizzle(ctx, "swizzle")))))
             .then(literal("team").then(argument("team", team())

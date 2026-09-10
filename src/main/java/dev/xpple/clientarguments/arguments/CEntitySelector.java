@@ -10,7 +10,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.util.AbortableIterationConsumer;
+import net.minecraft.util.Continuation;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -148,11 +148,11 @@ public class CEntitySelector {
 					if (predicate.test(entity)) {
 						entities.add(entity);
 						if (entities.size() >= resultLimit) {
-							return AbortableIterationConsumer.Continuation.ABORT;
+							return Continuation.ABORT;
 						}
 					}
 
-					return AbortableIterationConsumer.Continuation.CONTINUE;
+					return Continuation.CONTINUE;
 				});
 			}
 		}

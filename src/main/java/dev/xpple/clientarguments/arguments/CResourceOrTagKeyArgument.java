@@ -62,7 +62,7 @@ public class CResourceOrTagKeyArgument<T> implements ArgumentType<CResourceOrTag
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
         return context.getSource() instanceof SharedSuggestionProvider commandSource
-            ? commandSource.suggestRegistryElements(this.registryRef, SharedSuggestionProvider.ElementSuggestionType.ALL, builder, context)
+            ? commandSource.suggestRegistryElements(this.registryRef, SharedSuggestionProvider.ElementSuggestionType.ALL, builder, context, _ -> true)
             : builder.buildFuture();
     }
 

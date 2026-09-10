@@ -24,8 +24,6 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.item.enchantment.Enchantment;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.timeline.Timeline;
 
 import java.util.Arrays;
@@ -61,18 +59,6 @@ public class CResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
 
     public static Holder.Reference<Attribute> getEntityAttribute(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
         return getResource(context, name, Registries.ATTRIBUTE);
-    }
-
-    public static Holder.Reference<ConfiguredFeature<?, ?>> getConfiguredFeature(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        return getResource(context, name, Registries.CONFIGURED_FEATURE);
-    }
-
-    public static Holder.Reference<Structure> getStructure(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        return getResource(context, name, Registries.STRUCTURE);
-    }
-
-    public static Holder.Reference<EntityType<?>> getEntityType(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
-        return getResource(context, name, Registries.ENTITY_TYPE);
     }
 
     public static Holder.Reference<EntityType<?>> getSummonableEntityType(final CommandContext<FabricClientCommandSource> context, final String name) throws CommandSyntaxException {
